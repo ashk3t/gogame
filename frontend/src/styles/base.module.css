@@ -1,0 +1,30 @@
+.centeringContainer, .vcenteringContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.vcenteringContainer {
+  flex-direction: column;
+}
+
+.niceButton {
+  border: 4px solid var(--foam);
+  padding: 10px 20px 10px 20px;
+  transition: 0.2s all;
+}
+.niceButton:hover {
+  background-color: var(--highlight-low);
+  color: var(--love);
+}
+
+.niceInput {
+  padding: 10px;
+  background: var(--overlay);
+}
+
+.linkLike {
+  text-decoration: underline;
+}
+.linkLike:hover {
+  cursor: pointer;
+}

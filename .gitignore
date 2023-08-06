@@ -1,0 +1,25 @@
+# Personal
+.vscode/
+.idea/
+.DS_Store/
+pyrightconfig.json
+TODO.md
+
+# Private data
+metadata.json
+.env
+
+# Python
+__pycache__/
+.venv/
+venv/
+
+# React
+node_modules/
+build/
+dist/
+dist-ssr/
+
+# Logs
+logs/
+*.log

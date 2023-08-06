@@ -1,0 +1,31 @@
+header {
+  background-color: var(--surface);
+  display: flex;
+  justify-content: space-between;
+  height: 60px;
+  align-items: center;
+}
+
+/* header > :where(:first-child, :last-child) { */
+/*   flex: 3; */
+/*   display: flex; */
+/* } */
+/* header > :last-child { */
+/*   text-align: right; */
+/*   justify-content: right; */
+/* } */
+
+.menu {
+  display: flex;
+  justify-content: space-between;
+  flex: 5;
+}
+.menu > * {
+  align-self: center;
+  padding: 0.2em 0.2em;
+  transition: 0.2s ease-in-out;
+}
+.menu > :hover {
+  background-color: var(--text);
+  color: var(--base);
+}

@@ -1,0 +1,102 @@
+/* Rose Pine color scheme */
+:root {
+  --base: #191724;
+  --surface: #1f1d2e;
+  --overlay: #26233a;
+  --muted: #6e6a86;
+  --subtle: #908caa;
+  --text: #e0def4;
+  --love: #eb6f92;
+  --gold: #f6c177;
+  --rose: #ebbcba;
+  --pine: #31748f;
+  --foam: #9ccfd8;
+  --iris: #c4a7e7;
+  --highlight-low: #21202e;
+  --highlight-low-alpha: #6e6a861a;
+  --highlight-med: #403d52;
+  --highlight-med-alpha: #6e6a8633;
+  --highlight-high: #524f67;
+  --highlight-high-alpha: #6e6a8666;
+}
+
+html {
+  background-color: var(--base);
+  color: var(--text);
+  font-family: "Ubuntu Mono", "JetBrains Mono", "Fira Code", "Hack", monospace;
+  font-size: 24px;
+}
+html::-webkit-scrollbar {
+  display: none;
+}
+
+* {
+  margin: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+header {
+  padding: 0 20vw;
+}
+header,
+footer {
+  background-color: var(--surface);
+}
+main {
+  min-height: 100vh;
+}
+main > :nth-child(even) {
+  background-color: var(--surface);
+}
+main > section {
+  padding: 3em 20vw;
+}
+
+h1,
+h2 {
+  color: var(--pine);
+}
+h3,
+h4 {
+  color: var(--foam);
+}
+h1 {
+  font-size: 2em;
+}
+h2 {
+  font-size: 1.8em;
+}
+h3 {
+  font-size: 1.5em;
+}
+h4 {
+  font-size: 1.4em;
+}
+
+section > h1 {
+  margin-bottom: 1em;
+}
+
+em {
+  font-style: normal;
+  color: var(--love);
+}
+
+button,
+input {
+  font: inherit;
+  background-color: inherit;
+  color: inherit;
+  border: 0;
+  padding: 0;
+}
+button {
+  cursor: pointer;
+}
+input:focus {
+  outline: none;
+}

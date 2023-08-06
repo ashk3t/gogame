@@ -1,0 +1,55 @@
+import {Dispatch} from "redux"
+import {parseError} from "../utils"
+import {GenericAction} from "../types/generic"
+import {RequestState, RequestActionTypes} from "../types/request"
+
+const initialState: RequestState = {
+  isLoading: false,
+  errorMessage: null,
+  completedLabel: null,
+}
+
+export default function requestReducer(state = initialState, action: GenericAction) {
+  const {errorMessage, isLoading, completedLabel} = action.payload || {}
+  switch (action.type) {
+    case RequestActionTypes.SET_STATUS:
+      if (isLoading) state["isLoading"] = isLoading
+      if (errorMessage) state["errorMessage"] = errorMessage
+      if (completedLabel) state["completedLabel"] = completedLabel
+      return {...state}
+    case RequestActionTypes.CLEAR:
+      return {...state, errorMessage: null, completedLabel: null}
+    default:
+      return state
+  }
+}
+
+export const makeRequest =
+  (requestCallback: () => any, completedLabel: string) =>
+  async (dispatch: Dispatch<GenericAction>) => {
+    try {
+      dispatch({
+        type: SET_REQUEST_STATUS,
+        payload: {isLoading: true, completedLabel: null},
+      })
+      await dispatch(requestCallback())
+      dispatch({
+        type: SET_REQUEST_STATUS,
+        payload: {isLoading: false, completedLabel},
+      })
+    } catch (error: any) {
+      const errorMessage = parseError(error.response.data)
+      dispatch({
+        type: SET_REQUEST_STATUS,
+        payload: {errorMessage, isLoading: false},
+      })
+    }
+  }
+
+export const setError = (errorMessage: string) => {
+  return {type: SET_REQUEST_STATUS, payload: {errorMessage}}
+}
+
+export const clearRequest = () => {
+  return {type: CLEAR_REQUEST}
+}
