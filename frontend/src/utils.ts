@@ -1,5 +1,5 @@
 import {capitalize} from "lodash"
-import {nicknameLabels} from "./consts"
+import {nicknameLabels} from "./consts/utils"
 
 // Utils
 export function loadScript(src: string) {

@@ -1,6 +1,6 @@
 import styles from "../styles/Header.module.css"
 import {Link} from "react-router-dom"
-import {routes} from "../consts"
+import {routes} from "../consts/pages"
 
 export default function Header() {
   return (

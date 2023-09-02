@@ -1,5 +1,5 @@
 import {Routes, Route, Navigate} from "react-router-dom"
-import {routes, GAMES_PATH} from "../consts"
+import {routes, GAMES_PATH} from "../consts/pages"
 
 export default function AppRouter() {
   return (

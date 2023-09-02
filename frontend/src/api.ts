@@ -1,6 +1,6 @@
 import axios from "axios"
 // import {logout, refreshTokens} from "./reducers/authReducer"
-import {API_URL} from "./consts"
+import {API_URL} from "./consts/api"
 
 // let store
 //
