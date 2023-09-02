@@ -1,4 +1,4 @@
-from typing import Annotated, Union
+from typing import Annotated, Any, Union
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import APIRouter, Body, Depends
@@ -16,9 +16,11 @@ async def get_game(id: int, db: AsyncSession = Depends(get_db)):
     return await srv.get_game(db, id)
 
 
-@router.get("", response_model=list[GameResponse])
+# @router.get("", response_model=list[GameResponse])
+@router.get("")
 async def get_games(db: AsyncSession = Depends(get_db)):
-    return await srv.get_all_games(db)
+    # return await srv.get_all_games(db)
+    return ["game 1", "game 2", "game 3", "game 4", "game 5"]
 
 
 @router.post("/start", response_model=GameResponse)
