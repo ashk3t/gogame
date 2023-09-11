@@ -18,8 +18,8 @@ async def get_player_by_token(db: AsyncSession, token: str) -> PlayerModel:
     return result.scalars().one()
 
 
-async def create_player(db: AsyncSession, player: PlayerCreate):
-    db_player = PlayerModel(token=uuid.uuid4(), nickname=player.nickname)
+async def create_player(db: AsyncSession, player: PlayerCreate) -> PlayerModel:
+    db_player = PlayerModel(token=str(uuid.uuid4()), nickname=player.nickname)
     await add_commit_refresh(db, db_player)
     return db_player
 

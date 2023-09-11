@@ -5,6 +5,7 @@ import {persistStore, persistReducer} from "redux-persist"
 // import storage from "redux-persist/lib/storage"
 import requestReducer from "./reducers/request"
 import gameReducer from "./reducers/game"
+import gameListReducer from "./reducers/gameList"
 import {configureStore} from "@reduxjs/toolkit"
 
 const middlewares = [thunk]
@@ -13,6 +14,7 @@ const rootReducer = combineReducers({
   // authReducer: persistReducer({key: "authReducer", storage}, authReducer),
   requestReducer,
   gameReducer,
+  gameListReducer,
 })
 
 export const setupStore = () =>

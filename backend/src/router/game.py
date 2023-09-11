@@ -1,10 +1,18 @@
+import asyncio
 from typing import Annotated, Any, Union
-
 from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi import APIRouter, Body, Depends
+from fastapi import (
+    APIRouter,
+    BackgroundTasks,
+    Body,
+    Depends,
+    WebSocket,
+    WebSocketDisconnect,
+)
 
+from ..service.search import GameSearchManager
 from ..dependencies import get_db
-from ..schemas.game import *
+from ..schemas import *
 from .. import service as srv
 
 
@@ -16,11 +24,9 @@ async def get_game(id: int, db: AsyncSession = Depends(get_db)):
     return await srv.get_game(db, id)
 
 
-# @router.get("", response_model=list[GameResponse])
-@router.get("")
+@router.get("", response_model=list[GameResponse])
 async def get_games(db: AsyncSession = Depends(get_db)):
-    # return await srv.get_all_games(db)
-    return ["game 1", "game 2", "game 3", "game 4", "game 5"]
+    return await srv.get_all_games(db)
 
 
 @router.post("/start", response_model=GameResponse)
@@ -52,3 +58,30 @@ async def finish_game(
     await srv.delete_game(db, id)
     await srv.delete_player(db, game.white_player_id)
     await srv.delete_player(db, game.black_player_id)
+
+
+@router.websocket("/search")
+async def search_game(
+    websocket: WebSocket,
+    nickname: str,
+    bg: BackgroundTasks,
+    db: AsyncSession = Depends(get_db),
+):
+    async with GameSearchManager(websocket) as manager:
+        new_player = PlayerCreate(nickname=nickname)
+        db_player = await srv.create_player(db, new_player)
+        manager.identify_connection(db_player.id)
+
+        new_search_entry = SearchEntryCreate(player_id=db_player.id)
+        paired_search_entry = await srv.find_paired_search_entry(db, new_search_entry)
+        if paired_search_entry is not None:
+            await srv.delete_search_entry(db, paired_search_entry.id)
+            await manager.connect_players(paired_search_entry.player_id, db_player.id)
+            await srv.delete_player(db, paired_search_entry.player_id)
+            await srv.delete_player(db, db_player.id)
+            # FIX: implement another db session creating system instead of dependency injections
+            # asyncio.create_task(srv.delete_player(db, paired_search_entry.player_id))
+            # asyncio.create_task(srv.delete_player(db, db_player.id))
+        else:
+            db_search_entry = await srv.create_search_entry(db, new_search_entry)
+            await manager.websocket.receive_text()

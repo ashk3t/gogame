@@ -29,3 +29,12 @@ class PlayerModel(DBase):
     token: Mapped[str] = mapped_column(unique=True, index=True)
     nickname: Mapped[str] = mapped_column(unique=True)
     role: Mapped[str] = mapped_column(default=PlayerRoles.SEARCH)
+
+
+class SearchEntryModel(DBase):
+    __tablename__ = "search_entry"
+
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    player_id: Mapped[int] = mapped_column(ForeignKey("player.id"))
+    start_time: Mapped[datetime] = mapped_column(default=datetime.utcnow)
+    mode: Mapped[str] = mapped_column()

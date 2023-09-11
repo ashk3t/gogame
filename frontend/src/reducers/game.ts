@@ -1,15 +1,25 @@
 import {PayloadAction, createSlice} from "@reduxjs/toolkit"
+import {GameState, Player, PlayerRoles} from "../types/game"
 
-const initialState = {
-  games: []
+const initialPlayer = {
+  id: null,
+  token: null,
+  nickname: "",
+  role: PlayerRoles.NEW
+}
+
+const initialState: GameState = {
+  whitePlayer: {...initialPlayer},
+  blackPlayer: {...initialPlayer},
+  gameRep: "",
 }
 
 export const gameSlice = createSlice({
   name: "game",
   initialState,
   reducers: {
-    setGames(state, action: PayloadAction<[]>) {
-      state.games = action.payload
+    updateNickname(state, action: PayloadAction<string>) {
+      state.whitePlayer.nickname = action.payload
     },
   },
 })

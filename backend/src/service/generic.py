@@ -1,5 +1,6 @@
 from typing import Sequence
 from sqlalchemy import delete, select
+from .utils import add_commit_refresh
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -19,6 +20,15 @@ def get_all_query_factory(Model):
         return list(result.scalars().all())
 
     return get_all_query
+
+
+def create_query_factory(Model, Schema):
+    async def create_query(db: AsyncSession, schema: Schema) -> Model:
+        result = Model(**schema.model_dump())
+        await add_commit_refresh(db, result)
+        return result
+
+    return create_query
 
 
 def delete_query_factory(Model):
