@@ -79,9 +79,6 @@ async def search_game(
             await manager.connect_players(paired_search_entry.player_id, db_player.id)
             await srv.delete_player(db, paired_search_entry.player_id)
             await srv.delete_player(db, db_player.id)
-            # FIX: implement another db session creating system instead of dependency injections
-            # asyncio.create_task(srv.delete_player(db, paired_search_entry.player_id))
-            # asyncio.create_task(srv.delete_player(db, db_player.id))
         else:
             db_search_entry = await srv.create_search_entry(db, new_search_entry)
             await manager.websocket.receive_text()

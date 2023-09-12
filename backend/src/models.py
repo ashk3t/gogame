@@ -3,7 +3,7 @@ from datetime import datetime
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
-from src.schemas.player import PlayerRoles
+from src.schemas.player import PlayerStatus
 
 from .schemas.game import INITIAL_GAME_STATE
 from .database import DBase
@@ -28,7 +28,7 @@ class PlayerModel(DBase):
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     token: Mapped[str] = mapped_column(unique=True, index=True)
     nickname: Mapped[str] = mapped_column(unique=True)
-    role: Mapped[str] = mapped_column(default=PlayerRoles.SEARCH)
+    status: Mapped[str] = mapped_column(default=PlayerStatus.SEARCH)
 
 
 class SearchEntryModel(DBase):

@@ -1,11 +1,11 @@
 import {PayloadAction, createSlice} from "@reduxjs/toolkit"
-import {GameState, Player, PlayerRoles} from "../types/game"
+import {GameState, Player, PlayerStatus} from "../types/game"
 
-const initialPlayer = {
+const initialPlayer: Player = {
   id: null,
   token: null,
   nickname: "",
-  role: PlayerRoles.NEW
+  status: PlayerStatus.NEW
 }
 
 const initialState: GameState = {

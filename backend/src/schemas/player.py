@@ -2,7 +2,7 @@ from enum import Enum
 from pydantic import BaseModel, ConfigDict
 
 
-class PlayerRoles(str, Enum):
+class PlayerStatus(str, Enum):
     WHITE = "WHITE"
     BLACK = "BLACK"
     SPECTATOR = "SPECTATOR"
@@ -18,12 +18,12 @@ class PlayerCreate(PlayerBase):
 
 
 class PlayerUpdate(PlayerBase):
-    role: PlayerRoles
+    status: PlayerStatus
 
 
 class PlayerResponse(PlayerBase):
     id: int
     token: int
-    role: PlayerRoles
+    status: PlayerStatus
 
     model_config = ConfigDict(from_attributes=True)

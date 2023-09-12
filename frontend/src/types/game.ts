@@ -2,10 +2,10 @@ export interface Player {
   id: number | null
   token: string | null
   nickname: string
-  role: PlayerRoles
+  status: PlayerStatus
 }
 
-export enum PlayerRoles {
+export enum PlayerStatus {
   NEW = "NEW",
   SEARCH = "SEARCH",
   WHITE = "WHITE",
@@ -17,7 +17,7 @@ export enum PlayerRoles {
 //   id: number
 //   token: string
 //   nickname: string
-//   role: PlayerRoles
+//   status: PlayerStatus
 // }
 
 export interface GameState {

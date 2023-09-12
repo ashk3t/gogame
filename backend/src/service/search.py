@@ -57,8 +57,8 @@ class GameSearchManager:
 
     async def connect_players(self, white_player_id: int, black_player_id: int):
         for player_id, color in (
-            (white_player_id, PlayerRoles.WHITE),
-            (black_player_id, PlayerRoles.BLACK),
+            (white_player_id, PlayerStatus.WHITE),
+            (black_player_id, PlayerStatus.BLACK),
         ):
             websocket = self.connections[player_id]
             await websocket.send_json({"color": color})

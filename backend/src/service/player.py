@@ -27,6 +27,6 @@ async def create_player(db: AsyncSession, player: PlayerCreate) -> PlayerModel:
 async def update_player(db: AsyncSession, id: int, player: PlayerUpdate) -> PlayerModel:
     db_player = await get_player(db, id)
     db_player.nickname = player.nickname
-    db_player.role = player.role
+    db_player.status = player.status
     await add_commit_refresh(db, db_player)
     return db_player
