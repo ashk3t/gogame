@@ -5,28 +5,30 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ..schemas.player import *
 from ..models import PlayerModel
 from .utils import add_commit_refresh
-from .generic import delete_query_factory, get_all_query_factory, get_query_factory
+from .generic import BaseModelService
 
 
-get_player = get_query_factory(PlayerModel)
-get_all_players = get_all_query_factory(PlayerModel)
-delete_player = delete_query_factory(PlayerModel)
+class PlayerService(BaseModelService):
+    Model = PlayerModel
+    ResponseSchema = PlayerResponse
+    CreateSchema = PlayerCreate
+    UpdateSchema = PlayerUpdate
 
+    @classmethod
+    async def get_by_token(cls, db: AsyncSession, token: str) -> ResponseSchema:
+        result = await db.execute(select(cls.Model).where(cls.Model.token == token))
+        return cls.ResponseSchema.model_validate(result.scalars().one())
 
-async def get_player_by_token(db: AsyncSession, token: str) -> PlayerModel:
-    result = await db.execute(select(PlayerModel).where(PlayerModel.token == token))
-    return result.scalars().one()
+    @classmethod
+    async def create(cls, db: AsyncSession, player: CreateSchema) -> ResponseSchema:
+        db_player = cls.Model(token=str(uuid.uuid4()), nickname=player.nickname)
+        await add_commit_refresh(db, db_player)
+        return cls.ResponseSchema.model_validate(db_player)
 
-
-async def create_player(db: AsyncSession, player: PlayerCreate) -> PlayerModel:
-    db_player = PlayerModel(token=str(uuid.uuid4()), nickname=player.nickname)
-    await add_commit_refresh(db, db_player)
-    return db_player
-
-
-async def update_player(db: AsyncSession, id: int, player: PlayerUpdate) -> PlayerModel:
-    db_player = await get_player(db, id)
-    db_player.nickname = player.nickname
-    db_player.status = player.status
-    await add_commit_refresh(db, db_player)
-    return db_player
+    @classmethod
+    async def update(cls, db: AsyncSession, id: int, player: UpdateSchema) -> ResponseSchema:
+        db_player: PlayerModel = await cls._get(db, id)
+        db_player.nickname = player.nickname
+        db_player.status = player.status
+        await add_commit_refresh(db, db_player)
+        return cls.ResponseSchema.model_validate(db_player)

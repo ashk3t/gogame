@@ -1,5 +1,5 @@
 from enum import Enum
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel as BaseSchema, ConfigDict
 
 
 class PlayerStatus(str, Enum):
@@ -9,7 +9,7 @@ class PlayerStatus(str, Enum):
     SEARCH = "SEARCH"
 
 
-class PlayerBase(BaseModel):
+class PlayerBase(BaseSchema):
     nickname: str
 
 
@@ -18,12 +18,13 @@ class PlayerCreate(PlayerBase):
 
 
 class PlayerUpdate(PlayerBase):
-    status: PlayerStatus
-
-
-class PlayerResponse(PlayerBase):
     id: int
-    token: int
     status: PlayerStatus
+
+    # model_config = ConfigDict(from_attributes=True)
+
+
+class PlayerResponse(PlayerUpdate):
+    token: int
 
     model_config = ConfigDict(from_attributes=True)

@@ -1,39 +1,52 @@
-from typing import Sequence
 from sqlalchemy import delete, select
-from .utils import add_commit_refresh
 from sqlalchemy.ext.asyncio import AsyncSession
+from abc import ABC
+from pydantic import BaseModel as BaseSchema
+
+from ..models import BaseModel
+from .utils import add_commit_refresh
 
 
-def get_query_factory(Model):
-    async def get_query(db: AsyncSession, id: int) -> Model:
-        result = await db.execute(select(Model).where(Model.id == id))
+class BaseModelService(ABC):
+    Model = BaseModel
+    ResponseSchema = BaseSchema
+    CreateSchema = BaseSchema
+    UpdateSchema = BaseSchema
+
+    @classmethod
+    async def _get(cls, db: AsyncSession, id: int) -> Model:
+        result = await db.execute(select(cls.Model).where(cls.Model.id == id))
         return result.scalars().one()
 
-    return get_query
+    @classmethod
+    async def get(cls, db: AsyncSession, id: int) -> ResponseSchema:
+        return cls.ResponseSchema.model_validate(cls._get(db, id))
 
+    @classmethod
+    async def get_all(
+        cls, db: AsyncSession, skip: int = 0, limit: int = 100
+    ) -> list[ResponseSchema]:
+        result = await db.execute(select(cls.Model).offset(skip).limit(limit))
+        return [
+            cls.ResponseSchema.model_validate(model)
+            for model in list(result.scalars().all())
+        ]
 
-def get_all_query_factory(Model):
-    async def get_all_query(
-        db: AsyncSession, skip: int = 0, limit: int = 100
-    ) -> list[Model]:
-        result = await db.execute(select(Model).offset(skip).limit(limit))
-        return list(result.scalars().all())
-
-    return get_all_query
-
-
-def create_query_factory(Model, Schema):
-    async def create_query(db: AsyncSession, schema: Schema) -> Model:
-        result = Model(**schema.model_dump())
+    @classmethod
+    async def create(cls, db: AsyncSession, schema: CreateSchema) -> ResponseSchema:
+        result = cls.Model(**schema.model_dump())
         await add_commit_refresh(db, result)
-        return result
+        return cls.ResponseSchema.model_validate(result)
 
-    return create_query
+    @classmethod
+    async def update(cls, db: AsyncSession, id: int, schema: UpdateSchema) -> ResponseSchema:
+        model = await cls._get(db, id)
+        for attr, value in schema.model_dump().items():
+            setattr(model, attr, value)
+        await add_commit_refresh(db, model)
+        return cls.ResponseSchema.model_validate(model)
 
-
-def delete_query_factory(Model):
-    async def delete_query(db: AsyncSession, id: int) -> None:
-        await db.execute(delete(Model).where(Model.id == id))
+    @classmethod
+    async def delete(cls, db: AsyncSession, id: int) -> None:
+        await db.execute(delete(cls.Model).where(cls.Model.id == id))
         await db.commit()
-
-    return delete_query

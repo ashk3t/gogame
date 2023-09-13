@@ -6,29 +6,30 @@ from ..schemas import *
 from .generic import *
 
 
-get_search_entry = get_query_factory(SearchEntryModel)
-get_all_search_entries = get_all_query_factory(SearchEntryModel)
-create_search_entry = create_query_factory(SearchEntryModel, SearchEntryCreate)
-delete_search_entry = delete_query_factory(SearchEntryModel)
+class SearchService(BaseModelService):
+    Model = SearchEntryModel
+    ResponseSchema = SearchEntryResponse
+    CreateSchema = SearchEntryCreate
+    UpdateSchema = SearchEntryUpdate
 
+    @classmethod
+    async def find_paired(
+        cls, db: AsyncSession, search_entry: SearchEntryCreate
+    ) -> SearchEntryModel | None:
+        try:
+            result = await db.execute(
+                select(SearchEntryModel)
+                .where(SearchEntryModel.mode == search_entry.mode)
+                .order_by(desc(SearchEntryModel.start_time)),
+            )
+            return result.scalars().one()
+        except:
+            return
 
-async def find_paired_search_entry(
-    db: AsyncSession, search_entry: SearchEntryCreate
-) -> SearchEntryModel | None:
-    try:
-        result = await db.execute(
-            select(SearchEntryModel)
-            .where(SearchEntryModel.mode == search_entry.mode)
-            .order_by(desc(SearchEntryModel.start_time)),
-        )
-        return result.scalars().one()
-    except:
-        return
-
-
-async def clear_search_entries(db: AsyncSession):
-    await db.execute(delete(SearchEntryModel))
-    await db.commit()
+    @classmethod
+    async def delete_all(cls, db: AsyncSession):
+        await db.execute(delete(SearchEntryModel))
+        await db.commit()
 
 
 class GameSearchManager:
@@ -46,7 +47,9 @@ class GameSearchManager:
         return True
 
     async def disconnect(self, player_id: int | None = None):
-        websocket = self.connections.pop(player_id if player_id else self.player_id, None)
+        websocket = self.connections.pop(
+            player_id if player_id else self.player_id, None
+        )
 
     def identify_connection(self, player_id: int):
         self.player_id = player_id
@@ -55,10 +58,9 @@ class GameSearchManager:
     async def get_nickname(self):
         return await self.websocket.receive_text()
 
-    async def connect_players(self, white_player_id: int, black_player_id: int):
-        for player_id, color in (
-            (white_player_id, PlayerStatus.WHITE),
-            (black_player_id, PlayerStatus.BLACK),
-        ):
-            websocket = self.connections[player_id]
-            await websocket.send_json({"color": color})
+    async def connect_players(
+        self, white_player: PlayerResponse, black_player: PlayerResponse
+    ):
+        for player in (white_player, black_player):
+            websocket = self.connections[player.id]
+            await websocket.send_json(player)

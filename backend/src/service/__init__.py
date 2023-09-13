@@ -1,3 +1,3 @@
-from .game import *
-from .player import *
-from .search import *
+from .game import GameService
+from .player import PlayerService
+from .search import SearchService

@@ -9,7 +9,11 @@ from .schemas.game import INITIAL_GAME_STATE
 from .database import DBase
 
 
-class GameModel(DBase):
+class BaseModel(DBase):
+    id: Mapped[int]
+
+
+class GameModel(BaseModel):
     __tablename__ = "game"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
@@ -22,7 +26,7 @@ class GameModel(DBase):
     black_player: Mapped["PlayerModel"] = relationship(foreign_keys=[black_player_id])
 
 
-class PlayerModel(DBase):
+class PlayerModel(BaseModel):
     __tablename__ = "player"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
@@ -31,10 +35,12 @@ class PlayerModel(DBase):
     status: Mapped[str] = mapped_column(default=PlayerStatus.SEARCH)
 
 
-class SearchEntryModel(DBase):
+class SearchEntryModel(BaseModel):
     __tablename__ = "search_entry"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     player_id: Mapped[int] = mapped_column(ForeignKey("player.id"))
     start_time: Mapped[datetime] = mapped_column(default=datetime.utcnow)
     mode: Mapped[str] = mapped_column()
+
+    player: Mapped["PlayerModel"] = relationship()

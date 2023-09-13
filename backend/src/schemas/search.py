@@ -1,13 +1,17 @@
 from datetime import datetime
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel as BaseSchema, ConfigDict, Field
 
 
-class SearchEntryBase(BaseModel):
+class SearchEntryBase(BaseSchema):
     player_id: int
     mode: str = "default"
 
 
 class SearchEntryCreate(SearchEntryBase):
+    pass
+
+
+class SearchEntryUpdate(SearchEntryBase):
     pass
 
 

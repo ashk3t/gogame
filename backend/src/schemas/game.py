@@ -1,11 +1,11 @@
 from datetime import datetime
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel as BaseSchema, ConfigDict, Field
 
 
 INITIAL_GAME_STATE = "INITIAL"
 
 
-class GameBase(BaseModel):
+class GameBase(BaseSchema):
     pass
 
 

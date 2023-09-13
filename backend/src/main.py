@@ -29,6 +29,6 @@ async def startup_event():
 
 @app.on_event("shutdown")
 async def shutdown_event():
-    from .service.search import clear_search_entries
+    from .service.search import SearchService
     async with SessionMaker() as db:
-        await clear_search_entries(db)
+        await SearchService.delete_all(db)
