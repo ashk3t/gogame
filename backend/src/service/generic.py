@@ -1,14 +1,13 @@
 import sqlalchemy as alc
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from abc import ABC, ABCMeta
 from pydantic import BaseModel as BaseSchema
 
 from ..models import BaseModel
 from .utils import add_commit_refresh
 
 
-class ModelServiceMeta(ABCMeta):
+class ModelServiceMeta(type):
     REQUIRED_ATTRS = {"Model", "ResponseSchema", "CreateSchema", "UpdateSchema"}
 
     def __new__(cls, name: str, bases: tuple, dct: dict):
@@ -34,8 +33,7 @@ class ModelServiceMeta(ABCMeta):
             )
         return type.__new__(cls, name, bases, {**all_declosured_methods, **dct})
 
-
-class BaseModelService(ABC, metaclass=ModelServiceMeta):
+class BaseModelService(metaclass=ModelServiceMeta):
     Model = BaseModel
     ResponseSchema = BaseSchema
     CreateSchema = BaseSchema
