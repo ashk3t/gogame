@@ -15,7 +15,7 @@ export default class GameService {
     socket.onopen = (_) => {} // socket.send(nickname)
     socket.onmessage = (event) => {
       const data = JSON.parse(event.data)
-      alert("Игра найдена, ваш цвет: " + data.color + "!")
+      alert("Игра найдена, ваш цвет: " + data.status + "!")
       socket.close()
     }
   }

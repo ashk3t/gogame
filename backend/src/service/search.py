@@ -1,5 +1,6 @@
 from fastapi import BackgroundTasks, WebSocket
 from sqlalchemy import desc
+from sqlalchemy.orm import selectinload
 
 from ..models import *
 from ..schemas import *
@@ -19,6 +20,7 @@ class SearchService(BaseModelService):
         try:
             result = await db.execute(
                 select(SearchEntryModel)
+                .options(selectinload(SearchEntryModel.player))
                 .where(SearchEntryModel.mode == search_entry.mode)
                 .order_by(desc(SearchEntryModel.start_time)),
             )
@@ -37,6 +39,7 @@ class GameSearchManager:
 
     def __init__(self, websocket: WebSocket):
         self.websocket = websocket
+        self.player_id = None
 
     async def __aenter__(self):
         await self.websocket.accept()
@@ -47,9 +50,8 @@ class GameSearchManager:
         return True
 
     async def disconnect(self, player_id: int | None = None):
-        websocket = self.connections.pop(
-            player_id if player_id else self.player_id, None
-        )
+        conn_key = player_id or self.player_id or -1
+        websocket = self.connections.pop(conn_key, None)
 
     def identify_connection(self, player_id: int):
         self.player_id = player_id
@@ -63,4 +65,4 @@ class GameSearchManager:
     ):
         for player in (white_player, black_player):
             websocket = self.connections[player.id]
-            await websocket.send_json(player)
+            await websocket.send_json(player.model_dump())

@@ -10,6 +10,7 @@ from .database import DBase
 
 
 class BaseModel(DBase):
+    __abstract__ = True
     id: Mapped[int]
 
 

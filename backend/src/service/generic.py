@@ -13,21 +13,26 @@ class ModelServiceMeta(ABCMeta):
 
     def __new__(cls, name: str, bases: tuple, dct: dict):
         BaseClass = None
+        all_declosured_methods = {}
         try:
             for BaseClass in (
-                base for base in bases if "__generate_declosured_methods" in base.__dict__
+                base
+                for base in reversed(bases)
+                if f"_generate_declosured_methods_" in base.__dict__
             ):
-                declosured_methods = BaseClass.__generate_declosured_methods(
+                declosured_methods = BaseClass._generate_declosured_methods_(
                     *[dct[reqattr] for reqattr in cls.REQUIRED_ATTRS],
                 )
-                dct.update(declosured_methods)
+                all_declosured_methods.update(
+                    {meth.__name__: meth for meth in declosured_methods}
+                )
         except KeyError:
             raise Exception(
-                f"Required attributes are not implemented: {
+                f"""Required attributes are not implemented: {
                     cls.REQUIRED_ATTRS - set(BaseClass.__dict__.keys()) if BaseClass else set()
-                }",
+                }""",
             )
-        return type.__new__(cls, name, bases, dct)
+        return type.__new__(cls, name, bases, {**all_declosured_methods, **dct})
 
 
 class BaseModelService(ABC, metaclass=ModelServiceMeta):
@@ -37,7 +42,7 @@ class BaseModelService(ABC, metaclass=ModelServiceMeta):
     UpdateSchema = BaseSchema
 
     @staticmethod
-    def __generate_declosured_methods(
+    def _generate_declosured_methods_(
         Model, ResponseSchema, CreateSchema, UpdateSchema
     ):
         @classmethod
@@ -80,4 +85,4 @@ class BaseModelService(ABC, metaclass=ModelServiceMeta):
             await db.execute(alc.delete(cls.Model).where(cls.Model.id == id))
             await db.commit()
 
-        return _get, get, get_all, create, update
+        return _get, get, get_all, create, update, delete
