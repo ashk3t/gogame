@@ -7,15 +7,14 @@ from ..schemas import *
 from .generic import *
 
 
-class SearchService(BaseModelService):
-    Model = SearchEntryModel
-    ResponseSchema = SearchEntryResponse
-    CreateSchema = SearchEntryCreate
-    UpdateSchema = SearchEntryUpdate
+class SearchService:
+    _get, get, get_all, create, update, delete = generate_basic_service_methods(
+        SearchEntryModel, SearchEntryResponse, SearchEntryCreate, SearchEntryUpdate
+    )
 
-    @classmethod
+    @staticmethod
     async def find_paired(
-        cls, db: AsyncSession, search_entry: SearchEntryCreate
+        db: AsyncSession, search_entry: SearchEntryCreate
     ) -> SearchEntryModel | None:
         try:
             result = await db.execute(
@@ -46,6 +45,8 @@ class GameSearchManager:
         return self
 
     async def __aexit__(self, exc_type, exc_value, exc_tb):
+        if exc_value:
+            return
         await self.disconnect()
         return True
 
