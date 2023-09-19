@@ -13,6 +13,24 @@ class StoneColor(int, Enum):
     BLACK = 2
 
 
+class Stone:
+    def __init__(self, color: StoneColor | int | str, group: Group | None = None):
+        self.color: StoneColor = (
+            color
+            if isinstance(color, StoneColor)
+            else (
+                StoneColor(color) if isinstance(color, int) else StoneColor(int(color))
+            )
+        )
+        self.group = group
+
+    def __str__(self):
+        return str(self.color.value)
+
+    def __int__(self):
+        return int(self.color.value)
+
+
 class Group:
     all_groups: list[Group] = []
 
@@ -24,14 +42,14 @@ class Group:
         self.liberties: set[tuple[int, int]] = set()
 
     def add(self, x: int, y: int, point: Stone | None):
-            if point:
-                if point.color == self.color:
-                    self.member_stones[(x, y)] = point
-                    point.group = self
-                else:
-                    self.frontier_stones[(x, y)] = point
+        if point:
+            if point.color == self.color:
+                self.member_stones[(x, y)] = point
+                point.group = self
             else:
-                self.liberties.add((x, y))
+                self.frontier_stones[(x, y)] = point
+        else:
+            self.liberties.add((x, y))
 
     def update(self, points: dict[tuple[int, int], Stone | None]):
         for (x, y), point in points.items():
@@ -49,24 +67,6 @@ class Group:
 
     def __int__(self):
         return 0
-
-
-class Stone:
-    def __init__(self, color: StoneColor | int | str, group: Group | None = None):
-        self.color: StoneColor = (
-            color
-            if isinstance(color, StoneColor)
-            else (
-                StoneColor(color) if isinstance(color, int) else StoneColor(int(color))
-            )
-        )
-        self.group = group
-
-    def __str__(self):
-        return str(self.color.value)
-
-    def __int__(self):
-        return int(self.color.value)
 
 
 class Board:
@@ -109,11 +109,13 @@ class Board:
                     while new_member_positions:
                         next_member_position = new_member_positions.pop()
                         adjacent = self._get_adjacent(*next_member_position)
-                        new_member_positions.update([
-                            (x, y)
-                            for (x, y), point in adjacent.items()
-                            if (x, y) not in current_group.member_stones
-                        ])
+                        new_member_positions.update(
+                            [
+                                (x, y)
+                                for (x, y), point in adjacent.items()
+                                if (x, y) not in current_group.member_stones
+                            ]
+                        )
                         current_group.update(adjacent)
 
     def make_turn(self, x: int, y: int, stone: Stone) -> bool:
