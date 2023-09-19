@@ -83,12 +83,16 @@ class Board:
         return self.stones[x]
 
     def __str__(self):
-        return str([[int(p) if p else 0 for p in col] for col in self.stones])
+        return "\n".join([
+            "".join([str(p) if p else "0" for p in col])
+            for col in self.stones
+        ])
 
     def _get_adjacent(self, x: int, y: int) -> dict[tuple[int, int], Stone | None]:
         return {
             (x + dx, y + dy): self.stones[x + dx][y + dy]
-            for dx, dy in ((-1, -1), (-1, 1), (1, -1), (1, 1))
+            for dx, dy in ((-1, 0), (0, -1), (1, 0), (0, 1))
+            if 0 <= x + dx < self.x_size and 0 <= y + dy < self.y_size
         }
 
     def _clear_groups(self):
@@ -103,8 +107,9 @@ class Board:
         for x, column in enumerate(self.stones):
             for y, stone in enumerate(column):
                 if stone and not stone.group:
-                    new_member_positions = {(x, y)}
                     current_group = Group(stone.color)
+                    current_group.add(x, y, stone)
+                    new_member_positions = {(x, y)}
 
                     while new_member_positions:
                         next_member_position = new_member_positions.pop()
@@ -113,7 +118,9 @@ class Board:
                             [
                                 (x, y)
                                 for (x, y), point in adjacent.items()
-                                if (x, y) not in current_group.member_stones
+                                if point
+                                and point.color == current_group.color
+                                and (x, y) not in current_group.member_stones
                             ]
                         )
                         current_group.update(adjacent)
@@ -150,6 +157,7 @@ class Board:
                 pos += int(board_rep[(left_par_i + 1) : i])
                 left_par_i = None
 
+        board._estimate_groups()
         return board
 
     def to_rep(self) -> str:
@@ -169,6 +177,6 @@ class Board:
     to_rep.__doc__ = from_rep.__doc__
 
 
-b = Board.from_rep("6;6;02000000000002(13)10002")
+b = Board.from_rep("3;3;112102000")
 print(b.to_rep())
 print(b)
