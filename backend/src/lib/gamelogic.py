@@ -2,8 +2,8 @@ from __future__ import annotations
 from enum import Enum
 
 
-class OccupiedPointException(Exception):
-    def __init__(self, message="This point is already occupied"):
+class InvalidTurnException(Exception):
+    def __init__(self, message):
         self.message = message
         super().__init__(self.message)
 
@@ -69,7 +69,7 @@ class Group:
         return 0
 
 
-class Board:
+class GameBoard:
     all_groups = Group.all_groups
 
     def __init__(self, x_size: int = 19, y_size: int = 19):
@@ -78,21 +78,29 @@ class Board:
         self.stones: list[list[Stone | None]] = [
             [None for _ in range(y_size)] for _ in range(x_size)
         ]
+        self.turn_counter = 0
+        self.sides = [StoneColor.WHITE, StoneColor.BLACK]
 
     def __getitem__(self, x: int) -> list[Stone | None]:
         return self.stones[x]
 
+    @property
+    def _turn_color(self) -> StoneColor:
+        return self.sides[self.turn_counter % 1]
+
     def __str__(self):
-        return "\n".join([
-            "".join([str(p) if p else "0" for p in col])
-            for col in self.stones
-        ])
+        return "\n".join(
+            ["".join([str(p) if p else "0" for p in col]) for col in self.stones]
+        )
+
+    def _is_valid(self, x: int, y: int) -> bool:
+        return 0 <= x < self.x_size and 0 <= y < self.y_size
 
     def _get_adjacent(self, x: int, y: int) -> dict[tuple[int, int], Stone | None]:
         return {
             (x + dx, y + dy): self.stones[x + dx][y + dy]
             for dx, dy in ((-1, 0), (0, -1), (1, 0), (0, 1))
-            if 0 <= x + dx < self.x_size and 0 <= y + dy < self.y_size
+            if self._is_valid(x + dx, y + dy)
         }
 
     def _clear_groups(self):
@@ -115,22 +123,48 @@ class Board:
                         next_member_position = new_member_positions.pop()
                         adjacent = self._get_adjacent(*next_member_position)
                         new_member_positions.update(
-                            [
-                                (x, y)
-                                for (x, y), point in adjacent.items()
-                                if point
-                                and point.color == current_group.color
-                                and (x, y) not in current_group.member_stones
-                            ]
+                            (x, y)
+                            for (x, y), point in adjacent.items()
+                            if point
+                            and point.color == current_group.color
+                            and (x, y) not in current_group.member_stones
                         )
                         current_group.update(adjacent)
 
-    def make_turn(self, x: int, y: int, stone: Stone) -> bool:
-        self[x][y] = stone
-        return False
+
+    def take_turn(self, x: int, y: int):
+        if not self._is_valid(x, y):
+            raise InvalidTurnException("Invalid (X, Y)")
+        if self.stones[x][y]:
+            raise InvalidTurnException("Specified point is already occupied")
+        # TODO: Check suicide, KO
+
+        stone = Stone(self._turn_color)
+        self.stones[x][y] = stone
+
+        ally_groups = []
+        opponent_groups = []
+        liberties: set[tuple[int, int]] = set()
+        adjacent = self._get_adjacent(x, y)
+        for (x, y), point in adjacent.items():
+            if point:
+                if point.color == stone.color:
+                    ally_groups.append(point.group)
+                else:
+                    opponent_groups.append(point.group)
+            else:
+                liberties.add((x, y))
+
+        ally_groups[0].liberties.update(liberties)
+        # TODO: Update ally liberties
+        # TODO: Join alliases
+        # TODO: Update opponent liberty
+        # TODO: Kill opponent groups
+
+        self.turn_counter += 1
 
     @staticmethod
-    def from_rep(rep: str) -> Board:
+    def from_rep(rep: str) -> GameBoard:
         """Format:
         x_size;y_size;<board_rep>
 
@@ -142,7 +176,7 @@ class Board:
 
         x_size, y_size, board_rep = rep.split(";")
         x_size, y_size = int(x_size), int(y_size)
-        board = Board(x_size, y_size)
+        board = GameBoard(x_size, y_size)
 
         pos = 0
         left_par_i: int | None = None
@@ -177,6 +211,6 @@ class Board:
     to_rep.__doc__ = from_rep.__doc__
 
 
-b = Board.from_rep("3;3;112102000")
+b = GameBoard.from_rep("3;3;112102000")
 print(b.to_rep())
 print(b)
