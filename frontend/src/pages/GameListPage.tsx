@@ -2,9 +2,9 @@ import {useEffect, useState} from "react"
 import {useActions, useAppDispatch, useAppSelector} from "../hooks/redux"
 import {fetchAllGames} from "../action-creators/game"
 
-export default function GamesPage() {
-  // const [games, setGames] = useState([])
-  const {games} = useAppSelector((state) => state.gameReducer)
+export default function GameListPage() {
+  // const {games} = useAppSelector((state) => state.gameReducer)
+  const games: any[] = []
   const {fetchAllGames} = useActions()
 
   useEffect(() => {

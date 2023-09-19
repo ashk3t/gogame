@@ -1,0 +1,29 @@
+.boardRow {
+  height: 40px;
+  width: max-content;
+  margin: 0;
+  border-bottom: 4px solid var(--iris);
+}
+
+.boardCell {
+  height: 40px;
+  width: 40px;
+  margin: 0;
+  display: inline-block;
+  border-left: 4px solid var(--iris);
+}
+
+.boardCell:last-child {
+  border-right: 4px solid var(--iris);
+}
+
+.boardRow:first-child {
+  border-top: 4px solid var(--iris);
+}
+
+/* .boardRow:nth-child(odd) .boardCell:nth-child(even) { */
+/*   background: var(--iris); */
+/* } */
+/* .boardRow:nth-child(even) .boardCell:nth-child(odd) { */
+/*   background: var(--iris); */
+/* } */
