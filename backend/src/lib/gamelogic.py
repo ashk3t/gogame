@@ -9,36 +9,22 @@ class InvalidTurnException(Exception):
 
 
 class StoneColor(int, Enum):
+    NONE = 0
     WHITE = 1
     BLACK = 2
 
 
-class Stone:
-    def __init__(self, color: StoneColor | int | str, group: Group | None = None):
-        self.color: StoneColor = (
-            color
-            if isinstance(color, StoneColor)
-            else (
-                StoneColor(color) if isinstance(color, int) else StoneColor(int(color))
-            )
-        )
-        self.group = group
-
-    def __str__(self):
-        return str(self.color.value)
-
-    def __int__(self):
-        return int(self.color.value)
-
-
 class Group:
     all_groups: list[Group] = []
+    UNGROUPED: Group
 
     def __init__(self, color: StoneColor):
         self.all_groups.append(self)
         self.color = color
         self.member_stones: dict[tuple[int, int], Stone] = {}
-        self.frontier_stones: dict[tuple[int, int], Stone] = {}  # TODO: will we need it?
+        self.frontier_stones: dict[
+            tuple[int, int], Stone
+        ] = {}  # TODO: will we need it?
         self.liberties: set[tuple[int, int]] = set()
 
     def __del__(self):
@@ -76,10 +62,35 @@ class Group:
             stone.group = self
         del group
 
+    def free(self, x: int, y: int):
+        if (x, y) in self.frontier_stones:
+            self.frontier_stones.pop((x, y))
+            self.liberties.add((x, y))
+
+
+Group.UNGROUPED = Group(StoneColor.NONE)
+del Group.UNGROUPED
+
+
+class Stone:
+    def __init__(self, color: StoneColor | int | str, group: Group = Group.UNGROUPED):
+        self.color: StoneColor = (
+            color
+            if isinstance(color, StoneColor)
+            else (
+                StoneColor(color) if isinstance(color, int) else StoneColor(int(color))
+            )
+        )
+        self.group = group
+
+    def __str__(self):
+        return str(self.color.value)
+
+    def __int__(self):
+        return int(self.color.value)
+
 
 class GameBoard:
-    all_groups = Group.all_groups
-
     def __init__(self, x_size: int = 19, y_size: int = 19):
         self.x_size = x_size
         self.y_size = y_size
@@ -87,46 +98,55 @@ class GameBoard:
             [None for _ in range(y_size)] for _ in range(x_size)
         ]
         self.turn_counter = 0
-        self.sides = [StoneColor.WHITE, StoneColor.BLACK]
-
-    @property
-    def _turn_color(self) -> StoneColor:
-        return self.sides[self.turn_counter % 1]
+        self.SIDES = [StoneColor.WHITE, StoneColor.BLACK]
+        self.__prev_turn: list[tuple[int, int]] = [(-1, -1)] * 2
 
     def __str__(self):
         return "\n".join(
             ["".join([str(p) if p else "0" for p in col]) for col in self.stones]
         )
 
-    def _is_valid(self, x: int, y: int) -> bool:
+    @property
+    def turn_color(self) -> StoneColor:
+        return self.SIDES[self.turn_counter % len(self.SIDES)]
+
+    @property
+    def prev_turn(self) -> tuple[int, int]:
+        return self.__prev_turn[self.turn_counter % len(self.SIDES)]
+
+    @prev_turn.setter
+    def prev_turn(self, position: tuple[int, int]):
+        self.__prev_turn[self.turn_counter % len(self.SIDES)] = position
+
+    def is_valid(self, x: int, y: int) -> bool:
         return 0 <= x < self.x_size and 0 <= y < self.y_size
 
-    def _get_adjacent(self, x: int, y: int) -> dict[tuple[int, int], Stone | None]:
+    def get_adjacent(self, x: int, y: int) -> dict[tuple[int, int], Stone | None]:
         return {
             (x + dx, y + dy): self.stones[x + dx][y + dy]
             for dx, dy in ((-1, 0), (0, -1), (1, 0), (0, 1))
-            if self._is_valid(x + dx, y + dy)
+            if self.is_valid(x + dx, y + dy)
         }
 
-    def _clear_groups(self):
+    def clear_groups(self):
         for column in self.stones:
             for stone in column:
                 if stone:
-                    stone.group = None
-        self.all_groups.clear()
+                    stone.group = Group.UNGROUPED
+        Group.all_groups.clear()
 
-    def _estimate_groups(self):
-        self._clear_groups()
+    def estimate_groups(self):
+        self.clear_groups()
         for x, column in enumerate(self.stones):
             for y, stone in enumerate(column):
-                if stone and not stone.group:
+                if stone and stone.group is not Group.UNGROUPED:
                     current_group = Group(stone.color)
                     current_group.add(x, y, stone)
                     new_member_positions = {(x, y)}
 
                     while new_member_positions:
                         next_member_position = new_member_positions.pop()
-                        adjacent = self._get_adjacent(*next_member_position)
+                        adjacent = self.get_adjacent(*next_member_position)
                         new_member_positions.update(
                             (x, y)
                             for (x, y), point in adjacent.items()
@@ -136,21 +156,34 @@ class GameBoard:
                         )
                         current_group.update(adjacent)
 
+    def kill(self, group: Group):
+        for x, y in group.member_stones.keys():
+            self.stones[x][y] = None
+
+        # Loose frontier groups
+        for frontier_group in {stone.group for stone in group.frontier_stones.values()}:
+            for memb_x, memb_y in group.member_stones.keys():
+                frontier_group.free(memb_x, memb_y)
+
+        del group
+
     def take_turn(self, x: int, y: int):
-        if not self._is_valid(x, y):
+        if not self.is_valid(x, y):
             raise InvalidTurnException("Invalid (X, Y)")
         if self.stones[x][y]:
             raise InvalidTurnException("Specified point is already occupied")
+        if self.prev_turn == (x, y):
+            raise InvalidTurnException("Ko rule")
 
-        stone = Stone(self._turn_color)
+        stone = Stone(self.turn_color)
         self.stones[x][y] = stone
 
+        # Get info about adjacent points
         ally_groups: list[Group] = []
         opponent_groups: list[Group] = []
         liberties: set[tuple[int, int]] = set()
-        adjacent = self._get_adjacent(x, y)
-        for (x, y), point in adjacent.items():
-            if point and point.group:
+        for (x, y), point in self.get_adjacent(x, y).items():
+            if point:
                 if point.color == stone.color:
                     ally_groups.append(point.group)
                 else:
@@ -158,12 +191,9 @@ class GameBoard:
             else:
                 liberties.add((x, y))
 
-        # TODO: Check KO
-
         # Check suicide
-        if (
-            all(len(group.liberties) != 1 for group in opponent_groups)
-            and any(len(group.liberties) == 1 for group in ally_groups)
+        if all(len(group.liberties) != 1 for group in opponent_groups) and any(
+            len(group.liberties) == 1 for group in ally_groups
         ):
             raise InvalidTurnException("Suicide")
 
@@ -181,16 +211,12 @@ class GameBoard:
         # Update opponent liberties
         for opponent_group in opponent_groups:
             if opponent_group.liberties == 1:
-                # Kill opponent groups
-                for op_x, op_y in opponent_group.member_stones.keys():
-                    self.stones[op_x][op_y] = None
-                    # TODO add liberties for adjacent allies:
-                del opponent_group
+                self.kill(opponent_group)
             else:
                 opponent_group.liberties.remove((x, y))
                 opponent_group.frontier_stones[(x, y)] = stone
 
-
+        self.prev_turn = (x, y)
         self.turn_counter += 1
 
     @staticmethod
@@ -221,7 +247,7 @@ class GameBoard:
                 pos += int(board_rep[(left_par_i + 1) : i])
                 left_par_i = None
 
-        board._estimate_groups()
+        board.estimate_groups()
         return board
 
     def to_rep(self) -> str:
