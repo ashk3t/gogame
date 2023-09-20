@@ -38,8 +38,21 @@ class Group:
         self.all_groups.append(self)
         self.color = color
         self.member_stones: dict[tuple[int, int], Stone] = {}
-        self.frontier_stones: dict[tuple[int, int], Stone] = {}
+        self.frontier_stones: dict[tuple[int, int], Stone] = {}  # TODO: will we need it?
         self.liberties: set[tuple[int, int]] = set()
+
+    def __del__(self):
+        for group in self.all_groups:
+            group.member_stones.clear()
+            group.frontier_stones.clear()
+            group.liberties.clear()
+        self.all_groups.remove(self)
+
+    def __str__(self):
+        return "0"
+
+    def __int__(self):
+        return 0
 
     def add(self, x: int, y: int, point: Stone | None):
         if point:
@@ -55,18 +68,13 @@ class Group:
         for (x, y), point in points.items():
             self.add(x, y, point)
 
-    def __del__(self):
-        for group in self.all_groups:
-            group.member_stones.clear()
-            group.frontier_stones.clear()
-            group.liberties.clear()
-        self.all_groups.remove(self)
-
-    def __str__(self):
-        return "0"
-
-    def __int__(self):
-        return 0
+    def merge(self, group: Group):
+        self.member_stones.update(group.member_stones)
+        self.frontier_stones.update(group.frontier_stones)
+        self.liberties.update(group.liberties)
+        for stone in group.member_stones.values():
+            stone.group = self
+        del group
 
 
 class GameBoard:
@@ -80,9 +88,6 @@ class GameBoard:
         ]
         self.turn_counter = 0
         self.sides = [StoneColor.WHITE, StoneColor.BLACK]
-
-    def __getitem__(self, x: int) -> list[Stone | None]:
-        return self.stones[x]
 
     @property
     def _turn_color(self) -> StoneColor:
@@ -131,23 +136,21 @@ class GameBoard:
                         )
                         current_group.update(adjacent)
 
-
     def take_turn(self, x: int, y: int):
         if not self._is_valid(x, y):
             raise InvalidTurnException("Invalid (X, Y)")
         if self.stones[x][y]:
             raise InvalidTurnException("Specified point is already occupied")
-        # TODO: Check suicide, KO
 
         stone = Stone(self._turn_color)
         self.stones[x][y] = stone
 
-        ally_groups = []
-        opponent_groups = []
+        ally_groups: list[Group] = []
+        opponent_groups: list[Group] = []
         liberties: set[tuple[int, int]] = set()
         adjacent = self._get_adjacent(x, y)
         for (x, y), point in adjacent.items():
-            if point:
+            if point and point.group:
                 if point.color == stone.color:
                     ally_groups.append(point.group)
                 else:
@@ -155,11 +158,38 @@ class GameBoard:
             else:
                 liberties.add((x, y))
 
-        ally_groups[0].liberties.update(liberties)
-        # TODO: Update ally liberties
-        # TODO: Join alliases
-        # TODO: Update opponent liberty
-        # TODO: Kill opponent groups
+        # TODO: Check KO
+
+        # Check suicide
+        if (
+            all(len(group.liberties) != 1 for group in opponent_groups)
+            and any(len(group.liberties) == 1 for group in ally_groups)
+        ):
+            raise InvalidTurnException("Suicide")
+
+        # Merge Ally groups
+        main_ally_group = ally_groups.pop()
+        for ally_group in ally_groups:
+            main_ally_group.merge(ally_group)
+
+        # Update ally liberties
+        main_ally_group.liberties.update(liberties)
+        main_ally_group.liberties.remove((x, y))
+        main_ally_group.member_stones[(x, y)] = stone
+        stone.group = main_ally_group
+
+        # Update opponent liberties
+        for opponent_group in opponent_groups:
+            if opponent_group.liberties == 1:
+                # Kill opponent groups
+                for op_x, op_y in opponent_group.member_stones.keys():
+                    self.stones[op_x][op_y] = None
+                    # TODO add liberties for adjacent allies:
+                del opponent_group
+            else:
+                opponent_group.liberties.remove((x, y))
+                opponent_group.frontier_stones[(x, y)] = stone
+
 
         self.turn_counter += 1
 
@@ -185,7 +215,7 @@ class GameBoard:
                 left_par_i = i
             elif left_par_i is None:
                 if char != "0":
-                    board[pos // y_size][pos % y_size] = Stone(char)
+                    board.stones[pos // y_size][pos % y_size] = Stone(char)
                 pos += 1
             elif char == ")":
                 pos += int(board_rep[(left_par_i + 1) : i])
