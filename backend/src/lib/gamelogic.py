@@ -15,24 +15,15 @@ class StoneColor(int, Enum):
 
 
 class Group:
-    all_groups: list[Group] = []
     UNGROUPED: Group
 
     def __init__(self, color: StoneColor):
-        self.all_groups.append(self)
         self.color = color
         self.member_stones: dict[tuple[int, int], Stone] = {}
         self.frontier_stones: dict[
             tuple[int, int], Stone
         ] = {}  # TODO: will we need it?
         self.liberties: set[tuple[int, int]] = set()
-
-    def __del__(self):
-        for group in self.all_groups:
-            group.member_stones.clear()
-            group.frontier_stones.clear()
-            group.liberties.clear()
-        self.all_groups.remove(self)
 
     def __str__(self):
         return "0"
@@ -54,13 +45,17 @@ class Group:
         for (x, y), point in points.items():
             self.add(x, y, point)
 
+    def clear(self):
+        self.member_stones.clear()
+        self.frontier_stones.clear()
+        self.liberties.clear()
+
     def merge(self, group: Group):
         self.member_stones.update(group.member_stones)
         self.frontier_stones.update(group.frontier_stones)
         self.liberties.update(group.liberties)
         for stone in group.member_stones.values():
             stone.group = self
-        del group
 
     def free(self, x: int, y: int):
         if (x, y) in self.frontier_stones:
@@ -69,7 +64,6 @@ class Group:
 
 
 Group.UNGROUPED = Group(StoneColor.NONE)
-del Group.UNGROUPED
 
 
 class Stone:
@@ -91,6 +85,8 @@ class Stone:
 
 
 class GameBoard:
+    all_groups: list[Group] = []
+
     def __init__(self, x_size: int = 19, y_size: int = 19):
         self.x_size = x_size
         self.y_size = y_size
@@ -105,6 +101,19 @@ class GameBoard:
         return "\n".join(
             ["".join([str(p) if p else "0" for p in col]) for col in self.stones]
         )
+
+    def create_group(self, color: StoneColor) -> Group:
+        group = Group(color)
+        self.all_groups.append(group)
+        return group
+
+    def delete_group(self, group: Group):
+        group.clear()
+        self.all_groups.remove(group)
+
+    def merge_groups(self, first_group: Group, second_group: Group):
+        first_group.merge(second_group)
+        self.delete_group(second_group)
 
     @property
     def turn_color(self) -> StoneColor:
@@ -133,14 +142,18 @@ class GameBoard:
             for stone in column:
                 if stone:
                     stone.group = Group.UNGROUPED
-        Group.all_groups.clear()
+        for group in self.all_groups:
+            group.member_stones.clear()
+            group.frontier_stones.clear()
+            group.liberties.clear()
+        self.all_groups.clear()
 
     def estimate_groups(self):
         self.clear_groups()
         for x, column in enumerate(self.stones):
             for y, stone in enumerate(column):
-                if stone and stone.group is not Group.UNGROUPED:
-                    current_group = Group(stone.color)
+                if stone and stone.group is Group.UNGROUPED:
+                    current_group = self.create_group(stone.color)
                     current_group.add(x, y, stone)
                     new_member_positions = {(x, y)}
 
@@ -165,7 +178,7 @@ class GameBoard:
             for memb_x, memb_y in group.member_stones.keys():
                 frontier_group.free(memb_x, memb_y)
 
-        del group
+        self.delete_group(group)
 
     def take_turn(self, x: int, y: int):
         if not self.is_valid(x, y):
@@ -179,17 +192,17 @@ class GameBoard:
         self.stones[x][y] = stone
 
         # Get info about adjacent points
-        ally_groups: list[Group] = []
-        opponent_groups: list[Group] = []
+        ally_groups: set[Group] = set()
+        opponent_groups: set[Group] = set()
         liberties: set[tuple[int, int]] = set()
-        for (x, y), point in self.get_adjacent(x, y).items():
+        for (adj_x, adj_y), point in self.get_adjacent(x, y).items():
             if point:
                 if point.color == stone.color:
-                    ally_groups.append(point.group)
+                    ally_groups.add(point.group)
                 else:
-                    opponent_groups.append(point.group)
+                    opponent_groups.add(point.group)
             else:
-                liberties.add((x, y))
+                liberties.add((adj_x, adj_y))
 
         # Check suicide
         if all(len(group.liberties) != 1 for group in opponent_groups) and any(
@@ -198,15 +211,16 @@ class GameBoard:
             raise InvalidTurnException("Suicide")
 
         # Merge Ally groups
-        main_ally_group = ally_groups.pop()
-        for ally_group in ally_groups:
-            main_ally_group.merge(ally_group)
+        if ally_groups:
+            main_ally_group = ally_groups.pop()
+            for ally_group in ally_groups:
+                self.merge_groups(main_ally_group, ally_group)
 
-        # Update ally liberties
-        main_ally_group.liberties.update(liberties)
-        main_ally_group.liberties.remove((x, y))
-        main_ally_group.member_stones[(x, y)] = stone
-        stone.group = main_ally_group
+            # Update ally liberties
+            main_ally_group.liberties.update(liberties)
+            main_ally_group.liberties.remove((x, y))
+            main_ally_group.member_stones[(x, y)] = stone
+            stone.group = main_ally_group
 
         # Update opponent liberties
         for opponent_group in opponent_groups:
@@ -267,6 +281,8 @@ class GameBoard:
     to_rep.__doc__ = from_rep.__doc__
 
 
-b = GameBoard.from_rep("3;3;112102000")
+# TODO: fix orientation
+b = GameBoard.from_rep("3;3;")
+b.take_turn(1, 2)
 print(b.to_rep())
 print(b)
