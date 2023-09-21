@@ -66,13 +66,7 @@ Group.UNGROUPED = Group(StoneColor.NONE)
 
 class Stone:
     def __init__(self, color: StoneColor | int | str, group: Group = Group.UNGROUPED):
-        self.color: StoneColor = (
-            color
-            if isinstance(color, StoneColor)
-            else (
-                StoneColor(color) if isinstance(color, int) else StoneColor(int(color))
-            )
-        )
+        self.color = StoneColor(int(color))
         self.group = group
 
     def __str__(self):
@@ -144,10 +138,6 @@ class GameBoard:
             for stone in column:
                 if stone:
                     stone.group = Group.UNGROUPED
-        for group in self.all_groups:
-            group.member_stones.clear()
-            group.frontier_stones.clear()
-            group.liberties.clear()
         self.all_groups.clear()
 
     def estimate_groups(self):
@@ -214,10 +204,10 @@ class GameBoard:
 
         # Update opponent liberties
         for opponent_group in opponent_groups:
-            opponent_group.liberties.remove((x, y))  # TODO: why we have UNGROUPED
+            opponent_group.liberties.remove((x, y))
             opponent_group.frontier_stones[(x, y)] = stone
             if len(opponent_group.liberties) == 0:
-                self.kill(opponent_group)  # FIXME: consider new group
+                self.kill(opponent_group)
 
         self.prev_turn = (x, y)
         self.turn_counter += 1
@@ -269,10 +259,3 @@ class GameBoard:
         return f"{self.x_size};{self.y_size};" + rep
 
     to_rep.__doc__ = from_rep.__doc__
-
-
-b = GameBoard.from_rep("4;3;0120" "1202" "0120")
-b.take_turn(2, 1)
-b.take_turn(1, 1)
-b.take_turn(2, 1)
-print(b)
