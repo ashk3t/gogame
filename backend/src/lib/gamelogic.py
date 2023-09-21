@@ -99,7 +99,11 @@ class GameBoard:
 
     def __str__(self):
         return "\n".join(
-            ["".join([str(p) if p else "0" for p in col]) for col in self.stones]
+            "".join(
+                str(stone) if (stone := self.stones[x][y]) else "0"
+                for x in range(self.x_size)
+            )
+            for y in range(self.y_size)
         )
 
     def create_group(self, color: StoneColor) -> Group:
@@ -255,7 +259,7 @@ class GameBoard:
                 left_par_i = i
             elif left_par_i is None:
                 if char != "0":
-                    board.stones[pos // y_size][pos % y_size] = Stone(char)
+                    board.stones[pos % x_size][pos // x_size] = Stone(char)
                 pos += 1
             elif char == ")":
                 pos += int(board_rep[(left_par_i + 1) : i])
@@ -267,8 +271,9 @@ class GameBoard:
     def to_rep(self) -> str:
         rep = ""
         zeros_combo = 0
-        for column in self.stones:
-            for stone in column:
+        for y in range(self.y_size):
+            for x in range(self.x_size):
+                stone = self.stones[x][y]
                 if stone:
                     rep += (
                         f"({zeros_combo})" if zeros_combo > 3 else ("0" * zeros_combo)
@@ -282,7 +287,7 @@ class GameBoard:
 
 
 # TODO: fix orientation
-b = GameBoard.from_rep("3;3;")
-b.take_turn(1, 2)
+b = GameBoard.from_rep("10;2;00002")
+b.take_turn(5, 1)
 print(b.to_rep())
 print(b)
