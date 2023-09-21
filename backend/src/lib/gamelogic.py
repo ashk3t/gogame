@@ -20,9 +20,7 @@ class Group:
     def __init__(self, color: StoneColor):
         self.color = color
         self.member_stones: dict[tuple[int, int], Stone] = {}
-        self.frontier_stones: dict[
-            tuple[int, int], Stone
-        ] = {}  # TODO: will we need it?
+        self.frontier_stones: dict[tuple[int, int], Stone] = {}
         self.liberties: set[tuple[int, int]] = set()
 
     def __str__(self):
@@ -157,8 +155,8 @@ class GameBoard:
         for x, column in enumerate(self.stones):
             for y, stone in enumerate(column):
                 if stone and stone.group is Group.UNGROUPED:
-                    current_group = self.create_group(stone.color)
-                    current_group.add(x, y, stone)
+                    group = self.create_group(stone.color)
+                    group.add(x, y, stone)
                     new_member_positions = {(x, y)}
 
                     while new_member_positions:
@@ -168,10 +166,10 @@ class GameBoard:
                             (x, y)
                             for (x, y), point in adjacent.items()
                             if point
-                            and point.color == current_group.color
-                            and (x, y) not in current_group.member_stones
+                            and point.color == group.color
+                            and (x, y) not in group.member_stones
                         )
-                        current_group.update(adjacent)
+                        group.update(adjacent)
 
     def kill(self, group: Group):
         for x, y in group.member_stones.keys():
@@ -188,51 +186,38 @@ class GameBoard:
         if not self.is_valid(x, y):
             raise InvalidTurnException("Invalid (X, Y)")
         if self.stones[x][y]:
-            raise InvalidTurnException("Specified point is already occupied")
+            raise InvalidTurnException("Point is already occupied")
         if self.prev_turn == (x, y):
             raise InvalidTurnException("Ko rule")
 
         stone = Stone(self.turn_color)
         self.stones[x][y] = stone
 
-        # Get info about adjacent points
-        ally_groups: set[Group] = set()
-        opponent_groups: set[Group] = set()
-        liberties: set[tuple[int, int]] = set()
-        for (adj_x, adj_y), point in self.get_adjacent(x, y).items():
-            if point:
-                if point.color == stone.color:
-                    ally_groups.add(point.group)
-                else:
-                    opponent_groups.add(point.group)
-            else:
-                liberties.add((adj_x, adj_y))
+        group = self.create_group(stone.color)
+        group.update(self.get_adjacent(x, y))
+        ally_groups = {s.group for s in group.member_stones.values()}
+        opponent_groups = {s.group for s in group.frontier_stones.values()}
+        group.add(x, y, stone)
 
         # Check suicide
-        if all(len(group.liberties) != 1 for group in opponent_groups) and any(
-            len(group.liberties) == 1 for group in ally_groups
+        if (
+            all(len(g.liberties) != 1 for g in opponent_groups)
+            and len(group.liberties) == 0
         ):
             raise InvalidTurnException("Suicide")
 
         # Merge Ally groups
+        for ally_group in ally_groups:
+            self.merge_groups(group, ally_group)
         if ally_groups:
-            main_ally_group = ally_groups.pop()
-            for ally_group in ally_groups:
-                self.merge_groups(main_ally_group, ally_group)
-
-            # Update ally liberties
-            main_ally_group.liberties.update(liberties)
-            main_ally_group.liberties.remove((x, y))
-            main_ally_group.member_stones[(x, y)] = stone
-            stone.group = main_ally_group
+            group.liberties.remove((x, y))
 
         # Update opponent liberties
         for opponent_group in opponent_groups:
-            if opponent_group.liberties == 1:
-                self.kill(opponent_group)
-            else:
-                opponent_group.liberties.remove((x, y))
-                opponent_group.frontier_stones[(x, y)] = stone
+            opponent_group.liberties.remove((x, y))  # TODO: why we have UNGROUPED
+            opponent_group.frontier_stones[(x, y)] = stone
+            if len(opponent_group.liberties) == 0:
+                self.kill(opponent_group)  # FIXME: consider new group
 
         self.prev_turn = (x, y)
         self.turn_counter += 1
@@ -286,8 +271,8 @@ class GameBoard:
     to_rep.__doc__ = from_rep.__doc__
 
 
-# TODO: fix orientation
-b = GameBoard.from_rep("10;2;00002")
-b.take_turn(5, 1)
-print(b.to_rep())
+b = GameBoard.from_rep("4;3;0120" "1202" "0120")
+b.take_turn(2, 1)
+b.take_turn(1, 1)
+b.take_turn(2, 1)
 print(b)
