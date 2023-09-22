@@ -9,7 +9,6 @@ export default function GamePage() {
   return (
     <main>
       <section>
-        <h3>This page in development:</h3>
         <Board />
       </section>
     </main>

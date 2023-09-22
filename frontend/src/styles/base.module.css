@@ -1,3 +1,7 @@
+.defaultMargin * {
+  margin: 12px
+}
+
 .centeringContainer, .vcenteringContainer {
   display: flex;
   align-items: center;

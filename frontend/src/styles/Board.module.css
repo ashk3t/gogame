@@ -1,29 +1,67 @@
-.boardRow {
-  height: 40px;
-  width: max-content;
-  margin: 0;
-  border-bottom: 4px solid var(--iris);
+.board {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(19, 1fr);
 }
 
 .boardCell {
-  height: 40px;
-  width: 40px;
-  margin: 0;
+  position: relative;
+  aspect-ratio: 1 / 1;
   display: inline-block;
-  border-left: 4px solid var(--iris);
+  background:
+    linear-gradient(var(--text), var(--text)) no-repeat center/6% 100%,
+    linear-gradient(to right, var(--text), var(--text)) no-repeat center/100% 6%;
 }
 
-.boardCell:last-child {
-  border-right: 4px solid var(--iris);
+.stone {
+  position: absolute;
+  color: var(--pine);
+  width: 70%;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  margin: auto;
+  z-index: 30;
 }
 
-.boardRow:first-child {
-  border-top: 4px solid var(--iris);
+.boardCell:nth-child(-n+19) {
+  background:
+    linear-gradient(var(--base) 50%, var(--text) 50%) no-repeat center/6% 100%,
+    linear-gradient(to right, var(--text), var(--text)) no-repeat center/100% 6%;
 }
-
-/* .boardRow:nth-child(odd) .boardCell:nth-child(even) { */
-/*   background: var(--iris); */
-/* } */
-/* .boardRow:nth-child(even) .boardCell:nth-child(odd) { */
-/*   background: var(--iris); */
-/* } */
+.boardCell:nth-child(19n) {
+  background:
+    linear-gradient(var(--text), var(--text)) no-repeat center/6% 100%,
+    linear-gradient(to right, var(--text) 50%, var(--base) 50%) no-repeat center/100% 6%;
+}
+.boardCell:nth-child(n+343) {
+  background:
+    linear-gradient(var(--text) 50%, var(--base) 50%) no-repeat center/6% 100%,
+    linear-gradient(to right, var(--text), var(--text)) no-repeat center/100% 6%;
+}
+.boardCell:nth-child(19n+1) {
+  background:
+    linear-gradient(var(--text), var(--text)) no-repeat center/6% 100%,
+    linear-gradient(to right, var(--base) 50%, var(--text) 50%) no-repeat center/100% 6%;
+}
+.boardCell:nth-child(1) {
+  background:
+    linear-gradient(var(--base) 50%, var(--text) 50%) no-repeat center/6% 100%,
+    linear-gradient(to right, var(--base) 50%, var(--text) 50%) no-repeat center/100% 6%;
+}
+.boardCell:nth-child(19) {
+  background:
+    linear-gradient(var(--base) 50%, var(--text) 50%) no-repeat center/6% 100%,
+    linear-gradient(to right, var(--text) 50%, var(--base) 50%) no-repeat center/100% 6%;
+}
+.boardCell:nth-child(343) {
+  background:
+    linear-gradient(var(--text) 50%, var(--base) 50%) no-repeat center/6% 100%,
+    linear-gradient(to right, var(--base) 50%, var(--text) 50%) no-repeat center/100% 6%;
+}
+.boardCell:nth-child(361) {
+  background:
+    linear-gradient(var(--text) 50%, var(--base) 50%) no-repeat center/6% 100%,
+    linear-gradient(to right, var(--text) 50%, var(--base) 50%) no-repeat center/100% 6%;
+}
