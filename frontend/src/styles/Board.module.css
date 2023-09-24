@@ -1,16 +1,13 @@
 .board {
   position: relative;
   display: grid;
-  grid-template-columns: repeat(19, 1fr);
+  grid-auto-flow: column;
 }
 
-.boardCell {
+.intersection {
   position: relative;
   aspect-ratio: 1 / 1;
   display: inline-block;
-  background:
-    linear-gradient(var(--text), var(--text)) no-repeat center/6% 100%,
-    linear-gradient(to right, var(--text), var(--text)) no-repeat center/100% 6%;
 }
 
 .stone {
@@ -23,45 +20,4 @@
   bottom: 0;
   margin: auto;
   z-index: 30;
-}
-
-.boardCell:nth-child(-n+19) {
-  background:
-    linear-gradient(var(--base) 50%, var(--text) 50%) no-repeat center/6% 100%,
-    linear-gradient(to right, var(--text), var(--text)) no-repeat center/100% 6%;
-}
-.boardCell:nth-child(19n) {
-  background:
-    linear-gradient(var(--text), var(--text)) no-repeat center/6% 100%,
-    linear-gradient(to right, var(--text) 50%, var(--base) 50%) no-repeat center/100% 6%;
-}
-.boardCell:nth-child(n+343) {
-  background:
-    linear-gradient(var(--text) 50%, var(--base) 50%) no-repeat center/6% 100%,
-    linear-gradient(to right, var(--text), var(--text)) no-repeat center/100% 6%;
-}
-.boardCell:nth-child(19n+1) {
-  background:
-    linear-gradient(var(--text), var(--text)) no-repeat center/6% 100%,
-    linear-gradient(to right, var(--base) 50%, var(--text) 50%) no-repeat center/100% 6%;
-}
-.boardCell:nth-child(1) {
-  background:
-    linear-gradient(var(--base) 50%, var(--text) 50%) no-repeat center/6% 100%,
-    linear-gradient(to right, var(--base) 50%, var(--text) 50%) no-repeat center/100% 6%;
-}
-.boardCell:nth-child(19) {
-  background:
-    linear-gradient(var(--base) 50%, var(--text) 50%) no-repeat center/6% 100%,
-    linear-gradient(to right, var(--text) 50%, var(--base) 50%) no-repeat center/100% 6%;
-}
-.boardCell:nth-child(343) {
-  background:
-    linear-gradient(var(--text) 50%, var(--base) 50%) no-repeat center/6% 100%,
-    linear-gradient(to right, var(--base) 50%, var(--text) 50%) no-repeat center/100% 6%;
-}
-.boardCell:nth-child(361) {
-  background:
-    linear-gradient(var(--text) 50%, var(--base) 50%) no-repeat center/6% 100%,
-    linear-gradient(to right, var(--text) 50%, var(--base) 50%) no-repeat center/100% 6%;
 }
