@@ -1,4 +1,4 @@
-.defaultMargin * {
+.defaultMargin *:not(div) {
   margin: 12px
 }
 
@@ -11,19 +11,36 @@
   flex-direction: column;
 }
 
+.niceButton, .niceInput, .niceSelect {
+  transition: 0.2s all;
+}
+
 .niceButton {
   border: 4px solid var(--foam);
-  padding: 10px 20px 10px 20px;
-  transition: 0.2s all;
+  padding: 10px 20px;
 }
 .niceButton:hover {
   background-color: var(--highlight-low);
   color: var(--love);
 }
 
-.niceInput {
+.niceInput, .niceSelect {
   padding: 10px;
   background: var(--overlay);
+}
+
+.niceInput:focus {
+  color: var(--love);
+}
+
+.niceSelect {
+  border: 4px solid var(--iris);
+}
+.niceSelect:hover {
+  color: var(--love);
+}
+.niceSelect > option {
+  color: var(--text);
 }
 
 .linkLike {

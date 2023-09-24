@@ -5,18 +5,14 @@ import {AppDispatch, RootState} from "../store"
 import GameService from "../services/GameService"
 import {gameSlice} from "../reducers/game"
 import {gameListSlice} from "../reducers/gameList"
-
-export const updateNickname = (nickname: string) => {
-  return gameSlice.actions.updateNickname(nickname)
-}
+import {GameMode} from "../types/game"
 
 export const fetchAllGames = () => async (dispatch: AppDispatch) => {
   dispatch(gameListSlice.actions.setGames(await GameService.getAll()))
 }
 
-
 export const startNewGame = () => async (dispatch: AppDispatch, getState: () => RootState) => {
-  const nickname = getState().gameReducer.whitePlayer.nickname
+  const nickname = getState().gameReducer.player.nickname
   gameSlice.actions.updateNickname("")
   GameService.startSearch(nickname)
 }

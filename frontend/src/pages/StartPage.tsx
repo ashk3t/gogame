@@ -1,7 +1,10 @@
 import PlayerInput from "../components/inputs/PlayerInput"
 import StartButton from "../components/buttons/StartButton"
+import NavButton from "../components/buttons/NavButton"
 import styles from "../styles/base.module.css"
 import {getRandomNicknameLabel, startsWithVowel} from "../utils"
+import GameSettingsForm from "../components/forms/GameSettingsForm"
+import {useState} from "react"
 
 export default function StartPage() {
   const nicknameLabel = getRandomNicknameLabel()
@@ -13,10 +16,11 @@ export default function StartPage() {
           <h3>{nicknameLabel}'s name:</h3>
           <PlayerInput />
         </div>
-        <StartButton/>
-        <h5 className={styles.linkLike}>
-          Not a{startsWithVowel(nicknameLabel) ? "n" : ""} {nicknameLabel}?
-        </h5>
+        <div className={styles.centeringContainer}>
+          <StartButton />
+          <NavButton path="game_list">Games?</NavButton>
+        </div>
+        <GameSettingsForm />
       </div>
     </main>
   )

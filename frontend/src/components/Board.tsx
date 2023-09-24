@@ -6,8 +6,8 @@ import CircleSvg from "../assets/CircleSvg"
 import {BoardIntersectionStyler} from "../utils"
 
 export default function Board() {
-  const xSize = 15
-  const ySize = 6
+  const xSize = 19
+  const ySize = 19
   const board = Array.from({length: xSize}, () => new Array(ySize).fill(0))
 
   const [intersectionStyler] = useState(new BoardIntersectionStyler(xSize, ySize))

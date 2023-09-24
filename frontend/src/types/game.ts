@@ -13,15 +13,22 @@ export enum PlayerStatus {
   SPECTATOR = "SPECTATOR",
 }
 
-// export interface Game {
-//   id: number
-//   token: string
-//   nickname: string
-//   status: PlayerStatus
-// }
+export enum GameMode {
+  CLASSIC = "Classic",
+  ATARI = "Atari",
+}
+
+export interface GameSettings {
+  xSize: number;
+  ySize: number;
+  players: number;
+  mode: GameMode;
+  offline: boolean;
+}
 
 export interface GameState {
-  whitePlayer: Player,
-  blackPlayer: Player,
+  player: Player,
+  opponents: Player[],
   gameRep: string,
+  gameSettings: GameSettings
 }

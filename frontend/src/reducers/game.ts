@@ -1,17 +1,26 @@
 import {PayloadAction, createSlice} from "@reduxjs/toolkit"
-import {GameState, Player, PlayerStatus} from "../types/game"
+import {GameMode, GameSettings, GameState, Player, PlayerStatus} from "../types/game"
 
 const initialPlayer: Player = {
   id: null,
   token: null,
   nickname: "",
-  status: PlayerStatus.NEW
+  status: PlayerStatus.NEW,
+}
+
+const initialGameSettings: GameSettings = {
+  xSize: 19,
+  ySize: 19,
+  players: 2,
+  mode: GameMode.CLASSIC,
+  offline: false,
 }
 
 const initialState: GameState = {
-  whitePlayer: {...initialPlayer},
-  blackPlayer: {...initialPlayer},
+  player: {...initialPlayer},
+  opponents: [],
   gameRep: "",
+  gameSettings: initialGameSettings,
 }
 
 export const gameSlice = createSlice({
@@ -19,7 +28,10 @@ export const gameSlice = createSlice({
   initialState,
   reducers: {
     updateNickname(state, action: PayloadAction<string>) {
-      state.whitePlayer.nickname = action.payload
+      state.player.nickname = action.payload
+    },
+    updateGameSettings(state, action: PayloadAction<GameSettings>) {
+      state.gameSettings = action.payload
     },
   },
 })
