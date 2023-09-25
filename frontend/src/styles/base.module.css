@@ -11,7 +11,7 @@
   flex-direction: column;
 }
 
-.niceButton, .niceInput, .niceSelect {
+.niceButton, .niceInput, .niceSelect, .niceCheckbox::after {
   transition: 0.2s all;
 }
 
@@ -26,10 +26,10 @@
 
 .niceInput, .niceSelect {
   padding: 10px;
-  background: var(--overlay);
+  background-color: var(--overlay);
 }
 
-.niceInput:focus {
+.niceInput:focus, .niceInput:hover {
   color: var(--love);
 }
 
@@ -41,6 +41,29 @@
 }
 .niceSelect > option {
   color: var(--text);
+}
+
+.niceCheckbox {
+  visibility: hidden;
+}
+.niceCheckbox, .niceCheckbox::after {
+  aspect-ratio: 1 / 1;
+  width: 1em;
+  outline: 4px solid var(--iris);
+}
+.niceCheckbox::after {
+  visibility: visible;
+  content: "";
+  display: block;
+  background-color: var(--overlay);
+}
+.niceCheckbox:checked::after {
+  background-color: var(--text);
+  box-shadow:
+    inset 0 0 0 4px var(--overlay);
+}
+.niceCheckbox:hover::after {
+  outline: 4px solid var(--love);
 }
 
 .linkLike {
