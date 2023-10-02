@@ -2,12 +2,12 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
 from .config import settings
-from .router import routers
 from .database import SessionMaker
+from .router import routers
+from .dependencies import session
 
 
 app = FastAPI()
-session = None
 
 app.add_middleware(
     CORSMiddleware,
@@ -23,7 +23,6 @@ for router in routers:
 
 @app.middleware("http")
 async def update_global_db_session(request: Request, call_next):
-    global session
     session = SessionMaker()
     try:
         response = await call_next(request)
@@ -48,3 +47,4 @@ async def shutdown_event():
     global session
     session = SessionMaker()
     await SearchService.delete_all()
+    await session.close()

@@ -2,7 +2,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..schemas.game import *
 from ..models import GameModel
-from .utils import add_commit_refresh
 from .generic import generate_basic_service_methods
 
 

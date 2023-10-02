@@ -2,7 +2,7 @@ from fastapi import BackgroundTasks, WebSocket
 from sqlalchemy import desc
 from sqlalchemy.orm import selectinload
 
-from ..main import session
+from ..dependencies import session
 from ..models import *
 from ..schemas import *
 from .generic import *

@@ -2,7 +2,7 @@ import uuid
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..main import session
+from ..dependencies import session
 from ..schemas.player import *
 from ..models import PlayerModel
 from .utils import add_commit_refresh

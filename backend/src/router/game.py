@@ -3,16 +3,9 @@ from typing import Annotated, Any, Union
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import (
     APIRouter,
-    BackgroundTasks,
-    Body,
-    Depends,
     WebSocket,
-    WebSocketDisconnect,
 )
 
-from src.service.game import GameSettingsService
-
-from ..service.search import GameSearchManager
 from ..schemas import *
 from ..service import *
 
