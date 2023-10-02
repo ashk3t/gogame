@@ -1,5 +1,4 @@
-import {CSSProperties, FocusEvent} from "react"
-import {useActions, useAppSelector} from "../../hooks/redux"
+import {CSSProperties} from "react"
 import styles from "../../styles/base.module.css"
 
 export default function IntegerInput(props: {
@@ -16,12 +15,11 @@ export default function IntegerInput(props: {
       {...rest}
       type="text"
       onChange={(event) => {
-        const value = Number(event.target.value.replace(/[^\-\d]/, "")) || 0
-        setValue(value)
+        setValue(parseInt(event.target.value) || 0)
       }}
       onBlur={(event) => {
         if (!limits) return
-        let value = Number(event.target.value)
+        let value = parseInt(event.target.value)
         if (limits.min) value = Math.max(limits.min, value)
         if (limits.max) value = Math.min(limits.max, value)
         setValue(value)

@@ -4,7 +4,9 @@ import NavButton from "../components/buttons/NavButton"
 import styles from "../styles/base.module.css"
 import {getRandomNicknameLabel, startsWithVowel} from "../utils"
 import GameSettingsForm from "../components/forms/GameSettingsForm"
-import {useState} from "react"
+import {useEffect, useState} from "react"
+import {useAppSelector} from "../hooks/redux"
+import {PlayerStatus} from "../types/game"
 
 export default function StartPage() {
   const nicknameLabel = getRandomNicknameLabel()

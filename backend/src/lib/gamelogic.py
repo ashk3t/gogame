@@ -23,12 +23,6 @@ class Group:
         self.frontier_stones: dict[tuple[int, int], Stone] = {}
         self.liberties: set[tuple[int, int]] = set()
 
-    def __str__(self):
-        return "0"
-
-    def __int__(self):
-        return 0
-
     def add(self, x: int, y: int, point: Stone | None):
         if point:
             if point.color == self.color:
@@ -77,16 +71,15 @@ class Stone:
 
 
 class GameBoard:
-    all_groups: list[Group] = []
-
     def __init__(self, x_size: int = 19, y_size: int = 19):
+        self.sides = [StoneColor.WHITE, StoneColor.BLACK]
         self.x_size = x_size
         self.y_size = y_size
         self.stones: list[list[Stone | None]] = [
             [None for _ in range(y_size)] for _ in range(x_size)
         ]
+        self.all_groups: list[Group] = []
         self.turn_counter = 0
-        self.SIDES = [StoneColor.WHITE, StoneColor.BLACK]
         self.__prev_turn: list[tuple[int, int]] = [(-1, -1)] * 2
 
     def __str__(self):
@@ -113,17 +106,17 @@ class GameBoard:
 
     @property
     def turn_color(self) -> StoneColor:
-        return self.SIDES[self.turn_counter % len(self.SIDES)]
+        return self.sides[self.turn_counter % len(self.sides)]
 
     @property
     def prev_turn(self) -> tuple[int, int]:
-        return self.__prev_turn[self.turn_counter % len(self.SIDES)]
+        return self.__prev_turn[self.turn_counter % len(self.sides)]
 
     @prev_turn.setter
     def prev_turn(self, position: tuple[int, int]):
-        self.__prev_turn[self.turn_counter % len(self.SIDES)] = position
+        self.__prev_turn[self.turn_counter % len(self.sides)] = position
 
-    def is_valid(self, x: int, y: int) -> bool:
+    def is_valid(self, x: int, y: int):
         return 0 <= x < self.x_size and 0 <= y < self.y_size
 
     def get_adjacent(self, x: int, y: int) -> dict[tuple[int, int], Stone | None]:

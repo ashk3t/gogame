@@ -59,7 +59,6 @@ export class BoardIntersectionStyler {
       vColors = `${fg} ${50 + w}%, ${bg} ${50 + w}%`
     }
 
-    console.log(x, y)
     return {
       background: `
         linear-gradient(to bottom, ${vColors}) no-repeat center/${2 * w}% 100%,

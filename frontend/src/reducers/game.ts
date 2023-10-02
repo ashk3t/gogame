@@ -30,6 +30,9 @@ export const gameSlice = createSlice({
     updateNickname(state, action: PayloadAction<string>) {
       state.player.nickname = action.payload
     },
+    updatePlayerStatus(state, action: PayloadAction<PlayerStatus>) {
+      state.player.status = action.payload
+    },
     updateGameSettings(state, action: PayloadAction<GameSettings>) {
       state.gameSettings = action.payload
     },

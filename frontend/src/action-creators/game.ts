@@ -5,13 +5,13 @@ import {AppDispatch, RootState} from "../store"
 import GameService from "../services/GameService"
 import {gameSlice} from "../reducers/game"
 import {gameListSlice} from "../reducers/gameList"
-import {GameMode} from "../types/game"
+import {GameMode, PlayerStatus} from "../types/game"
 
 export const fetchAllGames = () => async (dispatch: AppDispatch) => {
   dispatch(gameListSlice.actions.setGames(await GameService.getAll()))
 }
 
-export const startNewGame = () => async (dispatch: AppDispatch, getState: () => RootState) => {
+export const startOnlineGame = () => async (dispatch: AppDispatch, getState: () => RootState) => {
   const nickname = getState().gameReducer.player.nickname
   const settings = getState().gameReducer.gameSettings
   gameSlice.actions.updateNickname("")
