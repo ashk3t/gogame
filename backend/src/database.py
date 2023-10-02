@@ -29,14 +29,14 @@ def init_database():
     )
 
 
-async def init_models():
+async def hardreset_database():
     from . import models
-
     async with engine.begin() as conn:
+        await conn.run_sync(DBase.metadata.drop_all)
         await conn.run_sync(DBase.metadata.create_all)
 
 
-async def reset_tables():
+async def clear_tables():
     async with engine.begin() as conn:
         for table in reversed(DBase.metadata.sorted_tables):
             await conn.execute(table.delete())

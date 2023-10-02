@@ -49,7 +49,6 @@ export default function GameSettingsForm() {
       </div>
       <div className={styles.centeringContainer}>
         <h5>Offline:</h5>
-        {/* TODO: https://frontips.ru/css-stili-dlya-checkbox/ */}
         <input
           type="checkbox"
           checked={settings.offline}

@@ -13,6 +13,7 @@ export const fetchAllGames = () => async (dispatch: AppDispatch) => {
 
 export const startNewGame = () => async (dispatch: AppDispatch, getState: () => RootState) => {
   const nickname = getState().gameReducer.player.nickname
+  const settings = getState().gameReducer.gameSettings
   gameSlice.actions.updateNickname("")
-  GameService.startSearch(nickname)
+  GameService.startSearch(nickname, settings)
 }

@@ -3,6 +3,24 @@ from pydantic import BaseModel as BaseSchema, ConfigDict, Field
 
 
 INITIAL_GAME_STATE = "INITIAL"
+DEFAULT_GAME_MODE = "CLASSIC"
+
+
+class GameSettingsBase(BaseSchema):
+    x_size: int
+    y_size: int
+    players: int
+    mode: str = DEFAULT_GAME_MODE
+
+
+class GameSettingsCreate(GameSettingsBase):
+    pass
+
+
+class GameSettingsResponse(GameSettingsCreate):
+    id: int
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class GameBase(BaseSchema):
@@ -10,8 +28,7 @@ class GameBase(BaseSchema):
 
 
 class GameCreate(GameBase):
-    white_player_id: int
-    black_player_id: int
+    game_settings_id: int
 
 
 class GameUpdate(GameBase):
@@ -20,8 +37,7 @@ class GameUpdate(GameBase):
 
 class GameResponse(GameBase):
     id: int
-    white_player_id: int
-    black_player_id: int
+    game_settings_id: int
     start_time: datetime = Field(default_factory=datetime.utcnow)
     state: str = INITIAL_GAME_STATE
 

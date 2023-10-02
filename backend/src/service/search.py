@@ -2,35 +2,34 @@ from fastapi import BackgroundTasks, WebSocket
 from sqlalchemy import desc
 from sqlalchemy.orm import selectinload
 
+from ..main import session
 from ..models import *
 from ..schemas import *
 from .generic import *
 
 
 class SearchService:
-    _get, get, get_all, create, update, delete = generate_basic_service_methods(
-        SearchEntryModel, SearchEntryResponse, SearchEntryCreate, SearchEntryUpdate
+    _get, get, get_all, create, _, delete = generate_basic_service_methods(
+        SearchEntryModel, SearchEntryResponse, SearchEntryCreate, None
     )
 
     @staticmethod
-    async def find_paired(
-        db: AsyncSession, search_entry: SearchEntryCreate
-    ) -> SearchEntryModel | None:
+    async def find_paired(search_entry: SearchEntryCreate) -> SearchEntryModel | None:
         try:
-            result = await db.execute(
+            result = await session.execute(
                 select(SearchEntryModel)
                 .options(selectinload(SearchEntryModel.player))
-                .where(SearchEntryModel.mode == search_entry.mode)
+                .where(SearchEntryModel.game_settings == search_entry.game_settings)
                 .order_by(desc(SearchEntryModel.start_time)),
-            )
+            )  # TODO show generated SQL code
             return result.scalars().one()
         except:
             return
 
     @classmethod
-    async def delete_all(cls, db: AsyncSession):
-        await db.execute(delete(SearchEntryModel))
-        await db.commit()
+    async def delete_all(cls):
+        await session.execute(delete(SearchEntryModel))
+        await session.commit()
 
 
 class GameSearchManager:

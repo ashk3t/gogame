@@ -1,41 +1,42 @@
+import inspect
+
 import sqlalchemy as alc
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel as BaseSchema
 
+from ..main import session
 from ..models import BaseModel
 from .utils import add_commit_refresh
 
 
 def generate_basic_service_methods(Model, ResponseSchema, CreateSchema, UpdateSchema):
     @staticmethod
-    async def _get(db: AsyncSession, id: int) -> Model:
-        result = await db.execute(select(Model).where(Model.id == id))
+    async def _get(id: int) -> Model:
+        result = await session.execute(select(Model).where(Model.id == id))
         return result.scalars().one()
 
     @staticmethod
-    async def get(db: AsyncSession, id: int) -> ResponseSchema:
-        return ResponseSchema.model_validate(_get(db, id))
+    async def get(id: int) -> ResponseSchema:
+        return ResponseSchema.model_validate(_get(id))
 
     @staticmethod
-    async def get_all(
-        db: AsyncSession, skip: int = 0, limit: int = 100
-    ) -> list[ResponseSchema]:
-        result = await db.execute(select(Model).offset(skip).limit(limit))
+    async def get_all(skip: int = 0, limit: int = 100) -> list[ResponseSchema]:
+        result = await session.execute(select(Model).offset(skip).limit(limit))
         return [
             ResponseSchema.model_validate(model)
             for model in list(result.scalars().all())
         ]
 
     @staticmethod
-    async def create(db: AsyncSession, schema: CreateSchema) -> ResponseSchema:
+    async def create(schema: CreateSchema) -> ResponseSchema:
         model = Model(**schema.model_dump())
-        await add_commit_refresh(db, model)
+        await add_commit_refresh(model)
         return ResponseSchema.model_validate(model)
 
     @staticmethod
-    async def update(db: AsyncSession, id: int, schema: UpdateSchema) -> ResponseSchema:
-        result = await db.execute(
+    async def update(id: int, schema: UpdateSchema) -> ResponseSchema:
+        result = await session.execute(
             alc.update(Model)
             .where(Model.id == id)
             .values(**schema.model_dump())
@@ -44,8 +45,8 @@ def generate_basic_service_methods(Model, ResponseSchema, CreateSchema, UpdateSc
         return ResponseSchema.model_validate(result.scalars().one())
 
     @staticmethod
-    async def delete(db: AsyncSession, id: int) -> None:
-        await db.execute(alc.delete(Model).where(Model.id == id))
-        await db.commit()
+    async def delete(id: int) -> None:
+        await session.execute(alc.delete(Model).where(Model.id == id))
+        await session.commit()
 
     return _get, get, get_all, create, update, delete

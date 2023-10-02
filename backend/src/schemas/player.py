@@ -3,8 +3,7 @@ from pydantic import BaseModel as BaseSchema, ConfigDict
 
 
 class PlayerStatus(str, Enum):
-    WHITE = "WHITE"
-    BLACK = "BLACK"
+    PLAYING = "PLAYING"
     SPECTATOR = "SPECTATOR"
     SEARCH = "SEARCH"
 
@@ -25,4 +24,5 @@ class PlayerUpdate(PlayerBase):
 
 
 class PlayerResponse(PlayerUpdate):
+    id: int
     token: str

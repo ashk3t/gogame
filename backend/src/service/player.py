@@ -2,6 +2,7 @@ import uuid
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ..main import session
 from ..schemas.player import *
 from ..models import PlayerModel
 from .utils import add_commit_refresh
@@ -14,12 +15,12 @@ class PlayerService:
     )
 
     @staticmethod
-    async def get_by_token(db: AsyncSession, token: str) -> PlayerResponse:
-        result = await db.execute(select(PlayerModel).where(PlayerModel.token == token))
+    async def get_by_token(token: str) -> PlayerResponse:
+        result = await session.execute(select(PlayerModel).where(PlayerModel.token == token))
         return PlayerResponse.model_validate(result.scalars().one())
 
     @staticmethod
-    async def create(db: AsyncSession, player: PlayerCreate) -> PlayerResponse:
-        db_player = PlayerModel(token=str(uuid.uuid4()), nickname=player.nickname)
-        await add_commit_refresh(db, db_player)
-        return PlayerResponse.model_validate(db_player)
+    async def create(player: PlayerCreate) -> PlayerResponse:
+        model = PlayerModel(token=str(uuid.uuid4()), nickname=player.nickname)
+        await add_commit_refresh(model)
+        return PlayerResponse.model_validate(model)
