@@ -17,7 +17,7 @@ class GameSettingsCreate(GameSettingsBase):
     pass
 
 
-class GameSettingsResponse(GameSettingsCreate):
+class GameSettingsResponse(GameSettingsBase):
     id: int
 
     model_config = ConfigDict(from_attributes=True)

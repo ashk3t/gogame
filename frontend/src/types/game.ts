@@ -14,8 +14,8 @@ export enum PlayerStatus {
 }
 
 export enum GameMode {
-  CLASSIC = "Classic",
-  ATARI = "Atari",
+  CLASSIC = "CLASSIC",
+  ATARI = "ATARI",
 }
 
 export interface GameSettings {

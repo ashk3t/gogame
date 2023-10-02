@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
 from .config import settings
-from .database import SessionMaker
+from .database import SessionMaker, clear_tables
 from .router import routers
 from .dependencies import session
 
@@ -36,7 +36,6 @@ async def update_global_db_session(request: Request, call_next):
 
 @app.on_event("startup")
 async def startup_event():
-    from .database import clear_tables
     if settings.reset_db_tables:
         await clear_tables()
 
@@ -44,7 +43,7 @@ async def startup_event():
 @app.on_event("shutdown")
 async def shutdown_event():
     from .service.search import SearchService
-    global session
+
     session = SessionMaker()
     await SearchService.delete_all()
     await session.close()

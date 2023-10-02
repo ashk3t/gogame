@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..schemas.game import *
-from ..models import GameModel
+from ..models import GameModel, GameSettingsModel
 from .generic import generate_basic_service_methods
 
 
@@ -12,5 +12,5 @@ class GameService:
 
 class GameSettingsService:
     _get, get, get_all, create, _, delete = generate_basic_service_methods(
-        GameSettingsBase, GameSettingsResponse, GameSettingsCreate, None
+        GameSettingsModel, GameSettingsResponse, GameSettingsCreate, None
     )

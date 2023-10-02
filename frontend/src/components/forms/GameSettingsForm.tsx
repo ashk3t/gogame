@@ -1,4 +1,5 @@
 import {useActions, useAppSelector} from "../../hooks/redux"
+import {capitalize} from "lodash"
 import styles from "../../styles/base.module.css"
 import {GameMode} from "../../types/game"
 import IntegerInput from "../inputs/IntegerInput"
@@ -43,7 +44,7 @@ export default function GameSettingsForm() {
           className={styles.niceSelect}
         >
           {Object.values(GameMode).map((value) => (
-            <option key={value}>{value}</option>
+            <option key={value} value={value}>{capitalize(value)}</option>
           ))}
         </select>
       </div>

@@ -15,7 +15,7 @@ class SearchEntryBase(BaseSchema):
 
 class SearchEntryCreate(SearchEntryBase):
     player_id: int
-    game_settings: GameSettingsBase
+    game_settings_id: int
 
 
 class SearchEntryResponse(SearchEntryBase):

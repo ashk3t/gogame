@@ -23,14 +23,15 @@ async def get_games():
 
 
 @router.websocket("/search")
-async def search_game(websocket: WebSocket, gamedata: SearchEntryRequest):
+async def search_game(websocket: WebSocket):
     async with GameSearchManager(websocket) as manager:
+        gamedata = await manager.get_gamedata()
         game_settings = await GameSettingsService.create(GameSettingsCreate(**gamedata.model_dump()))
         current_player = await PlayerService.create(PlayerCreate(nickname=gamedata.nickname))
         manager.identify_connection(current_player.id)
 
-        new_search_entry = SearchEntryCreate(player_id=current_player.id, game_settings=game_settings)
-        paired_search_entry = await SearchService.find_paired(new_search_entry)
+        new_search_entry = SearchEntryCreate(player_id=current_player.id, game_settings_id=game_settings.id)
+        paired_search_entry = await SearchService.find_paired(game_settings)
 
         if paired_search_entry is not None:
             white_player = PlayerUpdate.model_validate(paired_search_entry.player)
@@ -44,4 +45,4 @@ async def search_game(websocket: WebSocket, gamedata: SearchEntryRequest):
             await manager.connect_players(white_player, black_player)
         else:
             await SearchService.create(new_search_entry)
-            await manager.websocket.receive_text()
+        await manager.wait()
