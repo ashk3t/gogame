@@ -101,15 +101,16 @@ class GameBoard {
     this.stones = Array.from(Array(xSize), () => new Array(ySize).fill(0))
     this.allGroups = []
     this.turnCounter = 0
-    this.#prevTurn = [[-1, -1], [-1, -1]]
+    this.#prevTurn = [
+      [-1, -1],
+      [-1, -1],
+    ]
   }
 
   toString() {
-    return this.stones.map(
-      column => column.map(
-        stone => stone?.toString ?? "0"
-      ).join("")
-    ).join("\n")
+    return this.stones
+      .map((column) => column.map((stone) => stone?.toString ?? "0").join(""))
+      .join("\n")
   }
 
   createGroup(color: StoneColor): Group {
@@ -120,7 +121,7 @@ class GameBoard {
 
   deleteGroup(group: Group) {
     group.clear()
-    this.allGroups.filter(el => el != group)
+    this.allGroups = this.allGroups.filter((el) => el != group)
   }
 
   mergeGroups(firstGroup: Group, secondGroup: Group) {
@@ -144,9 +145,31 @@ class GameBoard {
     return 0 <= x && x < this.xSize && 0 <= y && y < this.ySize
   }
 
-  getAdjacent(x: number, y: number): Record<[number, number], Stone | null> {}
+  getAdjacent(x: number, y: number): Record<string, Stone | null> {
+    const adjacent: Record<string, Stone | null> = {}
+    for (const [dx, dy] of [
+      [-1, 0],
+      [0, -1],
+      [1, 0],
+      [0, 1],
+    ]) {
+      if (this.isValid(x + dx, y + dy)) {
+        adjacent[joinXY(x + dx, y + dy)] = this.stones[x + dx][y + dy]
+      }
+    }
+    return adjacent
+  }
 
-  clearGroups() {}
+  clearGroups() {
+    this.stones.forEach((column) =>
+      column.forEach((stone) => {
+        if (stone) {
+          stone.group = Group.UNGROUPED
+        }
+      }),
+    )
+    this.allGroups = []
+  }
 
   estimateGroups() {}
 
