@@ -12,7 +12,6 @@
 
 .stone {
   position: absolute;
-  color: var(--pine);
   width: 70%;
   left: 0;
   right: 0;

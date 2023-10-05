@@ -259,6 +259,6 @@ class GameBoard:
                     zeros_combo = 0
                 else:
                     zeros_combo += 1
-        return f"{self.x_size};{self.y_size};" + rep
+        return f"{self.x_size};{self.y_size};{rep}"
 
     to_rep.__doc__ = from_rep.__doc__

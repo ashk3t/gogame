@@ -8,11 +8,12 @@ import {useNavigate} from "react-router-dom"
 
 export default function StartButton() {
   const navigate = useNavigate()
-  const {startOnlineGame} = useActions()
-  const isOffline = useAppSelector((state) => state.gameReducer.gameSettings.offline)
+  const {startOnlineGame, createBoard} = useActions()
+  const isOffline = useAppSelector((state) => state.gameReducer.settings.offline)
 
   function startGame() {
     if (isOffline) {
+      createBoard()
       navigate("/game")
     } else {
       startOnlineGame()

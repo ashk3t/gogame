@@ -1,5 +1,6 @@
 import {PayloadAction, createSlice} from "@reduxjs/toolkit"
 import {GameMode, GameSettings, GameState, Player, PlayerStatus} from "../types/game"
+import {GameBoard} from "../lib/gamelogic"
 
 const initialPlayer: Player = {
   id: null,
@@ -19,8 +20,8 @@ const initialGameSettings: GameSettings = {
 const initialState: GameState = {
   player: {...initialPlayer},
   opponents: [],
-  gameRep: "",
-  gameSettings: initialGameSettings,
+  settings: initialGameSettings,
+  rep: "",
 }
 
 export const gameSlice = createSlice({
@@ -30,11 +31,11 @@ export const gameSlice = createSlice({
     updateNickname(state, action: PayloadAction<string>) {
       state.player.nickname = action.payload
     },
-    updatePlayerStatus(state, action: PayloadAction<PlayerStatus>) {
-      state.player.status = action.payload
-    },
     updateGameSettings(state, action: PayloadAction<GameSettings>) {
-      state.gameSettings = action.payload
+      state.settings = action.payload
+    },
+    setRep(state, action: PayloadAction<string>) {
+      state.rep = action.payload
     },
   },
 })

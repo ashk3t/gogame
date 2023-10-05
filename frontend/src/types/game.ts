@@ -29,6 +29,6 @@ export interface GameSettings {
 export interface GameState {
   player: Player,
   opponents: Player[],
-  gameRep: string,
-  gameSettings: GameSettings
+  settings: GameSettings
+  rep: string,
 }

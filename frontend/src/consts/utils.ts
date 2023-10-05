@@ -19,6 +19,16 @@ export const colors = {
   highlightHighAlpha: "#6e6a8666",
 }
 
+export const stoneColors = [
+  "none",
+  colors.love,
+  colors.gold,
+  colors.rose,
+  colors.pine,
+  colors.foam,
+  colors.iris,
+]
+
 export const nicknameLabels: string[] = [
   // "Fighter",
   // "Warrior",

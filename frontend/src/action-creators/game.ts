@@ -13,7 +13,7 @@ export const fetchAllGames = () => async (dispatch: AppDispatch) => {
 
 export const startOnlineGame = () => async (dispatch: AppDispatch, getState: () => RootState) => {
   const nickname = getState().gameReducer.player.nickname
-  const settings = getState().gameReducer.gameSettings
+  const settings = getState().gameReducer.settings
   gameSlice.actions.updateNickname("")
   GameService.startSearch(nickname, settings)
 }

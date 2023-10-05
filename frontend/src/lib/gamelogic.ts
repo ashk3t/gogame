@@ -2,8 +2,8 @@ function joinXY(x: number, y: number): string {
   return `${x} ${y}`
 }
 
-function splitXY(dot: string): [number, number] {
-  const [x, y] = dot.split(" ").map((xory) => Number(xory))
+function splitXY(xy: string): [number, number] {
+  const [x, y] = xy.split(" ").map((xory) => Number(xory))
   return [x, y]
 }
 
@@ -74,7 +74,7 @@ class Group {
   }
 }
 
-class Stone {
+export class Stone {
   color: StoneColor
   group: Group
 
@@ -92,7 +92,7 @@ class Stone {
   }
 }
 
-class GameBoard {
+export class GameBoard {
   sides: Array<StoneColor>
   xSize: number
   ySize: number
@@ -105,7 +105,7 @@ class GameBoard {
     this.sides = [StoneColor.WHITE, StoneColor.BLACK]
     this.xSize = xSize
     this.ySize = ySize
-    this.stones = Array.from(Array(xSize), () => new Array(ySize).fill(0))
+    this.stones = Array.from(Array(xSize), () => new Array(ySize).fill(null))
     this.allGroups = []
     this.turnCounter = 0
     this.#prevTurn = ["", ""]
@@ -113,7 +113,7 @@ class GameBoard {
 
   toString() {
     return this.stones
-      .map((column) => column.map((stone) => stone?.toString ?? "0").join(""))
+      .map((column) => column.map((stone) => stone?.toString() ?? "0").join(""))
       .join("\n")
   }
 
@@ -176,9 +176,9 @@ class GameBoard {
           const xy = joinXY(x, y)
           const group = this.createGroup(stone.color)
           group.add(xy, stone)
-          let newMemberPositions = new Set(xy)
+          let newMemberPositions = new Set([xy])
 
-          while (newMemberPositions) {
+          while (newMemberPositions.size > 0) {
             const [nextMemberPosition] = newMemberPositions
             newMemberPositions.delete(nextMemberPosition)
             const adjacent = this.getAdjacent(...splitXY(nextMemberPosition))
@@ -284,6 +284,6 @@ class GameBoard {
           zerosCombo = 0
         } else zerosCombo++
       }
-    return ""
+    return `${this.xSize};${this.ySize};${rep}`
   }
 }

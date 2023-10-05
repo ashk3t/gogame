@@ -36,7 +36,6 @@ export class BoardIntersectionStyler {
   ySize: number
 
   constructor(xSize: number, ySize: number) {
-    console.log("NICE")
     this.xSize = xSize
     this.ySize = ySize
   }

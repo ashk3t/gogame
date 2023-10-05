@@ -1,8 +1,9 @@
 .defaultMargin *:not(div) {
-  margin: 12px
+  margin: 12px;
 }
 
-.centeringContainer, .vcenteringContainer {
+.centeringContainer,
+.vcenteringContainer {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -11,45 +12,52 @@
   flex-direction: column;
 }
 
-.niceButton, .niceInput, .niceSelect, .niceCheckbox::after {
+.niceButton,
+.niceInput,
+.niceSelect,
+.niceCheckbox::after {
   transition: 0.2s all;
 }
 
 .niceButton {
-  border: 4px solid var(--foam);
+  border: 4px solid var(--gold);
   padding: 10px 20px;
 }
 .niceButton:hover {
   background-color: var(--highlight-low);
-  color: var(--love);
+  color: var(--gold);
 }
 
-.niceInput, .niceSelect {
+.niceInput,
+.niceSelect {
   padding: 10px;
   background-color: var(--overlay);
 }
 
-.niceInput:focus, .niceInput:hover {
-  color: var(--love);
+.niceInput:focus,
+.niceInput:hover,
+.niceSelect:hover {
+  color: var(--iris);
 }
 
 .niceSelect {
-  border: 4px solid var(--iris);
-}
-.niceSelect:hover {
-  color: var(--love);
+  border: 4px solid var(--foam);
 }
 .niceSelect > option {
   color: var(--text);
+}
+.niceSelect:hover {
+  border: 4px solid var(--iris);
 }
 
 .niceCheckbox {
   visibility: hidden;
 }
-.niceCheckbox, .niceCheckbox::after {
+.niceCheckbox,
+.niceCheckbox::after {
   aspect-ratio: 1 / 1;
   width: 1em;
-  outline: 4px solid var(--iris);
+  outline: 4px solid var(--foam);
 }
 .niceCheckbox::after {
   visibility: visible;
@@ -59,11 +67,10 @@
 }
 .niceCheckbox:checked::after {
   background-color: var(--text);
-  box-shadow:
-    inset 0 0 0 4px var(--overlay);
+  box-shadow: inset 0 0 0 4px var(--overlay);
 }
 .niceCheckbox:hover::after {
-  outline: 4px solid var(--love);
+  outline: 4px solid var(--iris);
 }
 
 .linkLike {

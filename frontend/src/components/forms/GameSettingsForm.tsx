@@ -5,10 +5,8 @@ import {GameMode} from "../../types/game"
 import IntegerInput from "../inputs/IntegerInput"
 
 export default function GameSettingsForm() {
-  const settings = useAppSelector((state) => state.gameReducer.gameSettings)
+  const settings = useAppSelector((state) => state.gameReducer.settings)
   const {updateGameSettings} = useActions()
-
-  console.log(settings)
 
   return (
     <div className={styles.vcenteringContainer}>
