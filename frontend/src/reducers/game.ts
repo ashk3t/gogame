@@ -10,8 +10,8 @@ const initialPlayer: Player = {
 }
 
 const initialGameSettings: GameSettings = {
-  xSize: 19,
-  ySize: 19,
+  height: 19,
+  width: 19,
   players: 2,
   mode: GameMode.CLASSIC,
   offline: false,

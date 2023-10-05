@@ -15,14 +15,14 @@ export default function GameSettingsForm() {
       <div className={styles.centeringContainer}>
         <h5>Width:</h5>
         <IntegerInput
-          value={settings.xSize}
-          setValue={(value: number) => updateGameSettings({...settings, xSize: value})}
+          value={settings.height}
+          setValue={(value: number) => updateGameSettings({...settings, height: value})}
           limits={{min: 5, max: 25}}
         />
         <h5>Height:</h5>
         <IntegerInput
-          value={settings.ySize}
-          setValue={(value: number) => updateGameSettings({...settings, ySize: value})}
+          value={settings.width}
+          setValue={(value: number) => updateGameSettings({...settings, width: value})}
           limits={{min: 5, max: 25}}
         />
       </div>

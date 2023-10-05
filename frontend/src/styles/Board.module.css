@@ -1,7 +1,6 @@
 .board {
   position: relative;
   display: grid;
-  grid-auto-flow: column;
 }
 
 .intersection {

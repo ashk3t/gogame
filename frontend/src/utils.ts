@@ -32,31 +32,32 @@ export function startsWithVowel(word: string): boolean {
 }
 
 export class BoardIntersectionStyler {
-  xSize: number
-  ySize: number
+  height: number
+  width: number
 
-  constructor(xSize: number, ySize: number) {
-    this.xSize = xSize
-    this.ySize = ySize
+  constructor(height: number, width: number) {
+    this.height = height
+    this.width = width
   }
 
-  getBackground(x: number, y: number) {
+  getBackground(i: number, j: number) {
     const fg = "var(--text)"
     const bg = "var(--base)"
     const w = 3
-    let hColors = `${fg}, ${fg}`
-    let vColors = `${fg}, ${fg}`
 
-    if (x == 0) {
-      hColors = `${bg} ${50 - w}%, ${fg} ${50 - w}%`
-    } else if (x + 1 == this.xSize) {
-      hColors = `${fg} ${50 + w}%, ${bg} ${50 + w}%`
-    }
-    if (y == 0) {
-      vColors = `${bg} ${50 - w}%, ${fg} ${50 - w}%`
-    } else if (y + 1 == this.ySize) {
-      vColors = `${fg} ${50 + w}%, ${bg} ${50 + w}%`
-    }
+    const vColors =
+      i == 0
+        ? `${bg} ${50 - w}%, ${fg} ${50 - w}%`
+        : i + 1 == this.height
+        ? `${fg} ${50 + w}%, ${bg} ${50 + w}%`
+        : `${fg}, ${fg}`
+
+    const hColors =
+      j == 0
+        ? `${bg} ${50 - w}%, ${fg} ${50 - w}%`
+        : j + 1 == this.width
+        ? `${fg} ${50 + w}%, ${bg} ${50 + w}%`
+        : `${fg}, ${fg}`
 
     return {
       background: `

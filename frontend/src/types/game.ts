@@ -19,8 +19,8 @@ export enum GameMode {
 }
 
 export interface GameSettings {
-  xSize: number;
-  ySize: number;
+  height: number;
+  width: number;
   players: number;
   mode: GameMode;
   offline: boolean;
