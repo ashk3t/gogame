@@ -24,10 +24,6 @@ class Group:
         self.liberties: set[tuple[int, int]] = set()
 
     @property
-    def member_groups(self) -> set[Group]:
-        return {stone.group for stone in self.member_stones.values()}
-
-    @property
     def frontier_groups(self) -> set[Group]:
         return {stone.group for stone in self.frontier_stones.values()}
 
@@ -35,7 +31,8 @@ class Group:
         if stone:
             if stone.color == self.color:
                 self.member_stones[(i, j)] = stone
-                stone.group = self
+                if stone.group is Group.UNGROUPED:
+                    stone.group = self
             else:
                 self.frontier_stones[(i, j)] = stone
         else:
@@ -56,6 +53,7 @@ class Group:
         self.liberties.update(group.liberties)
         for stone in group.member_stones.values():
             stone.group = self
+        group.clear()
 
     def free(self, i: int, j: int):
         if (i, j) in self.frontier_stones:
@@ -107,7 +105,7 @@ class GameBoard:
 
     def merge_groups(self, first_group: Group, second_group: Group):
         first_group.merge(second_group)
-        self.delete_group(second_group)
+        self.all_groups.remove(second_group)
 
     @property
     def turn_color(self) -> StoneColor:
@@ -183,15 +181,18 @@ class GameBoard:
 
         group = self.create_group(stone.color)
         group.update(self.get_adjacent(i, j))
-        ally_groups = group.member_groups
+        ally_groups = {s.group for s in group.member_stones.values()}
         opponent_groups = group.frontier_groups
         group.add(i, j, stone)
 
         # Check suicide
         if (
             all(len(g.liberties) > 1 for g in opponent_groups)
+            and all(len(g.liberties) == 1 for g in ally_groups)
             and len(group.liberties) == 0
         ):
+            self.stones[i][j] = None
+            self.delete_group(group)
             raise InvalidTurnException("Suicide")
 
         # Merge ally groups

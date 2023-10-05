@@ -32,10 +32,6 @@ class Group {
     this.color = color
   }
 
-  get memberGroups() {
-    return new Set(Object.values(this.memberStones).map((stone) => stone.group))
-  }
-
   get frontierGroups() {
     return new Set(Object.values(this.frontierStones).map((stone) => stone.group))
   }
@@ -43,9 +39,9 @@ class Group {
   add(ij: string, stone: Stone | null) {
     if (stone) {
       if (stone.color == this.color) {
-        this.memberStones[ij]
-        stone.group = this
-      } else this.frontierStones[ij]
+        this.memberStones[ij] = stone
+        if (stone.group == Group.UNGROUPED) stone.group = this
+      } else this.frontierStones[ij] = stone
     } else this.liberties.add(ij)
   }
 
@@ -62,8 +58,9 @@ class Group {
   merge(group: Group) {
     this.memberStones = {...this.memberStones, ...group.memberStones}
     this.frontierStones = {...this.frontierStones, ...group.frontierStones}
-    this.liberties = new Set(...this.liberties, ...group.liberties)
+    this.liberties = new Set([...this.liberties, ...group.liberties])
     for (const stone of Object.values(group.memberStones)) stone.group = this
+    group.clear()
   }
 
   free(ij: string) {
@@ -130,7 +127,7 @@ export class GameBoard {
 
   mergeGroups(firstGroup: Group, secondGroup: Group) {
     firstGroup.merge(secondGroup)
-    this.deleteGroup(secondGroup)
+    this.allGroups = this.allGroups.filter((el) => el != secondGroup)
   }
 
   get turnColor(): StoneColor {
@@ -182,12 +179,12 @@ export class GameBoard {
             const [nextMemberPosition] = newMemberPositions
             newMemberPositions.delete(nextMemberPosition)
             const adjacent = this.getAdjacent(...splitIJ(nextMemberPosition))
-            newMemberPositions = new Set(
+            newMemberPositions = new Set([
               ...newMemberPositions,
-              Object.entries(adjacent).flatMap(([ij, stone]) =>
+              ...Object.entries(adjacent).flatMap(([ij, stone]) =>
                 stone && stone.color == group.color && !(ij in group.memberStones) ? [ij] : [],
               ),
-            )
+            ])
             group.update(adjacent)
           }
         }
@@ -217,16 +214,20 @@ export class GameBoard {
 
     const group = this.createGroup(stone.color)
     group.update(this.getAdjacent(i, j))
-    const allyGroups = group.memberGroups
+    const allyGroups = new Set(Object.values(group.memberStones).map((s) => s.group))
     const opponentGroups = group.frontierGroups
     group.add(ij, stone)
 
     // Check suicide
     if (
-      Object.values(opponentGroups).every((g: Group) => g.liberties.size > 1) &&
+      Array.from(opponentGroups).every((g: Group) => g.liberties.size > 1) &&
+      Array.from(allyGroups).every((g: Group) => g.liberties.size == 1) &&
       group.liberties.size == 0
-    )
+    ) {
+      this.stones[i][j] = null
+      this.deleteGroup(group)
       throw new InvalidTurnError("Suicide")
+    }
 
     // Merge ally groups
     for (const allyGroup of allyGroups) this.mergeGroups(group, allyGroup)
