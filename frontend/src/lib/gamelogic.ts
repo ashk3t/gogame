@@ -14,10 +14,14 @@ class InvalidTurnError extends Error {
   }
 }
 
-enum StoneColor {
+export enum StoneColor {
   NONE = 0,
-  WHITE = 1,
-  BLACK = 2,
+  RED = 1,
+  YELLOW = 2,
+  PEACH = 3,
+  GREEN = 4,
+  CYAN = 5,
+  PURPLE = 6,
 }
 
 class Group {
@@ -90,22 +94,24 @@ export class Stone {
 }
 
 export class GameBoard {
-  sides: Array<StoneColor>
   height: number
   width: number
+  players: number
   stones: Array<Array<Stone | null>>
   allGroups: Array<Group>
   turnCounter: number
+  scores: Array<number>
   #prevTurn: Array<string>
 
-  constructor(height: number = 19, width: number = 19) {
-    this.sides = [StoneColor.WHITE, StoneColor.BLACK]
+  constructor(height: number = 19, width: number = 19, players: number = 2) {
     this.height = height
     this.width = width
+    this.players = players
     this.stones = Array.from(Array(height), () => new Array(width).fill(null))
     this.allGroups = []
     this.turnCounter = 0
-    this.#prevTurn = ["", ""]
+    this.scores = new Array(players).fill(0)
+    this.#prevTurn = new Array(players).fill("")
   }
 
   toString() {
@@ -131,15 +137,19 @@ export class GameBoard {
   }
 
   get turnColor(): StoneColor {
-    return this.sides[this.turnCounter % this.sides.length]
+    return ((this.turnCounter % this.players) + 1) as StoneColor
   }
 
   get prevTurn(): string {
-    return this.#prevTurn[this.turnCounter % this.sides.length]
+    return this.#prevTurn[this.turnCounter % this.players]
   }
 
   set prevTurn(ij: string) {
-    this.#prevTurn[this.turnCounter % this.sides.length] = ij
+    this.#prevTurn[this.turnCounter % this.players] = ij
+  }
+
+  incrementScore(color: StoneColor, value: number = 1) {
+    this.scores[(color as number) - 1] += value
   }
 
   isValid(i: number, j: number) {
@@ -200,6 +210,7 @@ export class GameBoard {
     for (const frontierGroup of group.frontierGroups)
       for (const memberIJ of Object.keys(group.memberStones)) frontierGroup.free(memberIJ)
 
+    this.incrementScore(group.color, -Object.keys(group.memberStones).length)
     this.deleteGroup(group)
   }
 
@@ -242,6 +253,7 @@ export class GameBoard {
 
     this.prevTurn = ij
     this.turnCounter++
+    this.incrementScore(stone.color)
   }
 
   static fromRep(rep: string): GameBoard {
@@ -259,9 +271,9 @@ export class GameBoard {
         leftParenthesisIdx = idx
       } else if (leftParenthesisIdx == null) {
         if (char != "0") {
-          board.stones[Math.floor(pos / width)][pos % width] = new Stone(
-            parseInt(char) as StoneColor,
-          )
+          const color = parseInt(char) as StoneColor
+          board.stones[Math.floor(pos / width)][pos % width] = new Stone(color)
+          board.incrementScore(color)
         }
         pos++
       } else if (char == ")") {

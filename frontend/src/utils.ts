@@ -1,5 +1,6 @@
 import {capitalize} from "lodash"
-import {nicknameLabels} from "./consts/utils"
+import {nicknameLabels, stoneColors} from "./consts/utils"
+import {GameBoard} from "./lib/gamelogic"
 
 export function loadScript(src: string) {
   return new Promise<void>((resolve, reject) => {
@@ -66,4 +67,8 @@ export class BoardIntersectionStyler {
       `,
     }
   }
+}
+
+export function getTurnHexColor(board: GameBoard): string {
+  return stoneColors[(board.turnCounter % board.players) + 1]
 }

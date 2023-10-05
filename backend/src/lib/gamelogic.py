@@ -10,8 +10,12 @@ class InvalidTurnException(Exception):
 
 class StoneColor(int, Enum):
     NONE = 0
-    WHITE = 1
-    BLACK = 2
+    RED = 1
+    YELLOW = 2
+    PEACH = 3
+    GREEN = 4
+    CYAN = 5
+    PURPLE = 6
 
 
 class Group:
@@ -77,16 +81,17 @@ class Stone:
 
 
 class GameBoard:
-    def __init__(self, height: int = 19, width: int = 19):
-        self.sides = [StoneColor.WHITE, StoneColor.BLACK]
+    def __init__(self, height: int = 19, width: int = 19, players: int = 2):
         self.height = height
         self.width = width
+        self.players = players
         self.stones: list[list[Stone | None]] = [
             [None for _ in range(width)] for _ in range(height)
         ]
         self.all_groups: list[Group] = []
         self.turn_counter = 0
-        self.__prev_turn: list[tuple[int, int]] = [(-1, -1)] * 2
+        self.scores: list[int] = [0] * players
+        self.__prev_turn: list[tuple[int, int]] = [(-1, -1)] * players
 
     def __str__(self):
         return "\n".join(
@@ -109,15 +114,18 @@ class GameBoard:
 
     @property
     def turn_color(self) -> StoneColor:
-        return self.sides[self.turn_counter % len(self.sides)]
+        return StoneColor(self.turn_counter % self.players + 1)
 
     @property
     def prev_turn(self) -> tuple[int, int]:
-        return self.__prev_turn[self.turn_counter % len(self.sides)]
+        return self.__prev_turn[self.turn_counter % self.players]
 
     @prev_turn.setter
     def prev_turn(self, point: tuple[int, int]):
-        self.__prev_turn[self.turn_counter % len(self.sides)] = point
+        self.__prev_turn[self.turn_counter % self.players] = point
+
+    def increment_score(self, color: StoneColor, value: int = 1):
+        self.scores[int(color) - 1] += value
 
     def is_valid(self, i: int, j: int):
         return 0 <= i < self.height and 0 <= j < self.width
@@ -166,6 +174,7 @@ class GameBoard:
             for member_i, member_j in group.member_stones.keys():
                 frontier_group.free(member_i, member_j)
 
+        self.increment_score(group.color, -len(group.member_stones))
         self.delete_group(group)
 
     def take_turn(self, i: int, j: int):
@@ -210,6 +219,7 @@ class GameBoard:
 
         self.prev_turn = (i, j)
         self.turn_counter += 1
+        self.increment_score(stone.color)
 
     @staticmethod
     def from_rep(rep: str) -> GameBoard:
@@ -233,9 +243,9 @@ class GameBoard:
                 left_parenthesis_idx = idx
             elif left_parenthesis_idx is None:
                 if char != "0":
-                    board.stones[pos // width][pos % width] = Stone(
-                        StoneColor(int(char))
-                    )
+                    color = StoneColor(int(char))
+                    board.stones[pos // width][pos % width] = Stone(color)
+                    board.increment_score(color)
                 pos += 1
             elif char == ")":
                 pos += int(board_rep[(left_parenthesis_idx + 1) : idx])
