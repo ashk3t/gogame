@@ -1,10 +1,10 @@
-function joinXY(x: number, y: number): string {
-  return `${x} ${y}`
+function joinIJ(i: number, j: number): string {
+  return `${i} ${j}`
 }
 
-function splitXY(xy: string): [number, number] {
-  const [x, y] = xy.split(" ").map((xory) => Number(xory))
-  return [x, y]
+function splitIJ(ij: string): [number, number] {
+  const [i, j] = ij.split(" ").map((xory) => Number(xory))
+  return [i, j]
 }
 
 class InvalidTurnError extends Error {
@@ -40,17 +40,17 @@ class Group {
     return new Set(Object.values(this.frontierStones).map((stone) => stone.group))
   }
 
-  add(xy: string, stone: Stone | null) {
+  add(ij: string, stone: Stone | null) {
     if (stone) {
       if (stone.color == this.color) {
-        this.memberStones[xy]
+        this.memberStones[ij]
         stone.group = this
-      } else this.frontierStones[xy]
-    } else this.liberties.add(xy)
+      } else this.frontierStones[ij]
+    } else this.liberties.add(ij)
   }
 
   update(stones: Record<string, Stone | null>) {
-    for (const [xy, stone] of Object.entries(stones)) this.add(xy, stone)
+    for (const [ij, stone] of Object.entries(stones)) this.add(ij, stone)
   }
 
   clear() {
@@ -66,10 +66,10 @@ class Group {
     for (const stone of Object.values(group.memberStones)) stone.group = this
   }
 
-  free(xy: string) {
-    if (xy in this.frontierStones) {
-      delete this.frontierStones[xy]
-      this.liberties.add(xy)
+  free(ij: string) {
+    if (ij in this.frontierStones) {
+      delete this.frontierStones[ij]
+      this.liberties.add(ij)
     }
   }
 }
@@ -94,18 +94,18 @@ export class Stone {
 
 export class GameBoard {
   sides: Array<StoneColor>
-  xSize: number
-  ySize: number
+  height: number
+  width: number
   stones: Array<Array<Stone | null>>
   allGroups: Array<Group>
   turnCounter: number
   #prevTurn: Array<string>
 
-  constructor(xSize: number = 19, ySize: number = 19) {
+  constructor(height: number = 19, width: number = 19) {
     this.sides = [StoneColor.WHITE, StoneColor.BLACK]
-    this.xSize = xSize
-    this.ySize = ySize
-    this.stones = Array.from(Array(xSize), () => new Array(ySize).fill(null))
+    this.height = height
+    this.width = width
+    this.stones = Array.from(Array(height), () => new Array(width).fill(null))
     this.allGroups = []
     this.turnCounter = 0
     this.#prevTurn = ["", ""]
@@ -113,7 +113,7 @@ export class GameBoard {
 
   toString() {
     return this.stones
-      .map((column) => column.map((stone) => stone?.toString() ?? "0").join(""))
+      .map((row) => row.map((stone) => stone?.toString() ?? "0").join(""))
       .join("\n")
   }
 
@@ -141,24 +141,24 @@ export class GameBoard {
     return this.#prevTurn[this.turnCounter % this.sides.length]
   }
 
-  set prevTurn(xy: string) {
-    this.#prevTurn[this.turnCounter % this.sides.length] = xy
+  set prevTurn(ij: string) {
+    this.#prevTurn[this.turnCounter % this.sides.length] = ij
   }
 
-  isValid(x: number, y: number) {
-    return 0 <= x && x < this.xSize && 0 <= y && y < this.ySize
+  isValid(i: number, j: number) {
+    return 0 <= i && i < this.height && 0 <= j && j < this.width
   }
 
-  getAdjacent(x: number, y: number): Record<string, Stone | null> {
+  getAdjacent(i: number, j: number): Record<string, Stone | null> {
     const adjacent: Record<string, Stone | null> = {}
-    for (const [dx, dy] of [
+    for (const [di, dj] of [
       [-1, 0],
       [0, -1],
       [1, 0],
       [0, 1],
     ])
-      if (this.isValid(x + dx, y + dy))
-        adjacent[joinXY(x + dx, y + dy)] = this.stones[x + dx][y + dy]
+      if (this.isValid(i + di, j + dj))
+        adjacent[joinIJ(i + di, j + dj)] = this.stones[i + di][j + dj]
     return adjacent
   }
 
@@ -170,22 +170,22 @@ export class GameBoard {
 
   estimateGroups() {
     this.clearGroups()
-    for (const [x, column] of this.stones.entries())
-      for (const [y, stone] of column.entries())
+    for (const [i, row] of this.stones.entries())
+      for (const [j, stone] of row.entries())
         if (stone && stone.group == Group.UNGROUPED) {
-          const xy = joinXY(x, y)
+          const ij = joinIJ(i, j)
           const group = this.createGroup(stone.color)
-          group.add(xy, stone)
-          let newMemberPositions = new Set([xy])
+          group.add(ij, stone)
+          let newMemberPositions = new Set([ij])
 
           while (newMemberPositions.size > 0) {
             const [nextMemberPosition] = newMemberPositions
             newMemberPositions.delete(nextMemberPosition)
-            const adjacent = this.getAdjacent(...splitXY(nextMemberPosition))
+            const adjacent = this.getAdjacent(...splitIJ(nextMemberPosition))
             newMemberPositions = new Set(
               ...newMemberPositions,
-              Object.entries(adjacent).flatMap(([xy, stone]) =>
-                stone && stone.color == group.color && !(xy in group.memberStones) ? [xy] : [],
+              Object.entries(adjacent).flatMap(([ij, stone]) =>
+                stone && stone.color == group.color && !(ij in group.memberStones) ? [ij] : [],
               ),
             )
             group.update(adjacent)
@@ -194,32 +194,32 @@ export class GameBoard {
   }
 
   kill(group: Group) {
-    for (const xy of Object.keys(group.memberStones)) {
-      const [x, y] = splitXY(xy)
-      this.stones[x][y] = null
+    for (const ij of Object.keys(group.memberStones)) {
+      const [i, j] = splitIJ(ij)
+      this.stones[i][j] = null
     }
 
     // Loose frontier groups
     for (const frontierGroup of group.frontierGroups)
-      for (const memberXY of Object.keys(group.memberStones)) frontierGroup.free(memberXY)
+      for (const memberIJ of Object.keys(group.memberStones)) frontierGroup.free(memberIJ)
 
     this.deleteGroup(group)
   }
 
-  takeTurn(x: number, y: number) {
-    const xy = joinXY(x, y)
-    if (!this.isValid(x, y)) throw new InvalidTurnError("Invalid (X, Y)")
-    if (this.stones[x][y]) throw new InvalidTurnError("Point is already occupied")
-    if (this.prevTurn == xy) throw new InvalidTurnError("Ko rule")
+  takeTurn(i: number, j: number) {
+    const ij = joinIJ(i, j)
+    if (!this.isValid(i, j)) throw new InvalidTurnError("Invalid (X, Y)")
+    if (this.stones[i][j]) throw new InvalidTurnError("Point is already occupied")
+    if (this.prevTurn == ij) throw new InvalidTurnError("Ko rule")
 
     const stone = new Stone(this.turnColor)
-    this.stones[x][y] = stone
+    this.stones[i][j] = stone
 
     const group = this.createGroup(stone.color)
-    group.update(this.getAdjacent(x, y))
+    group.update(this.getAdjacent(i, j))
     const allyGroups = group.memberGroups
     const opponentGroups = group.frontierGroups
-    group.add(xy, stone)
+    group.add(ij, stone)
 
     // Check suicide
     if (
@@ -230,41 +230,41 @@ export class GameBoard {
 
     // Merge ally groups
     for (const allyGroup of allyGroups) this.mergeGroups(group, allyGroup)
-    if (allyGroups.size > 0) group.liberties.delete(xy)
+    if (allyGroups.size > 0) group.liberties.delete(ij)
 
     // Update opponent liberties
     for (const opponentGroup of opponentGroups) {
-      opponentGroup.liberties.delete(xy)
-      opponentGroup.frontierStones[xy] = stone
+      opponentGroup.liberties.delete(ij)
+      opponentGroup.frontierStones[ij] = stone
       if (opponentGroup.liberties.size == 0) this.kill(opponentGroup)
     }
 
-    this.prevTurn = xy
+    this.prevTurn = ij
     this.turnCounter++
   }
 
   static fromRep(rep: string): GameBoard {
     const repSplit = rep.split(";")
-    const xSize = parseInt(repSplit[0])
-    const ySize = parseInt(repSplit[1])
+    const height = parseInt(repSplit[0])
+    const width = parseInt(repSplit[1])
     const boardRep = repSplit[2]
-    const board = new GameBoard(xSize, ySize)
+    const board = new GameBoard(height, width)
 
     let pos = 0
     let leftParenthesisIdx: number | null = null
-    for (let i = 0; i < boardRep.length; i++) {
-      const char = boardRep[i]
+    for (let idx = 0; idx < boardRep.length; idx++) {
+      const char = boardRep[idx]
       if (char == "(") {
-        leftParenthesisIdx = i
+        leftParenthesisIdx = idx
       } else if (leftParenthesisIdx == null) {
         if (char != "0") {
-          board.stones[pos % xSize][Math.floor(pos / xSize)] = new Stone(
+          board.stones[Math.floor(pos / width)][pos % width] = new Stone(
             parseInt(char) as StoneColor,
           )
         }
         pos++
       } else if (char == ")") {
-        pos += parseInt(boardRep.substring(leftParenthesisIdx + 1, i))
+        pos += parseInt(boardRep.substring(leftParenthesisIdx + 1, idx))
         leftParenthesisIdx = null
       }
     }
@@ -276,14 +276,13 @@ export class GameBoard {
   toRep(): string {
     let rep = ""
     let zerosCombo = 0
-    for (let y = 0; y < this.ySize; y++)
-      for (let x = 0; x < this.xSize; x++) {
-        const stone = this.stones[x][y]
+    for (const row of this.stones)
+      for (const stone of row) {
         if (stone) {
           rep += (zerosCombo > 3 ? `(${zerosCombo})` : "0".repeat(zerosCombo)) + stone.toString()
           zerosCombo = 0
         } else zerosCombo++
       }
-    return `${this.xSize};${this.ySize};${rep}`
+    return `${this.height};${this.width};${rep}`
   }
 }

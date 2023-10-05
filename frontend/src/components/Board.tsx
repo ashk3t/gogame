@@ -32,7 +32,7 @@ export default function Board() {
     <div
       className={styles.board}
       style={{
-        gridTemplateRows: `repeat(${board.ySize}, 1fr)`,
+        gridTemplateRows: `repeat(${board.width}, 1fr)`,
       }}
     >
       {stones.map((column: Array<Stone | null>, x: number) =>

@@ -31,19 +31,19 @@ class Group:
     def frontier_groups(self) -> set[Group]:
         return {stone.group for stone in self.frontier_stones.values()}
 
-    def add(self, x: int, y: int, stone: Stone | None):
+    def add(self, i: int, j: int, stone: Stone | None):
         if stone:
             if stone.color == self.color:
-                self.member_stones[(x, y)] = stone
+                self.member_stones[(i, j)] = stone
                 stone.group = self
             else:
-                self.frontier_stones[(x, y)] = stone
+                self.frontier_stones[(i, j)] = stone
         else:
-            self.liberties.add((x, y))
+            self.liberties.add((i, j))
 
     def update(self, stones: dict[tuple[int, int], Stone | None]):
-        for (x, y), stone in stones.items():
-            self.add(x, y, stone)
+        for (i, j), stone in stones.items():
+            self.add(i, j, stone)
 
     def clear(self):
         self.member_stones.clear()
@@ -57,10 +57,10 @@ class Group:
         for stone in group.member_stones.values():
             stone.group = self
 
-    def free(self, x: int, y: int):
-        if (x, y) in self.frontier_stones:
-            self.frontier_stones.pop((x, y))
-            self.liberties.add((x, y))
+    def free(self, i: int, j: int):
+        if (i, j) in self.frontier_stones:
+            self.frontier_stones.pop((i, j))
+            self.liberties.add((i, j))
 
 
 Group.UNGROUPED = Group(StoneColor.NONE)
@@ -79,12 +79,12 @@ class Stone:
 
 
 class GameBoard:
-    def __init__(self, x_size: int = 19, y_size: int = 19):
+    def __init__(self, height: int = 19, width: int = 19):
         self.sides = [StoneColor.WHITE, StoneColor.BLACK]
-        self.x_size = x_size
-        self.y_size = y_size
+        self.height = height
+        self.width = width
         self.stones: list[list[Stone | None]] = [
-            [None for _ in range(y_size)] for _ in range(x_size)
+            [None for _ in range(width)] for _ in range(height)
         ]
         self.all_groups: list[Group] = []
         self.turn_counter = 0
@@ -92,11 +92,8 @@ class GameBoard:
 
     def __str__(self):
         return "\n".join(
-            "".join(
-                str(stone) if (stone := self.stones[x][y]) else "0"
-                for x in range(self.x_size)
-            )
-            for y in range(self.y_size)
+            "".join(str(stone) if stone else "0" for stone in row)
+            for row in self.stones
         )
 
     def create_group(self, color: StoneColor) -> Group:
@@ -121,17 +118,17 @@ class GameBoard:
         return self.__prev_turn[self.turn_counter % len(self.sides)]
 
     @prev_turn.setter
-    def prev_turn(self, position: tuple[int, int]):
-        self.__prev_turn[self.turn_counter % len(self.sides)] = position
+    def prev_turn(self, point: tuple[int, int]):
+        self.__prev_turn[self.turn_counter % len(self.sides)] = point
 
-    def is_valid(self, x: int, y: int):
-        return 0 <= x < self.x_size and 0 <= y < self.y_size
+    def is_valid(self, i: int, j: int):
+        return 0 <= i < self.height and 0 <= j < self.width
 
-    def get_adjacent(self, x: int, y: int) -> dict[tuple[int, int], Stone | None]:
+    def get_adjacent(self, i: int, j: int) -> dict[tuple[int, int], Stone | None]:
         return {
-            (x + dx, y + dy): self.stones[x + dx][y + dy]
-            for dx, dy in ((-1, 0), (0, -1), (1, 0), (0, 1))
-            if self.is_valid(x + dx, y + dy)
+            (i + di, j + dj): self.stones[i + di][j + dj]
+            for di, dj in ((-1, 0), (0, -1), (1, 0), (0, 1))
+            if self.is_valid(i + di, j + dj)
         }
 
     def clear_groups(self):
@@ -143,52 +140,52 @@ class GameBoard:
 
     def estimate_groups(self):
         self.clear_groups()
-        for x, column in enumerate(self.stones):
-            for y, stone in enumerate(column):
+        for i, row in enumerate(self.stones):
+            for j, stone in enumerate(row):
                 if stone and stone.group is Group.UNGROUPED:
                     group = self.create_group(stone.color)
-                    group.add(x, y, stone)
-                    new_member_positions = {(x, y)}
+                    group.add(i, j, stone)
+                    new_member_positions = {(i, j)}
 
                     while new_member_positions:
                         next_member_position = new_member_positions.pop()
                         adjacent = self.get_adjacent(*next_member_position)
                         new_member_positions.update(
-                            (x, y)
-                            for (x, y), stone in adjacent.items()
+                            (i, j)
+                            for (i, j), stone in adjacent.items()
                             if stone
                             and stone.color == group.color
-                            and (x, y) not in group.member_stones
+                            and (i, j) not in group.member_stones
                         )
                         group.update(adjacent)
 
     def kill(self, group: Group):
-        for x, y in group.member_stones.keys():
-            self.stones[x][y] = None
+        for i, j in group.member_stones.keys():
+            self.stones[i][j] = None
 
         # Loose frontier groups
         for frontier_group in group.frontier_groups:
-            for member_x, member_y in group.member_stones.keys():
-                frontier_group.free(member_x, member_y)
+            for member_i, member_j in group.member_stones.keys():
+                frontier_group.free(member_i, member_j)
 
         self.delete_group(group)
 
-    def take_turn(self, x: int, y: int):
-        if not self.is_valid(x, y):
-            raise InvalidTurnException("Invalid (X, Y)")
-        if self.stones[x][y]:
+    def take_turn(self, i: int, j: int):
+        if not self.is_valid(i, j):
+            raise InvalidTurnException("Invalid (I, J)")
+        if self.stones[i][j]:
             raise InvalidTurnException("Point is already occupied")
-        if self.prev_turn == (x, y):
+        if self.prev_turn == (i, j):
             raise InvalidTurnException("Ko rule")
 
         stone = Stone(self.turn_color)
-        self.stones[x][y] = stone
+        self.stones[i][j] = stone
 
         group = self.create_group(stone.color)
-        group.update(self.get_adjacent(x, y))
+        group.update(self.get_adjacent(i, j))
         ally_groups = group.member_groups
         opponent_groups = group.frontier_groups
-        group.add(x, y, stone)
+        group.add(i, j, stone)
 
         # Check suicide
         if (
@@ -201,22 +198,22 @@ class GameBoard:
         for ally_group in ally_groups:
             self.merge_groups(group, ally_group)
         if ally_groups:
-            group.liberties.remove((x, y))
+            group.liberties.remove((i, j))
 
         # Update opponent liberties
         for opponent_group in opponent_groups:
-            opponent_group.liberties.remove((x, y))
-            opponent_group.frontier_stones[(x, y)] = stone
+            opponent_group.liberties.remove((i, j))
+            opponent_group.frontier_stones[(i, j)] = stone
             if len(opponent_group.liberties) == 0:
                 self.kill(opponent_group)
 
-        self.prev_turn = (x, y)
+        self.prev_turn = (i, j)
         self.turn_counter += 1
 
     @staticmethod
     def from_rep(rep: str) -> GameBoard:
         """Format:
-        x_size;y_size;<board_rep>
+        height;width;<board_rep>
 
         Where <board_rep> is the sequence of numbers,
         which represents the color of stone on a specific point
@@ -224,23 +221,23 @@ class GameBoard:
         OR length of sequence of vacant points if in ().
         Last vacant points can be skipped"""
 
-        x_size, y_size, board_rep = rep.split(";")
-        x_size, y_size = int(x_size), int(y_size)
-        board = GameBoard(x_size, y_size)
+        height, width, board_rep = rep.split(";")
+        height, width = int(height), int(width)
+        board = GameBoard(height, width)
 
         pos = 0
         left_parenthesis_idx: int | None = None
-        for i, char in enumerate(board_rep):
+        for idx, char in enumerate(board_rep):
             if char == "(":
-                left_parenthesis_idx = i
+                left_parenthesis_idx = idx
             elif left_parenthesis_idx is None:
                 if char != "0":
-                    board.stones[pos % x_size][pos // x_size] = Stone(
+                    board.stones[pos // width][pos % width] = Stone(
                         StoneColor(int(char))
                     )
                 pos += 1
             elif char == ")":
-                pos += int(board_rep[(left_parenthesis_idx + 1) : i])
+                pos += int(board_rep[(left_parenthesis_idx + 1) : idx])
                 left_parenthesis_idx = None
 
         board.estimate_groups()
@@ -249,9 +246,8 @@ class GameBoard:
     def to_rep(self) -> str:
         rep = ""
         zeros_combo = 0
-        for y in range(self.y_size):
-            for x in range(self.x_size):
-                stone = self.stones[x][y]
+        for row in self.stones:
+            for stone in row:
                 if stone:
                     rep += (
                         f"({zeros_combo})" if zeros_combo > 3 else ("0" * zeros_combo)
@@ -259,6 +255,6 @@ class GameBoard:
                     zeros_combo = 0
                 else:
                     zeros_combo += 1
-        return f"{self.x_size};{self.y_size};{rep}"
+        return f"{self.height};{self.width};{rep}"
 
     to_rep.__doc__ = from_rep.__doc__
