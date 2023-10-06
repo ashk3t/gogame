@@ -1,3 +1,5 @@
+import {InvalidTurnError} from "../lib/gamelogic";
+
 export interface Player {
   id: number | null
   token: string | null
@@ -31,4 +33,6 @@ export interface GameState {
   opponents: Player[],
   settings: GameSettings
   rep: string,
+  error: string | null
+  winner: string | null
 }

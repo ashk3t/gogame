@@ -1,6 +1,6 @@
 import {PayloadAction, createSlice} from "@reduxjs/toolkit"
 import {GameMode, GameSettings, GameState, Player, PlayerStatus} from "../types/game"
-import {GameBoard} from "../lib/gamelogic"
+import {GameBoard, InvalidTurnError, StoneColor} from "../lib/gamelogic"
 
 const initialPlayer: Player = {
   id: null,
@@ -22,6 +22,8 @@ const initialState: GameState = {
   opponents: [],
   settings: initialGameSettings,
   rep: "",
+  error: null,
+  winner: null,
 }
 
 export const gameSlice = createSlice({
@@ -34,8 +36,14 @@ export const gameSlice = createSlice({
     updateGameSettings(state, action: PayloadAction<GameSettings>) {
       state.settings = action.payload
     },
-    setRep(state, action: PayloadAction<string>) {
+    setGameRep(state, action: PayloadAction<string>) {
       state.rep = action.payload
+    },
+    setTurnError(state, action: PayloadAction<string | null>) {
+      state.error = action.payload
+    },
+    setGameWinner(state, action: PayloadAction<StoneColor>) {
+      state.winner = StoneColor[action.payload]
     },
   },
 })

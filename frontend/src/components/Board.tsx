@@ -3,17 +3,16 @@ import {useMemo, useState} from "react"
 import {useActions, useAppSelector} from "../hooks/redux"
 import CircleSvg from "../assets/CircleSvg"
 import {BoardIntersectionStyler} from "../utils"
-import {GameBoard, Stone} from "../lib/gamelogic"
+import {GameBoard, InvalidTurnError, Stone} from "../lib/gamelogic"
 import {stoneColors} from "../consts/utils"
+import {GameMode} from "../types/game"
 
-export default function Board(props: {
-  board: GameBoard
-  listener: any,
-  updateGameState: () => void
-}) {
-  const {board, updateGameState} = props
-  const {setRep} = useActions()
+export default function Board(props: {board: GameBoard; updater: any; triggerUpdater: () => void}) {
+  const {board, triggerUpdater} = props
+  const {setGameRep, setTurnError, setGameWinner} = useActions()
 
+  const gameMode = useAppSelector((state) => state.gameReducer.settings.mode)
+  const gameWinner = useAppSelector((state) => state.gameReducer.winner)
   const [intersectionStyler] = useState(new BoardIntersectionStyler(board.height, board.width))
 
   function getIntersectionBackground(x: number, y: number) {
@@ -24,9 +23,20 @@ export default function Board(props: {
   }
 
   function takeTurn(i: number, j: number) {
-    board.takeTurn(i, j)
-    setRep(board.toRep())
-    updateGameState()
+    if (gameWinner) return
+
+    try {
+      board.takeTurn(i, j)
+    } catch (error) {
+      if (error instanceof InvalidTurnError) setTurnError(error.message)
+      else throw error
+      return
+    }
+    setTurnError(null)
+    if (gameMode == GameMode.ATARI && board.killer) setGameWinner(board.killer)
+    setGameRep(board.toRep())
+
+    triggerUpdater()
     console.log(board)
   }
 

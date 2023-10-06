@@ -7,7 +7,7 @@ function splitIJ(ij: string): [number, number] {
   return [i, j]
 }
 
-class InvalidTurnError extends Error {
+export class InvalidTurnError extends Error {
   constructor(message: string) {
     super(message)
     this.name = "InvalidTurnError"
@@ -102,6 +102,7 @@ export class GameBoard {
   turnCounter: number
   scores: Array<number>
   #prevTurn: Array<string>
+  killer: StoneColor | null
 
   constructor(height: number = 19, width: number = 19, players: number = 2) {
     this.height = height
@@ -112,6 +113,7 @@ export class GameBoard {
     this.turnCounter = 0
     this.scores = new Array(players).fill(0)
     this.#prevTurn = new Array(players).fill("")
+    this.killer = null
   }
 
   toString() {
@@ -248,7 +250,10 @@ export class GameBoard {
     for (const opponentGroup of opponentGroups) {
       opponentGroup.liberties.delete(ij)
       opponentGroup.frontierStones[ij] = stone
-      if (opponentGroup.liberties.size == 0) this.kill(opponentGroup)
+      if (opponentGroup.liberties.size == 0) {
+        this.kill(opponentGroup)
+        this.killer = stone.color
+      }
     }
 
     this.prevTurn = ij
