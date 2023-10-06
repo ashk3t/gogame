@@ -1,8 +1,8 @@
-function joinIJ(i: number, j: number): string {
+export function joinIJ(i: number, j: number): string {
   return `${i} ${j}`
 }
 
-function splitIJ(ij: string): [number, number] {
+export function splitIJ(ij: string): [number, number] {
   const [i, j] = ij.split(" ").map((xory) => Number(xory))
   return [i, j]
 }

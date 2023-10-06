@@ -3,8 +3,8 @@ import {useMemo, useState} from "react"
 import {useActions, useAppSelector} from "../hooks/redux"
 import CircleSvg from "../assets/CircleSvg"
 import {BoardIntersectionStyler} from "../utils"
-import {GameBoard, InvalidTurnError, Stone} from "../lib/gamelogic"
-import {stoneColors} from "../consts/utils"
+import {GameBoard, InvalidTurnError, Stone, splitIJ} from "../lib/gamelogic"
+import {colors, stoneColors} from "../consts/utils"
 import {GameMode} from "../types/game"
 
 export default function Board(props: {board: GameBoard; updater: any; triggerUpdater: () => void}) {
@@ -14,12 +14,16 @@ export default function Board(props: {board: GameBoard; updater: any; triggerUpd
   const gameMode = useAppSelector((state) => state.gameReducer.settings.mode)
   const gameWinner = useAppSelector((state) => state.gameReducer.winner)
   const [intersectionStyler] = useState(new BoardIntersectionStyler(board.height, board.width))
+  const [libertyHints, setLibertyHints] = useState<Array<Array<boolean>>>(
+    Array.from(Array(board.height), () => new Array(board.width).fill(false)),
+  )
+  const [hintsHere, setHintsHere] = useState(false) // Optimization: do not rerender if point is empty
 
-  function getIntersectionBackground(x: number, y: number) {
+  function getIntersectionBackground(i: number, j: number) {
     return useMemo(() => {
       console.log("intersectionStyler.memo")
-      return intersectionStyler.getBackground(x, y)
-    }, [x, y])
+      return intersectionStyler.getBackground(i, j)
+    }, [i, j])
   }
 
   function takeTurn(i: number, j: number) {
@@ -40,6 +44,20 @@ export default function Board(props: {board: GameBoard; updater: any; triggerUpd
     console.log(board)
   }
 
+  function updateHints(i: number, j: number) {
+    if (hintsHere) setLibertyHints(libertyHints.map((row) => row.fill(false)))
+    const stone = board.stones[i][j]
+    setHintsHere(stone instanceof Stone)
+
+    if (stone) {
+      for (const ij of stone.group.liberties) {
+        const [i, j] = splitIJ(ij)
+        libertyHints[i][j] = true
+        setLibertyHints([...libertyHints])
+      }
+    }
+  }
+
   return (
     <div
       className={styles.board}
@@ -54,9 +72,13 @@ export default function Board(props: {board: GameBoard; updater: any; triggerUpd
             className={styles.intersection}
             style={getIntersectionBackground(i, j)}
             onClick={() => takeTurn(i, j)}
+            onMouseOver={() => updateHints(i, j)}
           >
             {stone && (
               <CircleSvg className={styles.stone} style={{color: stoneColors[stone.color]}} />
+            )}
+            {libertyHints[i][j] && (
+              <CircleSvg className={styles.stone} style={{color: colors.highlightHighAlpha}} />
             )}
           </div>
         )),
