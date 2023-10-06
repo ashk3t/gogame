@@ -32,7 +32,7 @@ export interface GameState {
   player: Player,
   opponents: Player[],
   settings: GameSettings
-  rep: string,
+  rep: string | null,
   error: string | null
   winner: string | null
 }

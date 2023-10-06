@@ -7,14 +7,16 @@ import {GameBoard} from "../lib/gamelogic"
 import useUpdater from "../hooks/useUpdater"
 
 export default function GamePage() {
-  const settings = useAppSelector((state) => state.gameReducer.settings)
-  const [board] = useState(new GameBoard(settings.height, settings.width, settings.players))
-  const [draftBoard, setDraftBoard] = useState<GameBoard | null>(null)
+  const gameRep = useAppSelector((state) => state.gameReducer.rep)
+  if (!gameRep) return
+
   const [gameUpdater, triggerGameUpdater] = useUpdater()
+  const [board] = useState(GameBoard.fromRep(gameRep))
+  const [draftBoard, setDraftBoard] = useState<GameBoard | null>(null)
   const [draftHistory, setDraftHistory] = useState<string[]>([])
 
   function startDraft() {
-    setDraftBoard(GameBoard.fromRep(board.toRep()))
+    if (board) setDraftBoard(GameBoard.fromRep(board.toRep()))
     if (draftHistory.length > 0) setDraftHistory([])
   }
   function stepBackDraft() {
@@ -27,7 +29,9 @@ export default function GamePage() {
     setDraftBoard(null)
     setDraftHistory([])
   }
-  const updateDraftHistory = (board: GameBoard) => setDraftHistory([...draftHistory, board.toRep()])
+  function updateDraftHistory(board: GameBoard) {
+    setDraftHistory([...draftHistory, board.toRep()])
+  }
 
   const actualBoard = draftBoard || board
   const draftMode = draftBoard != null

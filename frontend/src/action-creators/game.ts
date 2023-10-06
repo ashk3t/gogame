@@ -1,19 +1,25 @@
-import {Dispatch} from "react"
-import PlayerService from "../services/PlayerService"
 import {GenericAction} from "../types/generic"
 import {AppDispatch, RootState} from "../store"
 import GameService from "../services/GameService"
 import {gameSlice} from "../reducers/game"
 import {gameListSlice} from "../reducers/gameList"
 import {GameMode, PlayerStatus} from "../types/game"
+import {GameBoard} from "../lib/gamelogic"
 
 export const fetchAllGames = () => async (dispatch: AppDispatch) => {
   dispatch(gameListSlice.actions.setGames(await GameService.getAll()))
 }
 
-export const startOnlineGame = () => async (dispatch: AppDispatch, getState: () => RootState) => {
-  const nickname = getState().gameReducer.player.nickname
-  const settings = getState().gameReducer.settings
-  gameSlice.actions.updateNickname("")
-  GameService.startSearch(nickname, settings)
+export const startGame = () => async (dispatch: AppDispatch, getState: () => RootState) => {
+  const state = getState()
+  const settings = state.gameReducer.settings
+
+  if (settings.offline) {
+    const newGameRep = new GameBoard(settings.height, settings.width, settings.players).toRep()
+    dispatch(gameSlice.actions.setGameRep(newGameRep))
+  } else {
+    const nickname = state.gameReducer.player.nickname
+    dispatch(gameSlice.actions.updateNickname(""))
+    GameService.startSearch(nickname, settings)
+  }
 }

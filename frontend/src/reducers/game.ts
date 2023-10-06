@@ -21,7 +21,7 @@ const initialState: GameState = {
   player: {...initialPlayer},
   opponents: [],
   settings: initialGameSettings,
-  rep: "",
+  rep: null,
   error: null,
   winner: null,
 }
@@ -37,6 +37,7 @@ export const gameSlice = createSlice({
       state.settings = action.payload
     },
     setGameRep(state, action: PayloadAction<string>) {
+      console.log("setGameRep")
       state.rep = action.payload
     },
     setTurnError(state, action: PayloadAction<string | null>) {
@@ -45,6 +46,7 @@ export const gameSlice = createSlice({
     setGameWinner(state, action: PayloadAction<StoneColor>) {
       state.winner = StoneColor[action.payload]
     },
+    endGame: () => initialState
   },
 })
 

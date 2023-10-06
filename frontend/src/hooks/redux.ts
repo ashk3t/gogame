@@ -4,7 +4,7 @@ import {useSelector} from "react-redux"
 import {bindActionCreators} from "redux"
 import actionCreators from "../action-creators"
 
-export const useAppDispatch = () => useDispatch<AppDispatch>()
+export const useAppDispatch: () => AppDispatch = useDispatch
 export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector
 
 export const useActions = () => {

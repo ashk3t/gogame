@@ -6,8 +6,11 @@ export const GAME_LIST_PATH = "/game_list"
 export const START_PATH = "/start"
 export const GAME_PATH = "/game"
 
-export const routes = [
+export const defaultRoutes = [
   {path: GAME_LIST_PATH, Component: GameListPage, title: "game_list/"},
   {path: START_PATH, Component: StartPage, title: "start/"},
+]
+
+export const inGameRoutes = [
   {path: GAME_PATH, Component: GamePage, title: "game/"},
 ]

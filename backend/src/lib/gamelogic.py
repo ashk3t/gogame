@@ -226,7 +226,7 @@ class GameBoard:
     @staticmethod
     def from_rep(rep: str) -> GameBoard:
         """Format:
-        height;width;turn_counter;<board_rep>
+        height;width;players;turn_counter;<board_rep>
 
         Where <board_rep> is the sequence of numbers,
         which represents the color of stone on a specific point
@@ -234,9 +234,10 @@ class GameBoard:
         OR length of sequence of vacant points if in ().
         Last vacant points can be skipped"""
 
-        height, width, turn_counter, board_rep = rep.split(";")
-        height, width, turn_counter = int(height), int(width), int(turn_counter)
-        board = GameBoard(height, width)
+        *board_params, board_rep = rep.split(";")
+        height, width, players, turn_counter = map(int, board_params)
+        board = GameBoard(height, width, players)
+        board.turn_counter = turn_counter
 
         pos = 0
         left_parenthesis_idx: int | None = None
@@ -268,6 +269,6 @@ class GameBoard:
                     zeros_combo = 0
                 else:
                     zeros_combo += 1
-        return f"{self.height};{self.width};{self.turn_counter};{rep}"
+        return f"{self.height};{self.width};{self.players};{self.turn_counter};{rep}"
 
     to_rep.__doc__ = from_rep.__doc__
