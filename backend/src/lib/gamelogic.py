@@ -92,6 +92,7 @@ class GameBoard:
         self.turn_counter = 0
         self.scores: list[int] = [0] * players
         self.__prev_turn: list[tuple[int, int]] = [(-1, -1)] * players
+        self.killer: StoneColor | None = None
 
     def __str__(self):
         return "\n".join(
@@ -216,6 +217,7 @@ class GameBoard:
             opponent_group.frontier_stones[(i, j)] = stone
             if len(opponent_group.liberties) == 0:
                 self.kill(opponent_group)
+                self.killer = stone.color
 
         self.prev_turn = (i, j)
         self.turn_counter += 1
