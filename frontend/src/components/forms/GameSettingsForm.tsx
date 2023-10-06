@@ -10,7 +10,6 @@ export default function GameSettingsForm() {
 
   return (
     <div className={styles.vcenteringContainer}>
-      <br />
       <h3>Game settings</h3>
       <div className={styles.centeringContainer}>
         <h5>Height:</h5>

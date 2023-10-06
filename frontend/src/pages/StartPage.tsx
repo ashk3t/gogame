@@ -2,11 +2,8 @@ import PlayerInput from "../components/inputs/PlayerInput"
 import StartButton from "../components/buttons/StartButton"
 import NavButton from "../components/buttons/NavButton"
 import styles from "../styles/base.module.css"
-import {getRandomNicknameLabel, startsWithVowel} from "../utils"
+import {getRandomNicknameLabel} from "../utils"
 import GameSettingsForm from "../components/forms/GameSettingsForm"
-import {useEffect, useState} from "react"
-import {useAppSelector} from "../hooks/redux"
-import {PlayerStatus} from "../types/game"
 
 export default function StartPage() {
   const nicknameLabel = getRandomNicknameLabel()
@@ -22,6 +19,7 @@ export default function StartPage() {
           <StartButton />
           <NavButton path="game_list">Games?</NavButton>
         </div>
+        <br />
         <GameSettingsForm />
       </div>
     </main>

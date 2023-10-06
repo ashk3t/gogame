@@ -1,15 +1,12 @@
 import styles from "../styles/Board.module.css"
 import {capitalize} from "lodash"
-import {useActions, useAppSelector} from "../hooks/redux"
+import {useAppSelector} from "../hooks/redux"
 import {GameBoard, StoneColor} from "../lib/gamelogic"
 import {colors, stoneColors} from "../consts/utils"
 import {getTurnHexColor} from "../utils"
-import {GameMode} from "../types/game"
-import {useEffect} from "react"
 
 export default function GameInfo(props: {board: GameBoard; updater: any}) {
-  const {board, updater} = props
-  const {setTurnError} = useActions()
+  const {board} = props
   const turnError = useAppSelector((state) => state.gameReducer.error)
   const gameWinner = useAppSelector((state) => state.gameReducer.winner)
 

@@ -7,8 +7,14 @@ import {GameBoard, InvalidTurnError, Stone, splitIJ} from "../lib/gamelogic"
 import {colors, stoneColors} from "../consts/utils"
 import {GameMode} from "../types/game"
 
-export default function Board(props: {board: GameBoard; updater: any; triggerUpdater: () => void}) {
-  const {board, triggerUpdater} = props
+export default function Board(props: {
+  board: GameBoard
+  updater: any
+  triggerUpdater: () => void
+  draftMode: boolean
+  updateDraftHistory: (board: GameBoard) => void
+}) {
+  const {board, triggerUpdater, draftMode, updateDraftHistory} = props
   const {setGameRep, setTurnError, setGameWinner} = useActions()
 
   const gameMode = useAppSelector((state) => state.gameReducer.settings.mode)
@@ -21,13 +27,13 @@ export default function Board(props: {board: GameBoard; updater: any; triggerUpd
 
   function getIntersectionBackground(i: number, j: number) {
     return useMemo(() => {
-      console.log("intersectionStyler.memo")
       return intersectionStyler.getBackground(i, j)
     }, [i, j])
   }
 
   function takeTurn(i: number, j: number) {
     if (gameWinner) return
+    if (draftMode) updateDraftHistory(board)
 
     try {
       board.takeTurn(i, j)
@@ -37,11 +43,10 @@ export default function Board(props: {board: GameBoard; updater: any; triggerUpd
       return
     }
     setTurnError(null)
-    if (gameMode == GameMode.ATARI && board.killer) setGameWinner(board.killer)
-    setGameRep(board.toRep())
 
+    if (gameMode == GameMode.ATARI && board.killer && !draftMode) setGameWinner(board.killer)
+    setGameRep(board.toRep())
     triggerUpdater()
-    console.log(board)
   }
 
   function updateHints(i: number, j: number) {

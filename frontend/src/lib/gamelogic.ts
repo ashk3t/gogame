@@ -265,8 +265,10 @@ export class GameBoard {
     const repSplit = rep.split(";")
     const height = parseInt(repSplit[0])
     const width = parseInt(repSplit[1])
-    const boardRep = repSplit[2]
+    const turnCounter = parseInt(repSplit[2])
+    const boardRep = repSplit[3]
     const board = new GameBoard(height, width)
+    board.turnCounter = turnCounter
 
     let pos = 0
     let leftParenthesisIdx: number | null = null
@@ -301,6 +303,6 @@ export class GameBoard {
           zerosCombo = 0
         } else zerosCombo++
       }
-    return `${this.height};${this.width};${rep}`
+    return `${this.height};${this.width};${this.turnCounter};${rep}`
   }
 }
