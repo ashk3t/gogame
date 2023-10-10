@@ -4,21 +4,21 @@ import {useActions, useAppSelector} from "../hooks/redux"
 import CircleSvg from "../assets/CircleSvg"
 import {BoardIntersectionStyler} from "../utils"
 import {GameBoard, InvalidTurnError, Stone, splitIJ} from "../lib/gamelogic"
-import {colors, stoneColors} from "../consts/utils"
+import {hexColors, stoneHexColors} from "../consts/utils"
 import {GameMode} from "../types/game"
 
 export default function Board(props: {
   board: GameBoard
-  updater: any
-  triggerUpdater: () => void
   draftMode: boolean
   updateDraftHistory: (board: GameBoard) => void
+  updater: any
+  triggerUpdater: () => void
 }) {
-  const {board, triggerUpdater, draftMode, updateDraftHistory} = props
+  const {board, draftMode, updateDraftHistory, triggerUpdater} = props
   const {setGameRep, setTurnError, setGameWinner} = useActions()
 
   const gameMode = useAppSelector((state) => state.gameReducer.settings.mode)
-  const gameWinner = useAppSelector((state) => state.gameReducer.winner)
+  const winnerColor = useAppSelector((state) => state.gameReducer.winner)
   const [intersectionStyler] = useState(new BoardIntersectionStyler(board.height, board.width))
   const [libertyHints, setLibertyHints] = useState<Array<Array<boolean>>>(
     Array.from(Array(board.height), () => new Array(board.width).fill(false)),
@@ -32,7 +32,7 @@ export default function Board(props: {
   }
 
   function takeTurn(i: number, j: number) {
-    if (gameWinner) return
+    if (winnerColor != null) return
     if (draftMode) updateDraftHistory(board)
 
     try {
@@ -80,10 +80,10 @@ export default function Board(props: {
             onMouseOver={() => updateHints(i, j)}
           >
             {stone && (
-              <CircleSvg className={styles.stone} style={{color: stoneColors[stone.color]}} />
+              <CircleSvg className={styles.stone} style={{color: stoneHexColors[stone.color]}} />
             )}
             {libertyHints[i][j] && (
-              <CircleSvg className={styles.stone} style={{color: colors.highlightHighAlpha}} />
+              <CircleSvg className={styles.stone} style={{color: hexColors.highlightHighAlpha}} />
             )}
           </div>
         )),

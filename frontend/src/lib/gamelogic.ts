@@ -1,3 +1,5 @@
+import {round} from "lodash"
+
 export function joinIJ(i: number, j: number): string {
   return `${i} ${j}`
 }
@@ -15,13 +17,13 @@ export class InvalidTurnError extends Error {
 }
 
 export enum StoneColor {
-  NONE = 0,
-  RED = 1,
-  YELLOW = 2,
-  PEACH = 3,
-  GREEN = 4,
-  CYAN = 5,
-  PURPLE = 6,
+  NONE = -1,
+  RED = 0,
+  YELLOW = 1,
+  PEACH = 2,
+  GREEN = 3,
+  CYAN = 4,
+  PURPLE = 5,
 }
 
 class Group {
@@ -84,8 +86,12 @@ export class Stone {
     this.group = group
   }
 
+  static fromString(char: string): Stone {
+    return new Stone((parseInt(char) - 1) as StoneColor)
+  }
+
   toString() {
-    return this.color.toString()
+    return (this.color + 1).toString()
   }
 
   toInt() {
@@ -99,9 +105,11 @@ export class GameBoard {
   players: number
   stones: Array<Array<Stone | null>>
   allGroups: Array<Group>
-  turnCounter: number
+  turnColor: StoneColor
+  prevTurns: Array<string>
   scores: Array<number>
-  #prevTurn: Array<string>
+  passCounter: number
+  surrenderedPlayers: Set<StoneColor>
   killer: StoneColor | null
 
   constructor(height: number = 19, width: number = 19, players: number = 2) {
@@ -110,9 +118,13 @@ export class GameBoard {
     this.players = players
     this.stones = Array.from(Array(height), () => new Array(width).fill(null))
     this.allGroups = []
-    this.turnCounter = 0
-    this.scores = new Array(players).fill(0)
-    this.#prevTurn = new Array(players).fill("")
+    this.turnColor = StoneColor.RED
+    this.prevTurns = Array(players).fill("")
+    this.scores = Array(players)
+      .fill(0)
+      .map((v, i) => round(i * (8.1 - players), 1))
+    this.passCounter = 0
+    this.surrenderedPlayers = new Set()
     this.killer = null
   }
 
@@ -138,20 +150,22 @@ export class GameBoard {
     this.allGroups = this.allGroups.filter((el) => el != secondGroup)
   }
 
-  get turnColor(): StoneColor {
-    return ((this.turnCounter % this.players) + 1) as StoneColor
-  }
-
   get prevTurn(): string {
-    return this.#prevTurn[this.turnCounter % this.players]
+    return this.prevTurns[this.turnColor]
   }
 
   set prevTurn(ij: string) {
-    this.#prevTurn[this.turnCounter % this.players] = ij
+    this.prevTurns[this.turnColor] = ij
+  }
+
+  updateTurnColor() {
+    this.turnColor = (this.turnColor + 1) % this.players
+    while (this.surrenderedPlayers.has(this.turnColor))
+      this.turnColor = (this.turnColor + 1) % this.players
   }
 
   incrementScore(color: StoneColor, value: number = 1) {
-    this.scores[(color as number) - 1] += value
+    this.scores[color] += value
   }
 
   isValid(i: number, j: number) {
@@ -257,16 +271,31 @@ export class GameBoard {
     }
 
     this.prevTurn = ij
-    this.turnCounter++
-    this.incrementScore(stone.color)
+    this.passCounter = 0
+    this.incrementScore(this.turnColor)
+    this.updateTurnColor()
+  }
+
+  passTurn() {
+    this.prevTurn = ""
+    this.passCounter++
+    this.updateTurnColor()
+  }
+
+  surrenderTurn() {
+    this.surrenderedPlayers.add(this.turnColor)
+    this.updateTurnColor()
   }
 
   static fromRep(rep: string): GameBoard {
     const repSplit = rep.split(";")
     const boardRep = repSplit.pop() || ""
-    const [height, width, players, turnCounter] = repSplit.map((v) => parseInt(v))
+    const surrenderedPlayers = repSplit.pop() || ""
+    const [height, width, players, turnColor, passCounter] = repSplit.map((v) => parseInt(v))
     const board = new GameBoard(height, width, players)
-    board.turnCounter = turnCounter
+    board.turnColor = turnColor - 1
+    board.passCounter = passCounter
+    board.surrenderedPlayers = new Set(surrenderedPlayers.split("").map((v) => parseInt(v) - 1))
 
     let pos = 0
     let leftParenthesisIdx: number | null = null
@@ -276,9 +305,9 @@ export class GameBoard {
         leftParenthesisIdx = idx
       } else if (leftParenthesisIdx == null) {
         if (char != "0") {
-          const color = parseInt(char) as StoneColor
-          board.stones[Math.floor(pos / width)][pos % width] = new Stone(color)
-          board.incrementScore(color)
+          const stone = Stone.fromString(char)
+          board.stones[Math.floor(pos / width)][pos % width] = stone
+          board.incrementScore(stone.color)
         }
         pos++
       } else if (char == ")") {
@@ -301,6 +330,16 @@ export class GameBoard {
           zerosCombo = 0
         } else zerosCombo++
       }
-    return `${this.height};${this.width};${this.players};${this.turnCounter};${rep}`
+    return [
+      this.height,
+      this.width,
+      this.players,
+      this.turnColor + 1,
+      this.passCounter,
+      Array.from(this.surrenderedPlayers)
+        .map((v) => v + 1)
+        .join(""),
+      rep,
+    ].join(";")
   }
 }

@@ -2,30 +2,49 @@ import styles from "../styles/Board.module.css"
 import {capitalize} from "lodash"
 import {useAppSelector} from "../hooks/redux"
 import {GameBoard, StoneColor} from "../lib/gamelogic"
-import {colors, stoneColors} from "../consts/utils"
-import {getTurnHexColor} from "../utils"
+import {hexColors, stoneHexColors} from "../consts/utils"
 
 export default function GameInfo(props: {board: GameBoard; updater: any}) {
   const {board} = props
   const turnError = useAppSelector((state) => state.gameReducer.error)
-  const gameWinner = useAppSelector((state) => state.gameReducer.winner)
+  const winnerColor = useAppSelector((state) => state.gameReducer.winner)
+
+  const passedPlayers: boolean[] = (() => {
+    const passedPlayers = Array(board.players).fill(false)
+    for (let i = 1, nth = board.passCounter; nth > 0; i++) {
+      const index = (board.turnColor + board.players - i) % board.players
+      if (!board.surrenderedPlayers.has(index)) {
+        passedPlayers[index] = true
+        nth--
+      }
+    }
+    return passedPlayers
+  })()
 
   return (
     <div>
       <div>SCORE:</div>
       {board.scores.map((score, idx) => (
-        <div key={idx} style={{color: stoneColors[idx + 1]}}>
-          {capitalize(StoneColor[idx + 1])}: {score}
+        <div key={idx} style={{color: stoneHexColors[idx]}}>
+          {capitalize(StoneColor[idx]) + ": "}
+          {score.toFixed(1) +
+            (board.surrenderedPlayers.has(idx)
+              ? " (surrendered)"
+              : passedPlayers[idx]
+              ? " (passed)"
+              : "")}
         </div>
       ))}
       <br />
-      {!gameWinner && (
-        <div style={{color: getTurnHexColor(board)}}>
+      {winnerColor == null && (
+        <div style={{color: stoneHexColors[board.turnColor]}}>
           TURN: {capitalize(StoneColor[board.turnColor])}
         </div>
       )}
-      {turnError && <div style={{color: colors.love}}>ERROR: {turnError}</div>}
-      {gameWinner && <div style={{color: colors.gold}}>WINNER: {gameWinner}</div>}
+      {turnError && <div style={{color: hexColors.love}}>ERROR: {turnError}</div>}
+      {winnerColor != null && (
+        <div style={{color: stoneHexColors[winnerColor]}}>WINNER: {StoneColor[winnerColor]}</div>
+      )}
     </div>
   )
 }

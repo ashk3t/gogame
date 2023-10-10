@@ -37,14 +37,13 @@ export const gameSlice = createSlice({
       state.settings = action.payload
     },
     setGameRep(state, action: PayloadAction<string>) {
-      console.log("setGameRep")
       state.rep = action.payload
     },
     setTurnError(state, action: PayloadAction<string | null>) {
       state.error = action.payload
     },
     setGameWinner(state, action: PayloadAction<StoneColor>) {
-      state.winner = StoneColor[action.payload]
+      state.winner = action.payload
     },
     endGame: () => initialState
   },

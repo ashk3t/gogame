@@ -1,4 +1,4 @@
-import {InvalidTurnError} from "../lib/gamelogic";
+import {InvalidTurnError, StoneColor} from "../lib/gamelogic";
 
 export interface Player {
   id: number | null
@@ -34,5 +34,5 @@ export interface GameState {
   settings: GameSettings
   rep: string | null,
   error: string | null
-  winner: string | null
+  winner: StoneColor | null
 }

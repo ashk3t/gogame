@@ -1,4 +1,4 @@
-export const colors = {
+export const hexColors = {
   base: "#191724",
   surface: "#1f1d2e",
   overlay: "#26233a",
@@ -19,14 +19,13 @@ export const colors = {
   highlightHighAlpha: "#6e6a8666",
 }
 
-export const stoneColors = [
-  "none",
-  colors.love,
-  colors.gold,
-  colors.rose,
-  colors.pine,
-  colors.foam,
-  colors.iris,
+export const stoneHexColors = [
+  hexColors.love,
+  hexColors.gold,
+  hexColors.rose,
+  hexColors.pine,
+  hexColors.foam,
+  hexColors.iris,
 ]
 
 export const nicknameLabels: string[] = [

@@ -8,14 +8,16 @@ class InvalidTurnException(Exception):
         super().__init__(self.message)
 
 
+# You can notice +1 and -1 in some color manipulations especially in REP functions
+# It is needed for more comfortable board representation: 0 = NONE color, not -1
 class StoneColor(int, Enum):
-    NONE = 0
-    RED = 1
-    YELLOW = 2
-    PEACH = 3
-    GREEN = 4
-    CYAN = 5
-    PURPLE = 6
+    NONE = -1
+    RED = 0
+    YELLOW = 1
+    PEACH = 2
+    GREEN = 3
+    CYAN = 4
+    PURPLE = 5
 
 
 class Group:
@@ -73,25 +75,33 @@ class Stone:
         self.color = color
         self.group = group
 
+    @staticmethod
+    def from_str(char: str):
+        return Stone(StoneColor(int(char) - 1))
+
     def __str__(self):
-        return str(self.color.value)
+        return str(self.color + 1)
 
     def __int__(self):
-        return int(self.color.value)
+        return int(self.color)
 
 
 class GameBoard:
     def __init__(self, height: int = 19, width: int = 19, players: int = 2):
-        self.height = height
-        self.width = width
-        self.players = players
+        self.height: int = height
+        self.width: int = width
+        self.players: int = players
         self.stones: list[list[Stone | None]] = [
             [None for _ in range(width)] for _ in range(height)
         ]
         self.all_groups: list[Group] = []
-        self.turn_counter = 0
-        self.scores: list[int] = [0] * players
-        self.__prev_turn: list[tuple[int, int]] = [(-1, -1)] * players
+        self.turn_color: StoneColor = StoneColor.RED
+        self.prev_turns: list[tuple[int, int]] = [(-1, -1)] * players
+        self.scores: list[float] = [
+            round(i * (8.1 - players), 1) for i in range(players)
+        ]
+        self.pass_counter: int = 0
+        self.surrendered_players: set[StoneColor] = set()
         self.killer: StoneColor | None = None
 
     def __str__(self):
@@ -114,19 +124,20 @@ class GameBoard:
         self.all_groups.remove(second_group)
 
     @property
-    def turn_color(self) -> StoneColor:
-        return StoneColor(self.turn_counter % self.players + 1)
-
-    @property
     def prev_turn(self) -> tuple[int, int]:
-        return self.__prev_turn[self.turn_counter % self.players]
+        return self.prev_turns[self.turn_color]
 
     @prev_turn.setter
     def prev_turn(self, point: tuple[int, int]):
-        self.__prev_turn[self.turn_counter % self.players] = point
+        self.prev_turns[self.turn_color] = point
+
+    def update_turn_color(self):
+        self.turn_color = StoneColor((self.turn_color + 1) % self.players)
+        while self.turn_color in self.surrendered_players:
+            self.turn_color = StoneColor((self.turn_color + 1) % self.players)
 
     def increment_score(self, color: StoneColor, value: int = 1):
-        self.scores[int(color) - 1] += value
+        self.scores[color] += value
 
     def is_valid(self, i: int, j: int):
         return 0 <= i < self.height and 0 <= j < self.width
@@ -220,24 +231,42 @@ class GameBoard:
                 self.killer = stone.color
 
         self.prev_turn = (i, j)
-        self.turn_counter += 1
-        self.increment_score(stone.color)
+        self.pass_counter = 0
+        self.increment_score(self.turn_color)
+        self.update_turn_color()
+
+    def pass_turn(self):
+        self.prev_turn = (-1, -1)
+        self.pass_counter = 0
+        self.update_turn_color()
+
+    def surrender_turn(self):
+        self.surrendered_players.add(self.turn_color)
+        self.update_turn_color()
 
     @staticmethod
     def from_rep(rep: str) -> GameBoard:
         """Format:
-        height;width;players;turn_counter;<board_rep>
+        height;width;players;turn_color;pass_counter;<surrendered_players>;<board_rep>
 
-        Where <board_rep> is the sequence of numbers,
-        which represents the color of stone on a specific point
+        <board_rep> is the sequence of numbers,
+        which represent the color of stone on a specific point
         OR vacant point if 0
         OR length of sequence of vacant points if in ().
-        Last vacant points can be skipped"""
+        Last vacant points can be skipped.
 
-        *board_params, board_rep = rep.split(";")
-        height, width, players, turn_counter = map(int, board_params)
+        <surrendered_players> is sequence of numbers
+        which represent the color of a player who has surrendered.
+        """
+
+        *rest_params, surrendered_players, board_rep = rep.split(";")
+        height, width, players, turn_color, pass_counter = map(int, rest_params)
         board = GameBoard(height, width, players)
-        board.turn_counter = turn_counter
+        board.turn_color = StoneColor(turn_color - 1)
+        board.pass_counter = pass_counter
+        board.surrendered_players = set(
+            map(lambda v: StoneColor(int(v) - 1), surrendered_players.split(""))
+        )
 
         pos = 0
         left_parenthesis_idx: int | None = None
@@ -246,9 +275,9 @@ class GameBoard:
                 left_parenthesis_idx = idx
             elif left_parenthesis_idx is None:
                 if char != "0":
-                    color = StoneColor(int(char))
-                    board.stones[pos // width][pos % width] = Stone(color)
-                    board.increment_score(color)
+                    stone = Stone.from_str(char)
+                    board.stones[pos // width][pos % width] = stone
+                    board.increment_score(stone.color)
                 pos += 1
             elif char == ")":
                 pos += int(board_rep[(left_parenthesis_idx + 1) : idx])
@@ -269,6 +298,18 @@ class GameBoard:
                     zeros_combo = 0
                 else:
                     zeros_combo += 1
-        return f"{self.height};{self.width};{self.players};{self.turn_counter};{rep}"
+        return ";".join(
+            map(
+                str,
+                [
+                    self.height,
+                    self.width,
+                    self.players,
+                    self.turn_color + 1,
+                    self.pass_counter,
+                    "".join(map(lambda v: str(v + 1), self.surrendered_players)),
+                ],
+            )
+        )
 
     to_rep.__doc__ = from_rep.__doc__

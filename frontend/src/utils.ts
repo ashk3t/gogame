@@ -1,5 +1,5 @@
 import {capitalize} from "lodash"
-import {nicknameLabels, stoneColors} from "./consts/utils"
+import {nicknameLabels, stoneHexColors} from "./consts/utils"
 import {GameBoard} from "./lib/gamelogic"
 
 export function loadScript(src: string) {
@@ -11,6 +11,10 @@ export function loadScript(src: string) {
     script.onerror = (err) => reject(err)
     document.body.appendChild(script)
   })
+}
+
+export function posMod(divisible: number, divisor: number) {
+  return (divisible + divisor) % divisor
 }
 
 export function parseError(error: any): string {
@@ -67,8 +71,4 @@ export class BoardIntersectionStyler {
       `,
     }
   }
-}
-
-export function getTurnHexColor(board: GameBoard): string {
-  return stoneColors[(board.turnCounter % board.players) + 1]
 }

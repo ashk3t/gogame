@@ -11,47 +11,35 @@ export default function GamePage() {
   if (!gameRep) return
 
   const [gameUpdater, triggerGameUpdater] = useUpdater()
-  const [board] = useState(GameBoard.fromRep(gameRep))
+  const [mainBoard] = useState(GameBoard.fromRep(gameRep))
   const [draftBoard, setDraftBoard] = useState<GameBoard | null>(null)
   const [draftHistory, setDraftHistory] = useState<string[]>([])
 
-  function startDraft() {
-    if (board) setDraftBoard(GameBoard.fromRep(board.toRep()))
-    if (draftHistory.length > 0) setDraftHistory([])
-  }
-  function stepBackDraft() {
-    const prevRep = draftHistory.at(-1)
-    if (!prevRep) return
-    setDraftBoard(GameBoard.fromRep(prevRep))
-    setDraftHistory(draftHistory.slice(0, -1))
-  }
-  function finishDraft() {
-    setDraftBoard(null)
-    setDraftHistory([])
-  }
   function updateDraftHistory(board: GameBoard) {
     setDraftHistory([...draftHistory, board.toRep()])
   }
 
-  const actualBoard = draftBoard || board
+  const board = draftBoard || mainBoard
   const draftMode = draftBoard != null
 
   return (
     <main>
       <section>
-        <GameInfo board={actualBoard} updater={gameUpdater} />
+        <GameInfo board={board} updater={gameUpdater} />
         <Board
-          board={actualBoard}
-          updater={gameUpdater}
-          triggerUpdater={triggerGameUpdater}
+          board={board}
           draftMode={draftMode}
           updateDraftHistory={updateDraftHistory}
+          updater={gameUpdater}
+          triggerUpdater={triggerGameUpdater}
         />
         <GameControl
-          draftMode={draftMode}
-          startDraft={startDraft}
-          stepBackDraft={stepBackDraft}
-          finishDraft={finishDraft}
+          mainBoard={mainBoard}
+          draftBoard={draftBoard}
+          setDraftBoard={setDraftBoard}
+          draftHistory={draftHistory}
+          setDraftHistory={setDraftHistory}
+          triggerUpdater={triggerGameUpdater}
         />
       </section>
     </main>
