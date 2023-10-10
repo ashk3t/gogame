@@ -1,7 +1,7 @@
 import {Routes, Route, Navigate} from "react-router-dom"
 import {GAME_PATH, defaultRoutes, inGameRoutes, START_PATH} from "../consts/pages"
 import {useAppSelector} from "../hooks/redux"
-import {useEffect, useMemo, useState} from "react"
+import {useEffect, useState} from "react"
 
 export default function AppRouter() {
   const gameRep = useAppSelector((state) => state.gameReducer.rep)

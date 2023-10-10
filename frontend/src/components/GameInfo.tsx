@@ -1,4 +1,4 @@
-import styles from "../styles/Board.module.css"
+import styles from "../styles/GameInfo.module.css"
 import {capitalize} from "lodash"
 import {useAppSelector} from "../hooks/redux"
 import {GameBoard, StoneColor} from "../lib/gamelogic"
@@ -22,28 +22,35 @@ export default function GameInfo(props: {board: GameBoard; updater: any}) {
   })()
 
   return (
-    <div>
-      <div>SCORE:</div>
-      {board.scores.map((score, idx) => (
-        <div key={idx} style={{color: stoneHexColors[idx]}}>
-          {capitalize(StoneColor[idx]) + ": "}
-          {score.toFixed(1) +
-            (board.finishedPlayers.has(idx)
-              ? " (finished)"
-              : passedPlayers[idx]
-              ? " (passed)"
-              : "")}
-        </div>
-      ))}
-      <br />
+    <div className={styles.infoContainer}>
       {winnerColor == null && (
-        <div style={{color: stoneHexColors[board.turnColor]}}>
-          TURN: {capitalize(StoneColor[board.turnColor])}
-        </div>
+        <section>
+          <h4 style={{color: stoneHexColors[board.turnColor]}}>
+            Turn: {capitalize(StoneColor[board.turnColor])}
+          </h4>
+          {turnError && <div style={{color: hexColors.love}}>{turnError}!</div>}
+        </section>
       )}
-      {turnError && <div style={{color: hexColors.love}}>ERROR: {turnError}</div>}
+      <section>
+        <h4>Score:</h4>
+        {board.scores.map((score, idx) => (
+          <div key={idx} style={{color: stoneHexColors[idx]}}>
+            {capitalize(StoneColor[idx]).padStart(6) + ": "}
+            {score.toFixed(0).padEnd(4) +
+              (board.finishedPlayers.has(idx)
+                ? " (finished)"
+                : passedPlayers[idx]
+                ? " (passed)"
+                : "")}
+          </div>
+        ))}
+      </section>
       {winnerColor != null && (
-        <div style={{color: stoneHexColors[winnerColor]}}>WINNER: {StoneColor[winnerColor]}</div>
+        <section>
+          <h4 style={{color: stoneHexColors[winnerColor]}}>
+            Winner: {capitalize(StoneColor[winnerColor])}!
+          </h4>
+        </section>
       )}
     </div>
   )

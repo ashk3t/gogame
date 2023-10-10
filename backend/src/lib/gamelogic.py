@@ -101,7 +101,7 @@ class GameBoard:
             round(i * (8.1 - players), 1) for i in range(players)
         ]
         self.pass_counter: int = 0
-        self.surrendered_players: set[StoneColor] = set()
+        self.finished_players: set[StoneColor] = set()
         self.killer: StoneColor | None = None
 
     def __str__(self):
@@ -133,7 +133,7 @@ class GameBoard:
 
     def update_turn_color(self):
         self.turn_color = StoneColor((self.turn_color + 1) % self.players)
-        while self.turn_color in self.surrendered_players:
+        while self.turn_color in self.finished_players:
             self.turn_color = StoneColor((self.turn_color + 1) % self.players)
 
     def increment_score(self, color: StoneColor, value: int = 1):
@@ -240,14 +240,17 @@ class GameBoard:
         self.pass_counter = 0
         self.update_turn_color()
 
-    def surrender_turn(self):
-        self.surrendered_players.add(self.turn_color)
-        self.update_turn_color()
+    def finish_turns_turn(self):
+        self.finished_players.add(self.turn_color)
+        if len(self.finished_players) < self.players:
+            self.update_turn_color()
+        else:
+            self.turn_color = StoneColor.NONE  # Avoid inifinity loop
 
     @staticmethod
     def from_rep(rep: str) -> GameBoard:
         """Format:
-        height;width;players;turn_color;pass_counter;<surrendered_players>;<board_rep>
+        height;width;players;turn_color;pass_counter;<finished_players>;<board_rep>
 
         <board_rep> is the sequence of numbers,
         which represent the color of stone on a specific point
@@ -255,17 +258,18 @@ class GameBoard:
         OR length of sequence of vacant points if in ().
         Last vacant points can be skipped.
 
-        <surrendered_players> is sequence of numbers
-        which represent the color of a player who has surrendered.
+        <finished_players> is sequence of numbers
+        which represent the color of a player
+        who will no longer take turns in this game
         """
 
-        *rest_params, surrendered_players, board_rep = rep.split(";")
+        *rest_params, finished_players, board_rep = rep.split(";")
         height, width, players, turn_color, pass_counter = map(int, rest_params)
         board = GameBoard(height, width, players)
         board.turn_color = StoneColor(turn_color - 1)
         board.pass_counter = pass_counter
-        board.surrendered_players = set(
-            map(lambda v: StoneColor(int(v) - 1), surrendered_players.split(""))
+        board.finished_players = set(
+            map(lambda v: StoneColor(int(v) - 1), finished_players.split(""))
         )
 
         pos = 0
@@ -307,7 +311,7 @@ class GameBoard:
                     self.players,
                     self.turn_color + 1,
                     self.pass_counter,
-                    "".join(map(lambda v: str(v + 1), self.surrendered_players)),
+                    "".join(map(lambda v: str(v + 1), self.finished_players)),
                 ],
             )
         )

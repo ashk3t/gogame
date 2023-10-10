@@ -21,7 +21,6 @@ export default function StartPage() {
           <NavButton path={GAME_PATH} callback={startGame}>Go!</NavButton>
           <NavButton path={GAME_LIST_PATH}>Games?</NavButton>
         </div>
-        <br />
         <GameSettingsForm />
       </div>
     </main>

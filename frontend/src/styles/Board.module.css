@@ -1,6 +1,8 @@
 .board {
   position: relative;
   display: grid;
+  flex: 2;
+  align-self: center;
 }
 
 .intersection {
@@ -18,4 +20,17 @@
   bottom: 0;
   margin: auto;
   z-index: 30;
+}
+
+@media screen and (max-width: 1600px) {
+  .board {
+    flex: 3;
+  }
+}
+
+@media screen and (max-width: 1200px) {
+  .board {
+    flex: 0;
+    align-self: auto;
+  }
 }

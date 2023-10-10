@@ -1,8 +1,10 @@
 import {GAME_LIST_PATH, START_PATH} from "../consts/pages"
 import {useActions, useAppSelector} from "../hooks/redux"
 import {GameBoard, StoneColor} from "../lib/gamelogic"
-import styles from "../styles/base.module.css"
+import styles from "../styles/GameControl.module.css"
 import NavButton from "./buttons/NavButton"
+import NiceButton from "./buttons/NiceButton"
+import ScaryButton from "./buttons/ScaryButton"
 
 export default function GameControl(props: {
   mainBoard: GameBoard
@@ -14,7 +16,7 @@ export default function GameControl(props: {
 }) {
   const {mainBoard, draftBoard, setDraftBoard, draftHistory, setDraftHistory, triggerUpdater} =
     props
-  const {setGameRep, endGame, setGameWinner} = useActions()
+  const {setGameRep, endGame, setGameWinner, setTurnError} = useActions()
 
   const isOffline = useAppSelector((state) => state.gameReducer.settings.offline)
   const winnerColor = useAppSelector((state) => state.gameReducer.winner)
@@ -42,6 +44,7 @@ export default function GameControl(props: {
     updateGameData(mainBoard)
   }
   function updateGameData(board: GameBoard) {
+    setTurnError(null)
     if (board.passCounter >= board.players - board.finishedPlayers.size)
       setGameWinner(board.scores.indexOf(Math.max(...board.scores)))
     setGameRep(board.toRep())
@@ -49,37 +52,29 @@ export default function GameControl(props: {
   }
 
   return (
-    <div>
+    <div className={styles.controlContainer}>
       {winnerColor == null && draftBoard && (
         <>
-          <button className={styles.niceButton} onClick={stepBackDraft}>
-            Undo
-          </button>
-          <button className={styles.niceButton} onClick={startDraft}>
-            Reset
-          </button>
-          <button className={styles.niceButton} onClick={finishDraft}>
-            Finish draft
-          </button>
+          <NiceButton onClick={stepBackDraft}>Undo</NiceButton>
+          <NiceButton onClick={startDraft}>Reset</NiceButton>
+          <NiceButton onClick={finishDraft}>Finish draft</NiceButton>
+          <h6></h6>
         </>
       )}
       {winnerColor == null && !draftBoard && (
         <>
-          <button className={styles.niceButton} onClick={startDraft}>
-            Draft mode
-          </button>
-          <button className={styles.niceButton} onClick={passTurn}>
-            Pass
-          </button>
-          <button className={styles.niceButton} onClick={finishTurnsTurn}>
-            Finish turns
-          </button>
+          <NiceButton onClick={startDraft}>Draft mode</NiceButton>
+          <NiceButton onClick={passTurn}>Pass</NiceButton>
+          <h6></h6>
+          <ScaryButton onClick={finishTurnsTurn}>Finish turns</ScaryButton>
         </>
       )}
       {(winnerColor != null || isOffline) && (
-        <NavButton path={START_PATH} callback={endGame}>
-          End game
-        </NavButton>
+        <>
+          <NavButton path={START_PATH} callback={endGame} scary={true}>
+            End game
+          </NavButton>
+        </>
       )}
     </div>
   )

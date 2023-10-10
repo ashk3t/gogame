@@ -1,0 +1,14 @@
+.mainContainer {
+  display: flex;
+}
+
+.mainContainer *:not(div, svg, span) {
+  margin: var(--default-margin);
+}
+
+@media screen and (max-width: 1200px) {
+  .mainContainer {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+}

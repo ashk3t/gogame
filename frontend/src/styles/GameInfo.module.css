@@ -1,0 +1,23 @@
+.infoContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  margin: var(--default-margin);
+  flex: 1;
+}
+
+.infoContainer > section > h4 {
+  margin: var(--default-margin) 0;
+}
+
+section > div {
+  white-space: pre-wrap;
+}
+
+@media screen and (max-width: 1200px) {
+  .infoContainer {
+    align-items: flex-start;
+    flex: 0;
+  }
+}

@@ -1,5 +1,5 @@
 .defaultMargin *:not(div) {
-  margin: 12px;
+  margin: var(--default-margin);
 }
 
 .centeringContainer,
@@ -19,13 +19,23 @@
   transition: 0.2s all;
 }
 
-.niceButton {
-  border: 4px solid var(--gold);
+.niceButton, .scaryButton {
   padding: 10px 20px;
 }
-.niceButton:hover {
+.niceButton:hover, .scaryButton:hover {
   background-color: var(--highlight-low);
+}
+.niceButton {
+  border: 4px solid var(--gold);
+}
+.niceButton:hover {
   color: var(--gold);
+}
+.scaryButton {
+  border: 4px solid var(--love);
+}
+.scaryButton:hover {
+  color: var(--love);
 }
 
 .niceInput,
