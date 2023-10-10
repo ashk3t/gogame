@@ -13,7 +13,7 @@ export default function GameInfo(props: {board: GameBoard; updater: any}) {
     const passedPlayers = Array(board.players).fill(false)
     for (let i = 1, nth = board.passCounter; nth > 0; i++) {
       const index = (board.turnColor + board.players - i) % board.players
-      if (!board.surrenderedPlayers.has(index)) {
+      if (!board.finishedPlayers.has(index)) {
         passedPlayers[index] = true
         nth--
       }
@@ -28,8 +28,8 @@ export default function GameInfo(props: {board: GameBoard; updater: any}) {
         <div key={idx} style={{color: stoneHexColors[idx]}}>
           {capitalize(StoneColor[idx]) + ": "}
           {score.toFixed(1) +
-            (board.surrenderedPlayers.has(idx)
-              ? " (surrendered)"
+            (board.finishedPlayers.has(idx)
+              ? " (finished)"
               : passedPlayers[idx]
               ? " (passed)"
               : "")}

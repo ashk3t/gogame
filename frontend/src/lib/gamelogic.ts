@@ -109,7 +109,7 @@ export class GameBoard {
   prevTurns: Array<string>
   scores: Array<number>
   passCounter: number
-  surrenderedPlayers: Set<StoneColor>
+  finishedPlayers: Set<StoneColor>
   killer: StoneColor | null
 
   constructor(height: number = 19, width: number = 19, players: number = 2) {
@@ -122,9 +122,9 @@ export class GameBoard {
     this.prevTurns = Array(players).fill("")
     this.scores = Array(players)
       .fill(0)
-      .map((v, i) => round(i * (8.1 - players), 1))
+      .map((_, i) => round(i * (8.1 - players), 1))
     this.passCounter = 0
-    this.surrenderedPlayers = new Set()
+    this.finishedPlayers = new Set()
     this.killer = null
   }
 
@@ -160,7 +160,7 @@ export class GameBoard {
 
   updateTurnColor() {
     this.turnColor = (this.turnColor + 1) % this.players
-    while (this.surrenderedPlayers.has(this.turnColor))
+    while (this.finishedPlayers.has(this.turnColor))
       this.turnColor = (this.turnColor + 1) % this.players
   }
 
@@ -282,20 +282,21 @@ export class GameBoard {
     this.updateTurnColor()
   }
 
-  surrenderTurn() {
-    this.surrenderedPlayers.add(this.turnColor)
-    this.updateTurnColor()
+  finishTurnsTurn() {
+    this.finishedPlayers.add(this.turnColor)
+    if (this.finishedPlayers.size < this.players) this.updateTurnColor()
+    else this.turnColor = StoneColor.NONE // Avoid inifinity loop
   }
 
   static fromRep(rep: string): GameBoard {
     const repSplit = rep.split(";")
     const boardRep = repSplit.pop() || ""
-    const surrenderedPlayers = repSplit.pop() || ""
+    const finishedPlayers = repSplit.pop() || ""
     const [height, width, players, turnColor, passCounter] = repSplit.map((v) => parseInt(v))
     const board = new GameBoard(height, width, players)
     board.turnColor = turnColor - 1
     board.passCounter = passCounter
-    board.surrenderedPlayers = new Set(surrenderedPlayers.split("").map((v) => parseInt(v) - 1))
+    board.finishedPlayers = new Set(finishedPlayers.split("").map((v) => parseInt(v) - 1))
 
     let pos = 0
     let leftParenthesisIdx: number | null = null
@@ -336,7 +337,7 @@ export class GameBoard {
       this.players,
       this.turnColor + 1,
       this.passCounter,
-      Array.from(this.surrenderedPlayers)
+      Array.from(this.finishedPlayers)
         .map((v) => v + 1)
         .join(""),
       rep,

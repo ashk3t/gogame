@@ -37,12 +37,12 @@ export default function GameControl(props: {
     mainBoard.passTurn()
     updateGameData(mainBoard)
   }
-  function surrenderTurn() {
-    mainBoard.surrenderTurn()
+  function finishTurnsTurn() {
+    mainBoard.finishTurnsTurn()
     updateGameData(mainBoard)
   }
   function updateGameData(board: GameBoard) {
-    if (board.passCounter >= board.players - board.surrenderedPlayers.size)
+    if (board.passCounter >= board.players - board.finishedPlayers.size)
       setGameWinner(board.scores.indexOf(Math.max(...board.scores)))
     setGameRep(board.toRep())
     triggerUpdater()
@@ -71,8 +71,8 @@ export default function GameControl(props: {
           <button className={styles.niceButton} onClick={passTurn}>
             Pass
           </button>
-          <button className={styles.niceButton} onClick={surrenderTurn}>
-            Surrender
+          <button className={styles.niceButton} onClick={finishTurnsTurn}>
+            Finish turns
           </button>
         </>
       )}
