@@ -16,8 +16,8 @@ export default class GameService {
       socket.send(
         JSON.stringify({
           nickname: nickname,
-          x_size: settings.height,
-          y_size: settings.width,
+          height: settings.height,
+          width: settings.width,
           players: settings.players,
           mode: settings.mode,
         }),

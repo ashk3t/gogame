@@ -1,16 +1,20 @@
 from datetime import datetime
+from enum import Enum
 from pydantic import BaseModel as BaseSchema, ConfigDict, Field
 
+from ..schemas.player import PlayerBase
 
-INITIAL_GAME_STATE = "INITIAL"
-DEFAULT_GAME_MODE = "CLASSIC"
+
+class GameMode(str, Enum):
+    CLASSIC = "CLASSIC"
+    ATATRI = "ATATRI"
 
 
 class GameSettingsBase(BaseSchema):
-    x_size: int
-    y_size: int
+    height: int
+    width: int
     players: int
-    mode: str = DEFAULT_GAME_MODE
+    mode: str = GameMode.CLASSIC
 
 
 class GameSettingsCreate(GameSettingsBase):
@@ -32,13 +36,17 @@ class GameCreate(GameBase):
 
 
 class GameUpdate(GameBase):
-    state: str
+    rep: str | None
 
 
 class GameResponse(GameBase):
     id: int
-    game_settings_id: int
+    settings: GameSettingsResponse
     start_time: datetime = Field(default_factory=datetime.utcnow)
-    state: str = INITIAL_GAME_STATE
+    rep: str | None
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class GameSearchRequest(GameSettingsBase, PlayerBase):
+    pass

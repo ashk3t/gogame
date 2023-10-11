@@ -14,8 +14,8 @@ async def add_commit_refresh(target: DBase):
 
 def equal_game_settings(settings):
     return and_(
-        GameSettingsModel.x_size == settings.x_size,
-        GameSettingsModel.y_size == settings.y_size,
+        GameSettingsModel.height == settings.height,
+        GameSettingsModel.width == settings.width,
         GameSettingsModel.players == settings.players,
         GameSettingsModel.mode == settings.mode,
     )

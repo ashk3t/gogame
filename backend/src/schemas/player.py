@@ -1,5 +1,6 @@
+import uuid
 from enum import Enum
-from pydantic import BaseModel as BaseSchema, ConfigDict
+from pydantic import BaseModel as BaseSchema, ConfigDict, ValidationError
 
 
 class PlayerStatus(str, Enum):
@@ -13,7 +14,12 @@ class PlayerBase(BaseSchema):
 
 
 class PlayerCreate(PlayerBase):
-    pass
+    game_id: int
+
+    def __init__(self, nickname: str, game_id: int) -> None:
+        super().__init__(nickname=nickname)
+        self.game_id = game_id
+        self.token = str(uuid.uuid4())
 
 
 class PlayerUpdate(PlayerBase):

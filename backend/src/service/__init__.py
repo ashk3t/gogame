@@ -1,3 +1,2 @@
-from .game import GameService, GameSettingsService
+from .game import GameService, GameSettingsService, GameSearchManager
 from .player import PlayerService
-from .search import SearchService, GameSearchManager

@@ -10,13 +10,9 @@ from .utils import add_commit_refresh
 
 def generate_basic_service_methods(Model, ResponseSchema, CreateSchema, UpdateSchema):
     @staticmethod
-    async def _get(id: int) -> Model:
-        result = await session.execute(select(Model).where(Model.id == id))
-        return result.scalars().one()
-
-    @staticmethod
     async def get(id: int) -> ResponseSchema:
-        return ResponseSchema.model_validate(_get(id))
+        result = await session.execute(select(Model).where(Model.id == id))
+        return ResponseSchema.model_validate(result.scalars().one())
 
     @staticmethod
     async def get_all(skip: int = 0, limit: int = 100) -> list[ResponseSchema]:
@@ -47,4 +43,4 @@ def generate_basic_service_methods(Model, ResponseSchema, CreateSchema, UpdateSc
         await session.execute(alc.delete(Model).where(Model.id == id))
         await session.commit()
 
-    return _get, get, get_all, create, update, delete
+    return get, get_all, create, update, delete

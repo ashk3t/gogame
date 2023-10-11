@@ -3,9 +3,8 @@ from datetime import datetime
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
-from src.schemas.player import PlayerStatus
-
-from .schemas.game import DEFAULT_GAME_MODE, INITIAL_GAME_STATE
+from .schemas.player import PlayerStatus
+from .schemas.game import GameMode
 from .database import DBase
 
 
@@ -18,21 +17,22 @@ class GameSettingsModel(BaseModel):
     __tablename__ = "game_settings"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    x_size: Mapped[int] = mapped_column()
-    y_size: Mapped[int] = mapped_column()
+    height: Mapped[int] = mapped_column()
+    width: Mapped[int] = mapped_column()
     players: Mapped[int] = mapped_column()
-    mode: Mapped[str] = mapped_column(default=DEFAULT_GAME_MODE)
+    mode: Mapped[str] = mapped_column(default=GameMode.CLASSIC)
 
 
 class GameModel(BaseModel):
     __tablename__ = "game"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    game_settings_id: Mapped[int] = mapped_column(ForeignKey("game_settings.id"))
-    start_time: Mapped[datetime] = mapped_column(default=datetime.utcnow)
-    state: Mapped[str] = mapped_column(default=INITIAL_GAME_STATE)
+    settings_id: Mapped[int] = mapped_column(ForeignKey("game_settings.id"))
+    search_start_time: Mapped[datetime] = mapped_column(default=datetime.utcnow)
+    start_time: Mapped[datetime | None] = mapped_column()
+    rep: Mapped[str| None] = mapped_column(default=None)
 
-    game_settings: Mapped["GameSettingsModel"] = relationship()
+    settings: Mapped["GameSettingsModel"] = relationship()
 
 
 class PlayerModel(BaseModel):
@@ -45,15 +45,3 @@ class PlayerModel(BaseModel):
     status: Mapped[str] = mapped_column(default=PlayerStatus.SEARCH)
 
     game: Mapped["GameModel"] = relationship()
-
-
-class SearchEntryModel(BaseModel):
-    __tablename__ = "search_entry"
-
-    id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    player_id: Mapped[int] = mapped_column(ForeignKey("player.id"))
-    game_settings_id: Mapped[int] = mapped_column(ForeignKey("game_settings.id"))
-    start_time: Mapped[datetime] = mapped_column(default=datetime.utcnow)
-
-    player: Mapped["PlayerModel"] = relationship()
-    game_settings: Mapped["GameSettingsModel"] = relationship()
