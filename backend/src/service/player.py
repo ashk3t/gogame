@@ -14,6 +14,6 @@ class PlayerService:
     )
 
     @staticmethod
-    async def get_by_token(token: str) -> PlayerResponse:
+    async def get_by_token(token: str) -> PlayerResponse | None:
         result = await session.execute(select(PlayerModel).where(PlayerModel.token == token))
         return PlayerResponse.model_validate(result.scalars().one())

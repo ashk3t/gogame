@@ -1,9 +1,8 @@
-import {GenericAction} from "../types/generic"
 import {AppDispatch, RootState} from "../store"
 import GameService from "../services/GameService"
 import {gameSlice} from "../reducers/game"
+import {playerSlice} from "../reducers/player"
 import {gameListSlice} from "../reducers/gameList"
-import {GameMode, PlayerStatus} from "../types/game"
 import {GameBoard} from "../lib/gamelogic"
 
 export const fetchAllGames = () => async (dispatch: AppDispatch) => {
@@ -18,8 +17,8 @@ export const startGame = () => async (dispatch: AppDispatch, getState: () => Roo
     const newGameRep = new GameBoard(settings.height, settings.width, settings.players).toRep()
     dispatch(gameSlice.actions.setGameRep(newGameRep))
   } else {
-    const nickname = state.gameReducer.player.nickname
-    dispatch(gameSlice.actions.updateNickname(""))
+    const nickname = state.playerReducer.nickname
+    // dispatch(playerSlice.actions.updateNickname(""))
     GameService.startSearch(nickname, settings)
   }
 }

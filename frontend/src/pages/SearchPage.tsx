@@ -1,5 +1,11 @@
+import {useNavigate} from "react-router-dom"
 import ScaryButton from "../components/buttons/ScaryButton"
 import styles from "../styles/base.module.css"
+import {useEffect} from "react"
+import {useAppSelector} from "../hooks/redux"
+import {GAME_PATH, START_PATH} from "../consts/pages"
+import NavButton from "../components/buttons/NavButton"
+import GameService from "../services/GameService"
 
 export default function SearchPage() {
   return (
@@ -13,7 +19,9 @@ export default function SearchPage() {
           <li>Phantazumu</li>
         </ul>
       </div>
-      <ScaryButton>Cancel</ScaryButton>
+      <NavButton path={START_PATH} callback={GameService.stopSearch} scary={true}>
+        Cancel
+      </NavButton>
     </main>
   )
 }

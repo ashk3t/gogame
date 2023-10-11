@@ -1,13 +1,6 @@
 import {PayloadAction, createSlice} from "@reduxjs/toolkit"
-import {GameMode, GameSettings, GameState, Player, PlayerStatus} from "../types/game"
-import {GameBoard, InvalidTurnError, StoneColor} from "../lib/gamelogic"
-
-const initialPlayer: Player = {
-  id: null,
-  token: null,
-  nickname: "",
-  status: PlayerStatus.NEW,
-}
+import {GameMode, GameSettings, GameState} from "../types/game"
+import {StoneColor} from "../lib/gamelogic"
 
 const initialGameSettings: GameSettings = {
   height: 19,
@@ -18,8 +11,6 @@ const initialGameSettings: GameSettings = {
 }
 
 const initialState: GameState = {
-  player: {...initialPlayer},
-  opponents: [],
   settings: initialGameSettings,
   rep: null,
   error: null,
@@ -30,9 +21,6 @@ export const gameSlice = createSlice({
   name: "game",
   initialState,
   reducers: {
-    updateNickname(state, action: PayloadAction<string>) {
-      state.player.nickname = action.payload
-    },
     updateGameSettings(state, action: PayloadAction<GameSettings>) {
       state.settings = action.payload
     },

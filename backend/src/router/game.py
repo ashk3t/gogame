@@ -21,29 +21,29 @@ async def get_games():
 async def search_game(websocket: WebSocket):
     async with GameSearchManager(websocket) as manager:
         gamedata = await manager.get_gamedata()
-        game_settings = await GameSettingsService.create(
-            GameSettingsCreate(**gamedata.model_dump())
-        )
+        settings = GameSettingsCreate(**gamedata.model_dump())
 
-        relevant_game = await GameService.find_relevant(game_settings)
-        game = (
-            relevant_game
-            if relevant_game is not None
-            else await GameService.create(GameCreate(game_settings_id=game_settings.id))
-        )
+        game = await GameService.find_relevant(settings)
+        if not game:
+            settings = await GameSettingsService.create(settings)
+            game = await GameService.create(GameCreate(settings_id=settings.id))
 
-        new_player = await PlayerService.create(
+        player = await PlayerService.create(
             PlayerCreate(nickname=gamedata.nickname, game_id=game.id)
         )
-        manager.bind(game.id, new_player.id)
+        manager.bind_connection(game.id, player.id)
 
-        if len(manager.connections[game.id]) == game.settings.players:
-            pass
-            # TODO: notify all players about game start
-
-        await manager.wait()
+        await manager.send_all("player_connect", nickname=player.nickname)
+        while len(manager.connections[game.id]) < settings.players:
+            await manager.wait_message()
+        await manager.send_self("game_start", player=player.model_dump())
 
 
 @router.websocket("/join")
 async def join_game(websocket: WebSocket):
+    pass
+
+
+@router.websocket("/reconnect")
+async def reconnect(websocket: WebSocket):
     pass

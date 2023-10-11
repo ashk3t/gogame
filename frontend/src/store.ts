@@ -1,5 +1,4 @@
 import {combineReducers} from "redux"
-import thunk from "redux-thunk"
 import {
   persistStore,
   persistReducer,
@@ -11,13 +10,13 @@ import {
   REGISTER,
 } from "redux-persist"
 import storage from "redux-persist/lib/storage"
-import requestReducer from "./reducers/request"
+import playerReducer from "./reducers/player"
 import gameReducer from "./reducers/game"
 import gameListReducer from "./reducers/gameList"
 import {configureStore} from "@reduxjs/toolkit"
 
 const rootReducer = combineReducers({
-  requestReducer,
+  playerReducer,
   gameReducer: persistReducer({key: "gameReducer", storage}, gameReducer),
   gameListReducer,
 })

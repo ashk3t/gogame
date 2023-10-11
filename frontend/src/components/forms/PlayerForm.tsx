@@ -1,8 +1,8 @@
 import {useActions, useAppSelector} from "../../hooks/redux"
 import styles from "../../styles/base.module.css"
 
-export default function PlayerInput() {
-  const nickname = useAppSelector((state) => state.gameReducer.player.nickname)
+export default function PlayerForm() {
+  const nickname = useAppSelector((state) => state.playerReducer.nickname)  // TODO: make required
   const {updateNickname} = useActions()
 
   return (

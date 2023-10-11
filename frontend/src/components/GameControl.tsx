@@ -1,6 +1,6 @@
-import {GAME_LIST_PATH, START_PATH} from "../consts/pages"
+import {START_PATH} from "../consts/pages"
 import {useActions, useAppSelector} from "../hooks/redux"
-import {GameBoard, StoneColor} from "../lib/gamelogic"
+import {GameBoard} from "../lib/gamelogic"
 import styles from "../styles/GameControl.module.css"
 import NavButton from "./buttons/NavButton"
 import NiceButton from "./buttons/NiceButton"

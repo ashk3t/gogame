@@ -29,7 +29,7 @@ class GameModel(BaseModel):
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     settings_id: Mapped[int] = mapped_column(ForeignKey("game_settings.id"))
     search_start_time: Mapped[datetime] = mapped_column(default=datetime.utcnow)
-    start_time: Mapped[datetime | None] = mapped_column()
+    start_time: Mapped[datetime | None] = mapped_column(default=None)
     rep: Mapped[str| None] = mapped_column(default=None)
 
     settings: Mapped["GameSettingsModel"] = relationship()

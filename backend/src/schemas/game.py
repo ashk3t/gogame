@@ -32,7 +32,7 @@ class GameBase(BaseSchema):
 
 
 class GameCreate(GameBase):
-    game_settings_id: int
+    settings_id: int
 
 
 class GameUpdate(GameBase):
@@ -41,8 +41,8 @@ class GameUpdate(GameBase):
 
 class GameResponse(GameBase):
     id: int
-    settings: GameSettingsResponse
-    start_time: datetime = Field(default_factory=datetime.utcnow)
+    settings_id: int
+    start_time: datetime | None
     rep: str | None
 
     model_config = ConfigDict(from_attributes=True)

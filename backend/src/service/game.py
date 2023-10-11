@@ -22,9 +22,12 @@ class GameService:
         try:
             result = await session.execute(
                 select(GameModel)
-                .options(selectinload(GameModel.settings))
+                # .options(selectinload(GameModel.settings))
                 .where(
-                    GameModel.settings.has(equal_game_settings(game_settings))
+                    and_(
+                        GameModel.start_time == None,
+                        GameModel.settings.has(equal_game_settings(game_settings)),
+                    )
                 ).order_by(desc(GameModel.search_start_time)),
             )
             return GameResponse.model_validate(result.scalars().one())
@@ -49,32 +52,43 @@ class GameSearchManager:
 
     def __init__(self, websocket: WebSocket):
         self.websocket = websocket
-        self.game_id = None
-        self.player_id = None
+        self.game_id = 0
+        self.player_id = 0
 
     async def __aenter__(self):
         await self.websocket.accept()
         return self
 
     async def __aexit__(self, exc_type, exc_value, exc_tb):
-        await self.unbind()
+        await self.unbind_connection()
         if not exc_value or exc_type is WebSocketDisconnect:
             return True
 
-    def bind(self, game_id: int, player_id: int):
+    def bind_connection(self, game_id: int, player_id: int):
         self.game_id = game_id
         self.player_id = player_id
+        if not game_id in self.connections:
+            self.connections[game_id] = {}
         self.connections[game_id][player_id] = self.websocket
 
-    async def unbind(self):
+    async def unbind_connection(self):
         if self.game_id and self.player_id:
             self.connections[self.game_id].pop(self.player_id)
             if len(self.connections[self.game_id]) == 0:
                 self.connections.pop(self.game_id)
 
     async def get_gamedata(self):
-        data: dict = await self.websocket.receive_json()
+        data = await self.websocket.receive_json()
         return GameSearchRequest(**data)
+
+    async def send_self(self, data_type: str, **data):
+        data["type"] = data_type
+        await self.websocket.send_json(data)
+
+    async def send_all(self, data_type: str, **data):
+        data["type"] = data_type
+        for connection in self.connections[self.game_id].values():
+            await connection.send_json(data)
 
     # async def connect_players(
     #     self, white_player: PlayerResponse, black_player: PlayerResponse
@@ -83,5 +97,5 @@ class GameSearchManager:
     #         websocket = self.connections[player.id]
     #         await websocket.send_json(player.model_dump())
 
-    async def wait(self):
-        await self.websocket.receive_bytes()
+    async def wait_message(self) -> dict:
+        return await self.websocket.receive_json()
