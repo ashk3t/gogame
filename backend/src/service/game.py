@@ -90,12 +90,5 @@ class GameSearchManager:
         for connection in self.connections[self.game_id].values():
             await connection.send_json(data)
 
-    # async def connect_players(
-    #     self, white_player: PlayerResponse, black_player: PlayerResponse
-    # ):
-    #     for player in (white_player, black_player):
-    #         websocket = self.connections[player.id]
-    #         await websocket.send_json(player.model_dump())
-
     async def wait_message(self) -> dict:
         return await self.websocket.receive_json()

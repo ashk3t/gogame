@@ -8,6 +8,7 @@ const initialGameSettings: GameSettings = {
   players: 2,
   mode: GameMode.CLASSIC,
   offline: false,
+  hidden: false,
 }
 
 const initialState: GameState = {
@@ -33,7 +34,7 @@ export const gameSlice = createSlice({
     setGameWinner(state, action: PayloadAction<StoneColor>) {
       state.winner = action.payload
     },
-    endGame: () => initialState
+    endGame: () => initialState,
   },
 })
 

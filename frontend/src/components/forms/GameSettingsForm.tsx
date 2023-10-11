@@ -10,52 +10,68 @@ export default function GameSettingsForm() {
 
   return (
     <div className={styles.vcenteringContainer}>
-      <h3>Game settings</h3>
       <div className={styles.centeringContainer}>
-        <h6>Height:</h6>
-        <IntegerInput
-          value={settings.height}
-          setValue={(value: number) => updateGameSettings({...settings, height: value})}
-          limits={{min: 5, max: 25}}
-        />
-        <h6>Width:</h6>
-        <IntegerInput
-          value={settings.width}
-          setValue={(value: number) => updateGameSettings({...settings, width: value})}
-          limits={{min: 5, max: 25}}
-        />
-      </div>
-      <div className={styles.centeringContainer}>
-        <h6>Players:</h6>
-        <IntegerInput
-          value={settings.players}
-          setValue={(value: number) => updateGameSettings({...settings, players: value})}
-          limits={{min: 2, max: 6}}
-        />
-        <h6>Mode:</h6>
-        <select
-          value={settings.mode}
-          onChange={(event) =>
-            updateGameSettings({...settings, mode: event.target.value as GameMode})
-          }
-          className={styles.niceSelect}
-        >
-          {Object.values(GameMode).map((value) => (
-            <option key={value} value={value}>{capitalize(value)}</option>
-          ))}
-        </select>
-      </div>
-      <div className={styles.centeringContainer}>
-        <h6>Offline:</h6>
+        <h3>Game settings</h3>
         <input
           type="checkbox"
-          checked={settings.offline}
+          checked={!settings.hidden}
           onChange={(event) => {
-            updateGameSettings({...settings, offline: event.target.checked})
+            updateGameSettings({...settings, hidden: !event.target.checked})
           }}
           className={styles.niceCheckbox}
         />
       </div>
+      {!settings.hidden && (
+        <>
+          <div className={styles.centeringContainer}>
+            <h6>Height:</h6>
+            <IntegerInput
+              value={settings.height}
+              setValue={(value: number) => updateGameSettings({...settings, height: value})}
+              limits={{min: 5, max: 25}}
+            />
+            <h6>Width:</h6>
+            <IntegerInput
+              value={settings.width}
+              setValue={(value: number) => updateGameSettings({...settings, width: value})}
+              limits={{min: 5, max: 25}}
+            />
+          </div>
+          <div className={styles.centeringContainer}>
+            <h6>Players:</h6>
+            <IntegerInput
+              value={settings.players}
+              setValue={(value: number) => updateGameSettings({...settings, players: value})}
+              limits={{min: 2, max: 6}}
+            />
+            <h6>Mode:</h6>
+            <select
+              value={settings.mode}
+              onChange={(event) =>
+                updateGameSettings({...settings, mode: event.target.value as GameMode})
+              }
+              className={styles.niceSelect}
+            >
+              {Object.values(GameMode).map((value) => (
+                <option key={value} value={value}>
+                  {capitalize(value)}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className={styles.centeringContainer}>
+            <h6>Offline:</h6>
+            <input
+              type="checkbox"
+              checked={settings.offline}
+              onChange={(event) => {
+                updateGameSettings({...settings, offline: event.target.checked})
+              }}
+              className={styles.niceCheckbox}
+            />
+          </div>
+        </>
+      )}
     </div>
   )
 }

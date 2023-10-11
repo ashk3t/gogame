@@ -11,6 +11,7 @@ export interface GameSettings {
   players: number;
   mode: GameMode;
   offline: boolean;
+  hidden: boolean;
 }
 
 export interface GameState {

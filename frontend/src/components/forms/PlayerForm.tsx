@@ -2,7 +2,7 @@ import {useActions, useAppSelector} from "../../hooks/redux"
 import styles from "../../styles/base.module.css"
 
 export default function PlayerForm() {
-  const nickname = useAppSelector((state) => state.playerReducer.nickname)  // TODO: make required
+  const nickname = useAppSelector((state) => state.playerReducer.currentPlayer.nickname)
   const {updateNickname} = useActions()
 
   return (

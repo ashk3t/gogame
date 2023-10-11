@@ -8,15 +8,20 @@ import NavButton from "../components/buttons/NavButton"
 import GameService from "../services/GameService"
 
 export default function SearchPage() {
+  const maxPlayers = useAppSelector((state) => state.gameReducer.settings.players)
+  const connectedPlayers = useAppSelector((state) => state.playerReducer.players)
+
   return (
     <main className={`${styles.vcenteringContainer} ${styles.marginEverything}`}>
       <h1>Search...</h1>
       <div className={`${styles.frame} ${styles.vcenteringContainer}`}>
-        <h3>3/5</h3>
+        <h3>
+          {connectedPlayers.length}/{maxPlayers}
+        </h3>
         <ul className={styles.vcenteringContainer}>
-          <li>Shk3t</li>
-          <li>ashket</li>
-          <li>Phantazumu</li>
+          {connectedPlayers.map((player) => (
+            <li>{player.nickname}</li>
+          ))}
         </ul>
       </div>
       <NavButton path={START_PATH} callback={GameService.stopSearch} scary={true}>

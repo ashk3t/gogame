@@ -35,8 +35,8 @@ export default function GameInfo(props: {board: GameBoard; updater: any}) {
         <h4>Score:</h4>
         {board.scores.map((score, idx) => (
           <div key={idx} style={{color: stoneHexColors[idx]}}>
-            {capitalize(StoneColor[idx]).padStart(6) + ": "}
-            {score.toFixed(0).padEnd(4) +
+            {capitalize(StoneColor[idx]).padStart(6)}
+            {(": " + score.toFixed(0).padEnd(4)) +
               (board.finishedPlayers.has(idx)
                 ? " (finished)"
                 : passedPlayers[idx]

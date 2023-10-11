@@ -17,7 +17,7 @@ export const startGame = () => async (dispatch: AppDispatch, getState: () => Roo
     const newGameRep = new GameBoard(settings.height, settings.width, settings.players).toRep()
     dispatch(gameSlice.actions.setGameRep(newGameRep))
   } else {
-    const nickname = state.playerReducer.nickname
+    const nickname = state.playerReducer.currentPlayer.nickname
     // dispatch(playerSlice.actions.updateNickname(""))
     GameService.startSearch(nickname, settings)
   }
