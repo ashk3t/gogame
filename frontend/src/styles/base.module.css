@@ -1,4 +1,5 @@
-.defaultMargin *:not(div) {
+.defaultMargin *:not(div),
+.marginEverything * {
   margin: var(--default-margin);
 }
 
@@ -11,6 +12,15 @@
 .vcenteringContainer {
   flex-direction: column;
 }
+ul.vcenteringContainer > li {
+  font-size: 1.2em;
+  margin: 0.2em 0;
+}
+
+.frame {
+  padding: 15px 60px;
+  border: 6px solid var(--iris);
+}
 
 .niceButton,
 .niceInput,
@@ -19,10 +29,12 @@
   transition: 0.2s all;
 }
 
-.niceButton, .scaryButton {
+.niceButton,
+.scaryButton {
   padding: 10px 20px;
 }
-.niceButton:hover, .scaryButton:hover {
+.niceButton:hover,
+.scaryButton:hover {
   background-color: var(--highlight-low);
 }
 .niceButton {

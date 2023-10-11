@@ -12,13 +12,13 @@ export default function GameSettingsForm() {
     <div className={styles.vcenteringContainer}>
       <h3>Game settings</h3>
       <div className={styles.centeringContainer}>
-        <h5>Height:</h5>
+        <h6>Height:</h6>
         <IntegerInput
           value={settings.height}
           setValue={(value: number) => updateGameSettings({...settings, height: value})}
           limits={{min: 5, max: 25}}
         />
-        <h5>Width:</h5>
+        <h6>Width:</h6>
         <IntegerInput
           value={settings.width}
           setValue={(value: number) => updateGameSettings({...settings, width: value})}
@@ -26,13 +26,13 @@ export default function GameSettingsForm() {
         />
       </div>
       <div className={styles.centeringContainer}>
-        <h5>Players:</h5>
+        <h6>Players:</h6>
         <IntegerInput
           value={settings.players}
           setValue={(value: number) => updateGameSettings({...settings, players: value})}
           limits={{min: 2, max: 6}}
         />
-        <h5>Mode:</h5>
+        <h6>Mode:</h6>
         <select
           value={settings.mode}
           onChange={(event) =>
@@ -46,7 +46,7 @@ export default function GameSettingsForm() {
         </select>
       </div>
       <div className={styles.centeringContainer}>
-        <h5>Offline:</h5>
+        <h6>Offline:</h6>
         <input
           type="checkbox"
           checked={settings.offline}
