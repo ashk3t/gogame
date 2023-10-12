@@ -11,7 +11,7 @@ export interface GameSettings {
   players: number;
   mode: GameMode;
   offline: boolean;
-  hidden: boolean;
+  custom: boolean;
 }
 
 export interface GameState {
@@ -19,4 +19,13 @@ export interface GameState {
   rep: string | null,
   error: string | null
   winner: StoneColor | null
+}
+
+export const defaultGameSettings: GameSettings = {
+  custom: false,
+  height: 19,
+  width: 19,
+  players: 2,
+  mode: GameMode.CLASSIC,
+  offline: false,
 }

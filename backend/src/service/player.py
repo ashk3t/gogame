@@ -15,5 +15,17 @@ class PlayerService:
 
     @staticmethod
     async def get_by_token(token: str) -> PlayerResponse | None:
-        result = await session.execute(select(PlayerModel).where(PlayerModel.token == token))
+        result = await session.execute(
+            select(PlayerModel).where(PlayerModel.token == token)
+        )
         return PlayerResponse.model_validate(result.scalars().one())
+
+    @staticmethod
+    async def get_by_game_id(game_id: int) -> list[PlayerResponse]:
+        result = await session.execute(
+            select(PlayerModel).where(PlayerModel.game_id == game_id)
+        )
+        return [
+            PlayerResponse.model_validate(model)
+            for model in list(result.scalars().all())
+        ]

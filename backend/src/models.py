@@ -17,9 +17,9 @@ class GameSettingsModel(BaseModel):
     __tablename__ = "game_settings"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    height: Mapped[int] = mapped_column()
-    width: Mapped[int] = mapped_column()
-    players: Mapped[int] = mapped_column()
+    height: Mapped[int] = mapped_column(default=19)
+    width: Mapped[int] = mapped_column(default=19)
+    players: Mapped[int] = mapped_column(default=2)
     mode: Mapped[str] = mapped_column(default=GameMode.CLASSIC)
 
 
@@ -39,7 +39,7 @@ class PlayerModel(BaseModel):
     __tablename__ = "player"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    game_id: Mapped[int | None] = mapped_column(ForeignKey("game.id"))
+    game_id: Mapped[int] = mapped_column(ForeignKey("game.id", ondelete="CASCADE"))
     token: Mapped[str] = mapped_column(unique=True, index=True)
     nickname: Mapped[str] = mapped_column(unique=True)
     status: Mapped[str] = mapped_column(default=PlayerStatus.SEARCH)

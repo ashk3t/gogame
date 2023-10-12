@@ -11,30 +11,28 @@ export default class GameService {
     return response.data
   }
 
-  static startSearch(nickname: string, settings: GameSettings) {
-    const socket = new WebSocket(WS_API_URL + "/games/search")
-    GameService.socket = socket
+  static startSearch(nickname: string, settings: GameSettings): WebSocket {
+    const socket = new WebSocket(WS_API_URL + GameService.baseUrl + "/search")
     socket.onopen = (_) => {
       socket.send(
-        JSON.stringify({
-          nickname: nickname,
-          height: settings.height,
-          width: settings.width,
-          players: settings.players,
-          mode: settings.mode,
-        }),
+        JSON.stringify(
+          settings.custom
+            ? {
+                nickname: nickname,
+                height: settings.height,
+                width: settings.width,
+                players: settings.players,
+                mode: settings.mode,
+              }
+            : {nickname: nickname},
+        ),
       )
     }
-    socket.onmessage = (event) => {
-      const data = JSON.parse(event.data)
-
-      // switch (data.type) {
-      //   case:
-      // }
-    }
+    GameService.socket = socket
+    return socket
   }
 
-  static stopSearch() {
-    if (GameService.socket != null) GameService.socket.close()
+  static endGame() {
+    GameService.socket?.close()
   }
 }

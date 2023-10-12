@@ -4,6 +4,8 @@ from fastapi import WebSocket
 from sqlalchemy import and_, delete, desc, select
 from sqlalchemy.orm import selectinload
 
+from src.service.player import PlayerService
+
 from ..dependencies import session
 from ..schemas.game import *
 from ..schemas.player import *
@@ -74,8 +76,11 @@ class GameSearchManager:
     async def unbind_connection(self):
         if self.game_id and self.player_id:
             self.connections[self.game_id].pop(self.player_id)
+            await PlayerService.delete(self.player_id)
+            await self.send_all("player_disconnect", player_id=self.player_id)
             if len(self.connections[self.game_id]) == 0:
                 self.connections.pop(self.game_id)
+                await GameService.delete(self.game_id)
 
     async def get_gamedata(self):
         data = await self.websocket.receive_json()

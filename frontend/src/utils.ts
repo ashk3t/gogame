@@ -1,6 +1,5 @@
 import {capitalize} from "lodash"
-import {nicknameLabels, stoneHexColors} from "./consts/utils"
-import {GameBoard} from "./lib/gamelogic"
+import {nicknameLabels} from "./consts/utils"
 
 export function loadScript(src: string) {
   return new Promise<void>((resolve, reject) => {

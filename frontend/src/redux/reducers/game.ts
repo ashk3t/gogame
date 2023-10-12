@@ -1,18 +1,10 @@
 import {PayloadAction, createSlice} from "@reduxjs/toolkit"
-import {GameMode, GameSettings, GameState} from "../types/game"
-import {StoneColor} from "../lib/gamelogic"
-
-const initialGameSettings: GameSettings = {
-  height: 19,
-  width: 19,
-  players: 2,
-  mode: GameMode.CLASSIC,
-  offline: false,
-  hidden: false,
-}
+import {GameMode, GameSettings, GameState, defaultGameSettings} from "../../types/game"
+import {StoneColor} from "../../lib/gamelogic"
+import GameService from "../../services/GameService"
 
 const initialState: GameState = {
-  settings: initialGameSettings,
+  settings: defaultGameSettings,
   rep: null,
   error: null,
   winner: null,
@@ -34,7 +26,9 @@ export const gameSlice = createSlice({
     setGameWinner(state, action: PayloadAction<StoneColor>) {
       state.winner = action.payload
     },
-    endGame: () => initialState,
+    clearGamedata(state) {
+      return {...initialState, settings: state.settings}
+    }
   },
 })
 

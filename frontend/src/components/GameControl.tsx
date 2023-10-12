@@ -1,7 +1,8 @@
 import {START_PATH} from "../consts/pages"
-import {useActions, useAppSelector} from "../hooks/redux"
+import {useActions, useAppSelector} from "../redux/hooks"
 import {GameBoard} from "../lib/gamelogic"
 import styles from "../styles/GameControl.module.css"
+import {GameMode} from "../types/game"
 import NavButton from "./buttons/NavButton"
 import NiceButton from "./buttons/NiceButton"
 import ScaryButton from "./buttons/ScaryButton"
@@ -12,13 +13,13 @@ export default function GameControl(props: {
   setDraftBoard: (value: GameBoard | null) => void
   draftHistory: string[]
   setDraftHistory: (value: string[]) => void
-  triggerUpdater: () => void
 }) {
-  const {mainBoard, draftBoard, setDraftBoard, draftHistory, setDraftHistory, triggerUpdater} =
+  const {mainBoard, draftBoard, setDraftBoard, draftHistory, setDraftHistory} =
     props
   const {setGameRep, endGame, setGameWinner, setTurnError} = useActions()
 
   const isOffline = useAppSelector((state) => state.gameReducer.settings.offline)
+  const gameMode = useAppSelector((state) => state.gameReducer.settings.mode)
   const winnerColor = useAppSelector((state) => state.gameReducer.winner)
 
   function startDraft() {
@@ -48,7 +49,6 @@ export default function GameControl(props: {
     if (board.passCounter >= board.players - board.finishedPlayers.size)
       setGameWinner(board.scores.indexOf(Math.max(...board.scores)))
     setGameRep(board.toRep())
-    triggerUpdater()
   }
 
   return (
@@ -64,9 +64,11 @@ export default function GameControl(props: {
       {winnerColor == null && !draftBoard && (
         <>
           <NiceButton onClick={startDraft}>Draft mode</NiceButton>
-          <NiceButton onClick={passTurn}>Pass</NiceButton>
+          {gameMode != GameMode.ATARI && <NiceButton onClick={passTurn}>Pass</NiceButton>}
           <h6></h6>
-          <ScaryButton onClick={finishTurnsTurn}>Finish turns</ScaryButton>
+          {gameMode != GameMode.ATARI && (
+            <ScaryButton onClick={finishTurnsTurn}>Finish turns</ScaryButton>
+          )}
         </>
       )}
       {(winnerColor != null || isOffline) && (

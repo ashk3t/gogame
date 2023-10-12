@@ -1,5 +1,5 @@
 export interface Player {
-  // id: number | null
+  id: number | null
   // token: string | null
   nickname: string
   // status: PlayerStatus

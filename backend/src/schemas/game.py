@@ -11,9 +11,9 @@ class GameMode(str, Enum):
 
 
 class GameSettingsBase(BaseSchema):
-    height: int
-    width: int
-    players: int
+    height: int = 19
+    width: int = 19
+    players: int = 2
     mode: str = GameMode.CLASSIC
 
 

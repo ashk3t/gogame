@@ -1,5 +1,4 @@
 import {PayloadAction, createSlice} from "@reduxjs/toolkit"
-import {Player} from "../types/game"
 
 const initialState = {
   games: [],

@@ -57,7 +57,9 @@ ul.vcenteringContainer > li {
 }
 
 .niceInput:focus,
-.niceInput:hover,
+.niceInput:hover {
+  color: var(--rose);
+}
 .niceSelect:hover {
   color: var(--iris);
 }

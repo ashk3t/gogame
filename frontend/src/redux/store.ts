@@ -16,8 +16,14 @@ import gameListReducer from "./reducers/gameList"
 import {configureStore} from "@reduxjs/toolkit"
 
 const rootReducer = combineReducers({
-  playerReducer,
-  gameReducer: persistReducer({key: "gameReducer", storage}, gameReducer),
+  playerReducer: persistReducer(
+    {key: "playerReducer", storage, whitelist: ["thisPlayer"]},
+    playerReducer,
+  ),
+  gameReducer: persistReducer(
+    {key: "gameReducer", storage, whitelist: ["settings", "rep"]},
+    gameReducer,
+  ),
   gameListReducer,
 })
 

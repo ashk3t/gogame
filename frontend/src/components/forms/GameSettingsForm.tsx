@@ -1,4 +1,4 @@
-import {useActions, useAppSelector} from "../../hooks/redux"
+import {useActions, useAppSelector} from "../../redux/hooks"
 import {capitalize} from "lodash"
 import styles from "../../styles/base.module.css"
 import {GameMode} from "../../types/game"
@@ -11,17 +11,17 @@ export default function GameSettingsForm() {
   return (
     <div className={styles.vcenteringContainer}>
       <div className={styles.centeringContainer}>
-        <h3>Game settings</h3>
+        <h3>Custom game</h3>
         <input
           type="checkbox"
-          checked={!settings.hidden}
+          checked={settings.custom}
           onChange={(event) => {
-            updateGameSettings({...settings, hidden: !event.target.checked})
+            updateGameSettings({...settings, custom: event.target.checked})
           }}
           className={styles.niceCheckbox}
         />
       </div>
-      {!settings.hidden && (
+      {settings.custom && (
         <>
           <div className={styles.centeringContainer}>
             <h6>Height:</h6>

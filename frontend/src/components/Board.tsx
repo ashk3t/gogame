@@ -1,6 +1,6 @@
 import styles from "../styles/Board.module.css"
 import {useMemo, useState} from "react"
-import {useActions, useAppSelector} from "../hooks/redux"
+import {useActions, useAppSelector} from "../redux/hooks"
 import CircleSvg from "../assets/CircleSvg"
 import {BoardIntersectionStyler} from "../utils"
 import {GameBoard, InvalidTurnError, Stone, splitIJ} from "../lib/gamelogic"
@@ -11,10 +11,8 @@ export default function Board(props: {
   board: GameBoard
   draftMode: boolean
   updateDraftHistory: (board: GameBoard) => void
-  updater: any
-  triggerUpdater: () => void
 }) {
-  const {board, draftMode, updateDraftHistory, triggerUpdater} = props
+  const {board, draftMode, updateDraftHistory} = props
   const {setGameRep, setTurnError, setGameWinner} = useActions()
 
   const gameMode = useAppSelector((state) => state.gameReducer.settings.mode)
@@ -45,8 +43,7 @@ export default function Board(props: {
     setTurnError(null)
 
     if (gameMode == GameMode.ATARI && board.killer && !draftMode) setGameWinner(board.killer)
-    setGameRep(board.toRep())
-    triggerUpdater()
+    if (!draftMode) setGameRep(board.toRep())
   }
 
   function updateHints(i: number, j: number) {

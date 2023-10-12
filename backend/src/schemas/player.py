@@ -34,4 +34,6 @@ class PlayerUpdate(PlayerBase):
 
 class PlayerResponse(PlayerUpdate):
     id: int
+
+class PlayerWithToken(PlayerResponse):
     token: str

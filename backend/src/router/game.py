@@ -1,5 +1,7 @@
 from fastapi import APIRouter, WebSocket
 
+from src.service.utils import list_model_dump
+
 from ..schemas import *
 from ..service import *
 
@@ -33,8 +35,10 @@ async def search_game(websocket: WebSocket):
         )
         manager.bind_connection(game.id, player.id)
 
-        await manager.send_all("player_connect", nickname=player.nickname)
-        while len(manager.connections[game.id]) < settings.players:
+        game_players = await PlayerService.get_by_game_id(game.id)
+        await manager.send_all("player_connect", players=list_model_dump(game_players))
+        # while len(manager.connections[game.id]) < settings.players:
+        while True:
             await manager.wait_message()
         await manager.send_self("game_start", player=player.model_dump())
 
