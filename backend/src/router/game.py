@@ -14,9 +14,9 @@ async def get_game(id: int):
     return await GameService.get(id)
 
 
-@router.get("", response_model=list[GameResponse])
+@router.get("", response_model=list[GameExtendedResponse])
 async def get_games():
-    return await GameService.get_all()
+    return await GameService.get_all_ext()
 
 
 @router.websocket("/search")

@@ -6,14 +6,15 @@ import {gameListSlice} from "../reducers/gameList"
 import {GameBoard} from "../../lib/gamelogic"
 
 export const fetchAllGames = () => async (dispatch: AppDispatch) => {
-  dispatch(gameListSlice.actions.setGames(await GameService.getAll()))
+  const data = await GameService.getAll()
+  dispatch(gameListSlice.actions.setGames(data))
 }
 
 export const startGame = () => async (dispatch: AppDispatch, getState: () => RootState) => {
   const state = getState()
   const settings = state.gameReducer.settings
 
-  if (settings.offline) {
+  if (settings.custom && settings.offline) {
     const newGameRep = new GameBoard(settings.height, settings.width, settings.players).toRep()
     dispatch(gameSlice.actions.setGameRep(newGameRep))
   } else {

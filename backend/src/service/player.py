@@ -25,7 +25,4 @@ class PlayerService:
         result = await session.execute(
             select(PlayerModel).where(PlayerModel.game_id == game_id)
         )
-        return [
-            PlayerResponse.model_validate(model)
-            for model in list(result.scalars().all())
-        ]
+        return list(map(PlayerResponse.model_validate, result.scalars().all()))

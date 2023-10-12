@@ -15,12 +15,9 @@ def generate_basic_service_methods(Model, ResponseSchema, CreateSchema, UpdateSc
         return ResponseSchema.model_validate(result.scalars().one())
 
     @staticmethod
-    async def get_all(skip: int = 0, limit: int = 100) -> list[ResponseSchema]:
+    async def get_all(skip: int = 0, limit: int = 10) -> list[ResponseSchema]:
         result = await session.execute(select(Model).offset(skip).limit(limit))
-        return [
-            ResponseSchema.model_validate(model)
-            for model in list(result.scalars().all())
-        ]
+        return list(map(ResponseSchema.model_validate, result.scalars().all()))
 
     @staticmethod
     async def create(schema: CreateSchema) -> ResponseSchema:

@@ -1,9 +1,9 @@
 import {PayloadAction, createSlice} from "@reduxjs/toolkit"
-import {GameMode, GameSettings, GameState, defaultGameSettings} from "../../types/game"
+import {GameMode, GameSettings, Game, defaultGameSettings} from "../../types/game"
 import {StoneColor} from "../../lib/gamelogic"
 import GameService from "../../services/GameService"
 
-const initialState: GameState = {
+const initialState: Game = {
   settings: defaultGameSettings,
   rep: null,
   error: null,

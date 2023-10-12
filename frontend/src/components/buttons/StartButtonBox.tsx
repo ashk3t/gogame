@@ -6,10 +6,11 @@ import NiceButton from "./NiceButton"
 
 export default function StartButtonBox() {
   const {startGame} = useActions()
+  const isCustom = useAppSelector((state) => state.gameReducer.settings.custom)
   const isOffline = useAppSelector((state) => state.gameReducer.settings.offline)
   const nickname = useAppSelector((state) => state.playerReducer.thisPlayer.nickname)
 
-  if (!nickname && !isOffline) return <></>
+  if (!nickname && !(isCustom && isOffline)) return <></>
 
   return (
     <div className={styles.centeringContainer}>

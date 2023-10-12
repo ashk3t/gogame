@@ -14,7 +14,7 @@ export interface GameSettings {
   custom: boolean;
 }
 
-export interface GameState {
+export interface Game {
   settings: GameSettings
   rep: string | null,
   error: string | null

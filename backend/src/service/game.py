@@ -20,6 +20,16 @@ class GameService:
     )
 
     @staticmethod
+    async def get_all_ext(skip: int = 0, limit: int = 10) -> list[GameExtendedResponse]:
+        result = await session.execute(
+            select(GameModel)
+            .options(selectinload(GameModel.settings))
+            .offset(skip)
+            .limit(limit)
+        )
+        return list(map(GameExtendedResponse.model_validate, result.scalars().all()))
+
+    @staticmethod
     async def find_relevant(game_settings: GameSettingsBase) -> GameResponse | None:
         try:
             result = await session.execute(

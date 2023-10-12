@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import Enum
-from pydantic import BaseModel as BaseSchema, ConfigDict, Field
+from pydantic import BaseModel as BaseSchema, ConfigDict
 
 from ..schemas.player import PlayerBase
 
@@ -36,7 +36,11 @@ class GameCreate(GameBase):
 
 
 class GameUpdate(GameBase):
-    rep: str | None
+    start_time: datetime
+    rep: str
+
+    def __init__(self, rep: str):
+        super().__init__(start_time=datetime.utcnow(), rep=rep)  # pyright: ignore
 
 
 class GameResponse(GameBase):
@@ -46,6 +50,10 @@ class GameResponse(GameBase):
     rep: str | None
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class GameExtendedResponse(GameResponse):
+    settings: GameSettingsResponse
 
 
 class GameSearchRequest(GameSettingsBase, PlayerBase):
