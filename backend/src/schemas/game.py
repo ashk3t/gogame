@@ -36,11 +36,7 @@ class GameCreate(GameBase):
 
 
 class GameUpdate(GameBase):
-    start_time: datetime
     rep: str
-
-    def __init__(self, rep: str):
-        super().__init__(start_time=datetime.utcnow(), rep=rep)  # pyright: ignore
 
 
 class GameResponse(GameBase):

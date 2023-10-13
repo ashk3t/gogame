@@ -1,14 +1,12 @@
 export interface Player {
   id: number | null
-  // token: string | null
+  token: string | null
   nickname: string
-  // status: PlayerStatus
+  status: PlayerStatus
 }
 
 export enum PlayerStatus {
-  NEW = "NEW",
+  PLAYING = "PLAYING",
   SEARCH = "SEARCH",
-  WHITE = "WHITE",
-  BLACK = "BLACK",
   SPECTATOR = "SPECTATOR",
 }

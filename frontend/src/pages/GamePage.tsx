@@ -1,42 +1,25 @@
-import {useState} from "react"
 import Board from "../components/Board"
 import GameInfo from "../components/GameInfo"
 import GameControl from "../components/GameControl"
 import styles from "../styles/pages/GamePage.module.css"
-import {useAppSelector} from "../redux/hooks"
 import {GameBoard} from "../lib/gamelogic"
-import useUpdater from "../hooks/useUpdater"
+import {useEffect, useState} from "react"
+import {useAppSelector} from "../redux/hooks"
 
 export default function GamePage() {
-  const gameRep = useAppSelector((state) => state.gameReducer.rep)
-  if (!gameRep) return <></>
+  const [board, setBoard] = useState<GameBoard | null>(null)
+  const rep = useAppSelector((state) => state.gameReducer.rep)
+  const draftRep = useAppSelector((state) => state.gameReducer.draftRep)
 
-  const [gameUpdater, triggerGameUpdater] = useUpdater()
-  const [mainBoard] = useState(GameBoard.fromRep(gameRep))
-  const [draftBoard, setDraftBoard] = useState<GameBoard | null>(null)
-  const [draftHistory, setDraftHistory] = useState<string[]>([])
+  useEffect(() => {
+    if (rep) setBoard(GameBoard.fromRep(draftRep || rep))
+  }, [rep, draftRep])
 
-  function updateDraftHistory(board: GameBoard) {
-    setDraftHistory([...draftHistory, board.toRep()])
-  }
-
-  const board = draftBoard || mainBoard
-  const draftMode = draftBoard != null
-
+  if (!board) return <></>
   return (
     <main className={styles.mainContainer}>
-      <GameControl
-        mainBoard={mainBoard}
-        draftBoard={draftBoard}
-        setDraftBoard={setDraftBoard}
-        draftHistory={draftHistory}
-        setDraftHistory={setDraftHistory}
-      />
-      <Board
-        board={board}
-        draftMode={draftMode}
-        updateDraftHistory={updateDraftHistory}
-      />
+      <GameControl board={board} />
+      <Board board={board} />
       <GameInfo board={board} />
     </main>
   )

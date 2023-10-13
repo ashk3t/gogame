@@ -7,9 +7,9 @@ import {GameMode} from "../types/game"
 
 export default function GameInfo(props: {board: GameBoard}) {
   const {board} = props
-  const turnError = useAppSelector((state) => state.gameReducer.error)
-  const winnerColor = useAppSelector((state) => state.gameReducer.winner)
+  const winner = useAppSelector((state) => state.gameReducer.winner)
   const gameMode = useAppSelector((state) => state.gameReducer.settings.mode)
+  const turnError = useAppSelector((state) => state.gameReducer.error)
 
   const passedPlayers: boolean[] = (() => {
     const passedPlayers = Array(board.players).fill(false)
@@ -25,7 +25,7 @@ export default function GameInfo(props: {board: GameBoard}) {
 
   return (
     <div className={styles.infoContainer}>
-      {winnerColor == null && (
+      {winner == null && (
         <section>
           <h4 style={{color: stoneHexColors[board.turnColor]}}>
             Turn: {capitalize(StoneColor[board.turnColor])}
@@ -50,10 +50,10 @@ export default function GameInfo(props: {board: GameBoard}) {
           ))}
         </section>
       )}
-      {winnerColor != null && (
+      {winner != null && (
         <section>
-          <h4 style={{color: stoneHexColors[winnerColor]}}>
-            Winner: {capitalize(StoneColor[winnerColor])}!
+          <h4 style={{color: stoneHexColors[winner]}}>
+            Winner: {capitalize(StoneColor[winner])}!
           </h4>
         </section>
       )}

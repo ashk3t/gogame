@@ -1,10 +1,7 @@
 import sqlalchemy as alc
-from sqlalchemy import delete, select
-from sqlalchemy.ext.asyncio import AsyncSession
-from pydantic import BaseModel as BaseSchema
+from sqlalchemy import select
 
 from ..dependencies import session
-from ..models import BaseModel
 from .utils import add_commit_refresh
 
 

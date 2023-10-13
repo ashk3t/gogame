@@ -9,7 +9,7 @@ from .generic import generate_basic_service_methods
 
 
 class PlayerService:
-    get, get_all, create, update, delete = generate_basic_service_methods(
+    get, get_all, _, update, delete = generate_basic_service_methods(
         PlayerModel, PlayerResponse, PlayerCreate, PlayerUpdate
     )
 
@@ -26,3 +26,10 @@ class PlayerService:
             select(PlayerModel).where(PlayerModel.game_id == game_id)
         )
         return list(map(PlayerResponse.model_validate, result.scalars().all()))
+
+
+    @staticmethod
+    async def create(schema: PlayerCreate) -> PlayerWithTokenResponse:
+        model = PlayerModel(**schema.model_dump())
+        await add_commit_refresh(model)
+        return PlayerWithTokenResponse.model_validate(model)

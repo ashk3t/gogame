@@ -1,14 +1,13 @@
-from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.websockets import WebSocketDisconnect
 from fastapi import WebSocket
+import sqlalchemy as alc
 from sqlalchemy import and_, delete, desc, select
 from sqlalchemy.orm import selectinload
 
-from src.service.player import PlayerService
-
+from ..lib.gamelogic import GameBoard
+from ..service.player import PlayerService
 from ..dependencies import session
-from ..schemas.game import *
-from ..schemas.player import *
+from ..schemas import *
 from ..models import GameModel, GameSettingsModel
 from .generic import generate_basic_service_methods
 from ..service.utils import equal_game_settings
@@ -30,7 +29,7 @@ class GameService:
         return list(map(GameExtendedResponse.model_validate, result.scalars().all()))
 
     @staticmethod
-    async def find_relevant(game_settings: GameSettingsBase) -> GameResponse | None:
+    async def find_relevant(settings: GameSettingsBase) -> GameResponse | None:
         try:
             result = await session.execute(
                 select(GameModel)
@@ -38,7 +37,7 @@ class GameService:
                 .where(
                     and_(
                         GameModel.start_time == None,
-                        GameModel.settings.has(equal_game_settings(game_settings)),
+                        GameModel.settings.has(equal_game_settings(settings)),
                     )
                 ).order_by(desc(GameModel.search_start_time)),
             )
@@ -46,8 +45,23 @@ class GameService:
         except:
             return
 
-    @classmethod
-    async def delete_all(cls):
+    @staticmethod
+    async def start(id: int, settings: GameSettingsBase):
+        result = await session.execute(
+            alc.update(GameModel)
+            .where(GameModel.id == id)
+            .values(
+                rep=GameBoard(
+                    settings.height, settings.width, settings.players
+                ).to_rep(),
+                start_time=datetime.utcnow(),
+            )
+            .returning(GameModel)
+        )
+        return GameResponse.model_validate(result.scalars().one())
+
+    @staticmethod
+    async def delete_all():
         await session.execute(delete(GameModel))
         await session.commit()
 

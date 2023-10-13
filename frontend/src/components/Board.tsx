@@ -7,16 +7,13 @@ import {GameBoard, InvalidTurnError, Stone, splitIJ} from "../lib/gamelogic"
 import {hexColors, stoneHexColors} from "../consts/utils"
 import {GameMode} from "../types/game"
 
-export default function Board(props: {
-  board: GameBoard
-  draftMode: boolean
-  updateDraftHistory: (board: GameBoard) => void
-}) {
-  const {board, draftMode, updateDraftHistory} = props
+export default function Board(props: {board: GameBoard}) {
+  const {board} = props
   const {setGameRep, setTurnError, setGameWinner} = useActions()
-
+  const winner = useAppSelector((state) => state.gameReducer.winner)
   const gameMode = useAppSelector((state) => state.gameReducer.settings.mode)
-  const winnerColor = useAppSelector((state) => state.gameReducer.winner)
+  const draftRep = useAppSelector((state) => state.gameReducer.draftRep)
+
   const [intersectionStyler] = useState(new BoardIntersectionStyler(board.height, board.width))
   const [libertyHints, setLibertyHints] = useState<Array<Array<boolean>>>(
     Array.from(Array(board.height), () => new Array(board.width).fill(false)),
@@ -30,8 +27,7 @@ export default function Board(props: {
   }
 
   function takeTurn(i: number, j: number) {
-    if (winnerColor != null) return
-    if (draftMode) updateDraftHistory(board)
+    if (winner != null) return
 
     try {
       board.takeTurn(i, j)
@@ -42,8 +38,9 @@ export default function Board(props: {
     }
     setTurnError(null)
 
-    if (gameMode == GameMode.ATARI && board.killer && !draftMode) setGameWinner(board.killer)
-    if (!draftMode) setGameRep(board.toRep())
+    if (gameMode == GameMode.ATARI && board.killer && !draftRep)
+      setGameWinner(board.killer)
+    setGameRep(board.toRep())
   }
 
   function updateHints(i: number, j: number) {

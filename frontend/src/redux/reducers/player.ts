@@ -7,7 +7,7 @@ interface PlayersData {
 }
 
 const initialState: PlayersData = {
-  thisPlayer: {id: null, nickname: ""},
+  thisPlayer: {id: null, token: null, nickname: "", status: PlayerStatus.SEARCH},
   players: [],
 }
 
@@ -17,6 +17,9 @@ export const playerSlice = createSlice({
   reducers: {
     setNickname(state, action: PayloadAction<string>) {
       state.thisPlayer.nickname = action.payload
+    },
+    setThisPlayer(state, action: PayloadAction<Player>) {
+      state.thisPlayer = action.payload
     },
     setPlayers(state, action: PayloadAction<Array<Player>>) {
       state.players = action.payload

@@ -6,43 +6,23 @@ import {GameMode} from "../types/game"
 import NavButton from "./buttons/NavButton"
 import NiceButton from "./buttons/NiceButton"
 import ScaryButton from "./buttons/ScaryButton"
+import {isOffline} from "../redux/utils"
 
-export default function GameControl(props: {
-  mainBoard: GameBoard
-  draftBoard: GameBoard | null
-  setDraftBoard: (value: GameBoard | null) => void
-  draftHistory: string[]
-  setDraftHistory: (value: string[]) => void
-}) {
-  const {mainBoard, draftBoard, setDraftBoard, draftHistory, setDraftHistory} =
-    props
-  const {setGameRep, endGame, setGameWinner, setTurnError} = useActions()
+export default function GameControl(props: {board: GameBoard}) {
+  const {board} = props
+  const {setDraftMode, stepBackDraft, setTurnError, setGameRep, setGameWinner, endGame} =
+    useActions()
+  const winner = useAppSelector((state) => state.gameReducer.winner)
+  const settings = useAppSelector((state) => state.gameReducer.settings)
+  const draftRep = useAppSelector((state) => state.gameReducer.draftRep)
 
-  const isOffline = useAppSelector((state) => state.gameReducer.settings.offline)
-  const gameMode = useAppSelector((state) => state.gameReducer.settings.mode)
-  const winnerColor = useAppSelector((state) => state.gameReducer.winner)
-
-  function startDraft() {
-    if (mainBoard) setDraftBoard(GameBoard.fromRep(mainBoard.toRep()))
-    if (draftHistory.length > 0) setDraftHistory([])
-  }
-  function stepBackDraft() {
-    const prevRep = draftHistory.at(-1)
-    if (!prevRep) return
-    setDraftBoard(GameBoard.fromRep(prevRep))
-    setDraftHistory(draftHistory.slice(0, -1))
-  }
-  function finishDraft() {
-    setDraftBoard(null)
-    setDraftHistory([])
-  }
   function passTurn() {
-    mainBoard.passTurn()
-    updateGameData(mainBoard)
+    board.passTurn()
+    updateGameData(board)
   }
   function finishTurnsTurn() {
-    mainBoard.finishTurnsTurn()
-    updateGameData(mainBoard)
+    board.finishTurnsTurn()
+    updateGameData(board)
   }
   function updateGameData(board: GameBoard) {
     setTurnError(null)
@@ -53,25 +33,25 @@ export default function GameControl(props: {
 
   return (
     <div className={styles.controlContainer}>
-      {winnerColor == null && draftBoard && (
+      {winner == null && draftRep && (
         <>
-          <NiceButton onClick={stepBackDraft}>Undo</NiceButton>
-          <NiceButton onClick={startDraft}>Reset</NiceButton>
-          <NiceButton onClick={finishDraft}>Finish draft</NiceButton>
+          <NiceButton onClick={() => stepBackDraft()}>Undo</NiceButton>
+          <NiceButton onClick={() => setDraftMode(true)}>Reset</NiceButton>
+          <NiceButton onClick={() => setDraftMode(false)}>Finish draft</NiceButton>
           <h6></h6>
         </>
       )}
-      {winnerColor == null && !draftBoard && (
+      {winner == null && !draftRep && (
         <>
-          <NiceButton onClick={startDraft}>Draft mode</NiceButton>
-          {gameMode != GameMode.ATARI && <NiceButton onClick={passTurn}>Pass</NiceButton>}
+          <NiceButton onClick={() => setDraftMode(true)}>Draft mode</NiceButton>
+          {settings.mode != GameMode.ATARI && <NiceButton onClick={passTurn}>Pass</NiceButton>}
           <h6></h6>
-          {gameMode != GameMode.ATARI && (
+          {settings.mode != GameMode.ATARI && (
             <ScaryButton onClick={finishTurnsTurn}>Finish turns</ScaryButton>
           )}
         </>
       )}
-      {(winnerColor != null || isOffline) && (
+      {(winner != null || isOffline(settings)) && (
         <>
           <NavButton path={START_PATH} callback={endGame} scary={true}>
             End game

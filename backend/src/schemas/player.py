@@ -26,7 +26,6 @@ class PlayerCreate(PlayerBase):
 
 
 class PlayerUpdate(PlayerBase):
-    id: int
     status: PlayerStatus
 
     model_config = ConfigDict(from_attributes=True)
@@ -35,5 +34,5 @@ class PlayerUpdate(PlayerBase):
 class PlayerResponse(PlayerUpdate):
     id: int
 
-class PlayerWithToken(PlayerResponse):
+class PlayerWithTokenResponse(PlayerResponse):
     token: str

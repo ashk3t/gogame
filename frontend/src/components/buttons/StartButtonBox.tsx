@@ -3,14 +3,14 @@ import NavButton from "../buttons/NavButton"
 import {GAME_LIST_PATH} from "../../consts/pages"
 import {useActions, useAppSelector} from "../../redux/hooks"
 import NiceButton from "./NiceButton"
+import {isOffline} from "../../redux/utils"
 
 export default function StartButtonBox() {
   const {startGame} = useActions()
-  const isCustom = useAppSelector((state) => state.gameReducer.settings.custom)
-  const isOffline = useAppSelector((state) => state.gameReducer.settings.offline)
+  const settings = useAppSelector((state) => state.gameReducer.settings)
   const nickname = useAppSelector((state) => state.playerReducer.thisPlayer.nickname)
 
-  if (!nickname && !(isCustom && isOffline)) return <></>
+  if (!nickname && !isOffline(settings)) return <></>
 
   return (
     <div className={styles.centeringContainer}>
