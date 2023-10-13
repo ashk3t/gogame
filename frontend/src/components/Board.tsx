@@ -11,7 +11,7 @@ export default function Board(props: {board: GameBoard}) {
   const {board} = props
   const {setGameRep, setTurnError, setGameWinner} = useActions()
   const winner = useAppSelector((state) => state.gameReducer.winner)
-  const gameMode = useAppSelector((state) => state.gameReducer.settings.mode)
+  const settings = useAppSelector((state) => state.gameReducer.settings)
   const draftRep = useAppSelector((state) => state.gameReducer.draftRep)
 
   const [intersectionStyler] = useState(new BoardIntersectionStyler(board.height, board.width))
@@ -38,7 +38,7 @@ export default function Board(props: {board: GameBoard}) {
     }
     setTurnError(null)
 
-    if (gameMode == GameMode.ATARI && board.killer && !draftRep)
+    if (settings.mode == GameMode.ATARI && board.killer && !draftRep)
       setGameWinner(board.killer)
     setGameRep(board.toRep())
   }

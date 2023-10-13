@@ -1,7 +1,6 @@
 import {PayloadAction, createSlice} from "@reduxjs/toolkit"
-import {GameMode, GameSettings, Game, defaultGameSettings} from "../../types/game"
-import {GameBoard, StoneColor} from "../../lib/gamelogic"
-import GameService from "../../services/GameService"
+import {GameSettings, Game, defaultGameSettings} from "../../types/game"
+import {StoneColor} from "../../lib/gamelogic"
 
 const initialState: Game = {
   settings: defaultGameSettings,
@@ -16,8 +15,9 @@ export const gameSlice = createSlice({
   name: "game",
   initialState,
   reducers: {
-    updateGameSettings(state, action: PayloadAction<GameSettings>) {
-      state.settings = action.payload
+    setGameSettings(state, action: PayloadAction<GameSettings>) {
+      if (action.payload.custom) state.settings = action.payload
+      else state.settings = defaultGameSettings
     },
     setGameRep(state, action: PayloadAction<string>) {
       if (state.draftRep) {

@@ -6,7 +6,7 @@ import IntegerInput from "../inputs/IntegerInput"
 
 export default function GameSettingsForm() {
   const settings = useAppSelector((state) => state.gameReducer.settings)
-  const {updateGameSettings} = useActions()
+  const {setGameSettings} = useActions()
 
   return (
     <div className={styles.vcenteringContainer}>
@@ -16,7 +16,7 @@ export default function GameSettingsForm() {
           type="checkbox"
           checked={settings.custom}
           onChange={(event) => {
-            updateGameSettings({...settings, custom: event.target.checked})
+            setGameSettings({...settings, custom: event.target.checked})
           }}
           className={styles.niceCheckbox}
         />
@@ -27,13 +27,13 @@ export default function GameSettingsForm() {
             <h6>Height:</h6>
             <IntegerInput
               value={settings.height}
-              setValue={(value: number) => updateGameSettings({...settings, height: value})}
+              setValue={(value: number) => setGameSettings({...settings, height: value})}
               limits={{min: 5, max: 25}}
             />
             <h6>Width:</h6>
             <IntegerInput
               value={settings.width}
-              setValue={(value: number) => updateGameSettings({...settings, width: value})}
+              setValue={(value: number) => setGameSettings({...settings, width: value})}
               limits={{min: 5, max: 25}}
             />
           </div>
@@ -41,14 +41,14 @@ export default function GameSettingsForm() {
             <h6>Players:</h6>
             <IntegerInput
               value={settings.players}
-              setValue={(value: number) => updateGameSettings({...settings, players: value})}
+              setValue={(value: number) => setGameSettings({...settings, players: value})}
               limits={{min: 2, max: 6}}
             />
             <h6>Mode:</h6>
             <select
               value={settings.mode}
               onChange={(event) =>
-                updateGameSettings({...settings, mode: event.target.value as GameMode})
+                setGameSettings({...settings, mode: event.target.value as GameMode})
               }
               className={styles.niceSelect}
             >
@@ -65,7 +65,7 @@ export default function GameSettingsForm() {
               type="checkbox"
               checked={settings.offline}
               onChange={(event) => {
-                updateGameSettings({...settings, offline: event.target.checked})
+                setGameSettings({...settings, offline: event.target.checked})
               }}
               className={styles.niceCheckbox}
             />

@@ -38,14 +38,15 @@ async def search_game(websocket: WebSocket):
         game_players = await PlayerService.get_by_game_id(game.id)
         await manager.send_all("player_connect", players=list_model_dump(game_players))
         while len(manager.connections[game.id]) < settings.players:
-            await manager.wait_message()
+            await manager.wait()
 
-        game_rep = await GameService.start(game.id, settings)
+        game = await GameService.start(game.id, settings)
         await manager.send_self(
-            "game_start", player=player.model_dump(), game_rep=game_rep
+            "game_start", player=player.model_dump(), game_rep=game.rep
         )
+
         # TODO gamecycle
-        # extract draft rep to reducer state
+        await manager.wait()
 
 
 @router.websocket("/join")

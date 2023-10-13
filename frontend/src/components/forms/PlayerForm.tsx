@@ -2,7 +2,6 @@ import {useState} from "react"
 import {useActions, useAppSelector} from "../../redux/hooks"
 import styles from "../../styles/base.module.css"
 import {getRandomNicknameLabel} from "../../utils"
-import {isOffline} from "../../redux/utils"
 
 export default function PlayerForm() {
   const nickname = useAppSelector((state) => state.playerReducer.thisPlayer.nickname)
@@ -10,7 +9,7 @@ export default function PlayerForm() {
   const settings = useAppSelector((state) => state.gameReducer.settings)
   const [nicknameLabel] = useState(getRandomNicknameLabel())
 
-  if (isOffline(settings)) return <></>
+  if (settings.offline) return <></>
 
   return (
     <div className={styles.vcenteringContainer}>

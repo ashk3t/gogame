@@ -8,7 +8,7 @@ import {GameMode} from "../types/game"
 export default function GameInfo(props: {board: GameBoard}) {
   const {board} = props
   const winner = useAppSelector((state) => state.gameReducer.winner)
-  const gameMode = useAppSelector((state) => state.gameReducer.settings.mode)
+  const settings = useAppSelector((state) => state.gameReducer.settings)
   const turnError = useAppSelector((state) => state.gameReducer.error)
 
   const passedPlayers: boolean[] = (() => {
@@ -33,7 +33,7 @@ export default function GameInfo(props: {board: GameBoard}) {
           {turnError && <div style={{color: hexColors.love}}>{turnError}!</div>}
         </section>
       )}
-      {gameMode != GameMode.ATARI && (
+      {settings.mode != GameMode.ATARI && (
         <section>
           <h4>Score:</h4>
           {board.scores.map((score, idx) => (

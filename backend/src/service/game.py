@@ -46,7 +46,7 @@ class GameService:
             return
 
     @staticmethod
-    async def start(id: int, settings: GameSettingsBase):
+    async def start(id: int, settings: GameSettingsBase) -> GameResponse:
         result = await session.execute(
             alc.update(GameModel)
             .where(GameModel.id == id)
@@ -119,5 +119,5 @@ class GameSearchManager:
         for connection in self.connections[self.game_id].values():
             await connection.send_json(data)
 
-    async def wait_message(self) -> dict:
-        return await self.websocket.receive_json()
+    async def wait(self):
+        await self.websocket.receive()

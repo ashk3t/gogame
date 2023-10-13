@@ -6,7 +6,6 @@ import {GameMode} from "../types/game"
 import NavButton from "./buttons/NavButton"
 import NiceButton from "./buttons/NiceButton"
 import ScaryButton from "./buttons/ScaryButton"
-import {isOffline} from "../redux/utils"
 
 export default function GameControl(props: {board: GameBoard}) {
   const {board} = props
@@ -51,13 +50,10 @@ export default function GameControl(props: {board: GameBoard}) {
           )}
         </>
       )}
-      {(winner != null || isOffline(settings)) && (
-        <>
-          <NavButton path={START_PATH} callback={endGame} scary={true}>
-            End game
-          </NavButton>
-        </>
-      )}
+      <NavButton path={START_PATH} callback={endGame} scary={true}>
+        End game
+      </NavButton>
     </div>
   )
 }
+// TODO: endGame or Finish + end if online

@@ -4,7 +4,6 @@ import {gameSlice} from "../reducers/game"
 import {playerSlice} from "../reducers/player"
 import {gameListSlice} from "../reducers/gameList"
 import {GameBoard} from "../../lib/gamelogic"
-import {isOffline} from "../utils"
 
 export const fetchAllGames = () => async (dispatch: AppDispatch) => {
   const data = await GameService.getAll()
@@ -15,7 +14,7 @@ export const startGame = () => async (dispatch: AppDispatch, getState: () => Roo
   const state = getState()
   const settings = state.gameReducer.settings
 
-  if (isOffline(settings)) {
+  if (settings.offline) {
     const newGameRep = new GameBoard(settings.height, settings.width, settings.players).toRep()
     dispatch(gameSlice.actions.setGameRep(newGameRep))
   } else {
@@ -25,15 +24,18 @@ export const startGame = () => async (dispatch: AppDispatch, getState: () => Roo
     connection.onmessage = (event) => {
       const data = JSON.parse(event.data)
 
-      const handlers = {
-        player_connect: () => dispatch(playerSlice.actions.setPlayers(data.players)),
-        player_disconnect: () => dispatch(playerSlice.actions.popPlayer(data.player_id)),
-        game_start: () => {
+      switch (data.type) {
+        case "player_connect":
+          dispatch(playerSlice.actions.setPlayers(data.players))
+          connection.send("")
+          break
+        case "player_disconnect":
+          dispatch(playerSlice.actions.popPlayer(data.player_id))
+          break
+        case "game_start":
           dispatch(playerSlice.actions.setThisPlayer(data.player))
           dispatch(gameSlice.actions.setGameRep(data.game_rep))
-        },
       }
-      handlers[data.type as keyof typeof handlers]()
     }
 
     connection.onclose = () => {
