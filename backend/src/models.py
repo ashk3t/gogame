@@ -3,7 +3,8 @@ from datetime import datetime
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
-from .schemas.player import PlayerStatus
+from src.lib.gamelogic import StoneColor
+
 from .schemas.game import GameMode
 from .database import DBase
 
@@ -42,6 +43,6 @@ class PlayerModel(BaseModel):
     game_id: Mapped[int] = mapped_column(ForeignKey("game.id", ondelete="CASCADE"))
     token: Mapped[str] = mapped_column(unique=True, index=True)
     nickname: Mapped[str] = mapped_column(unique=True)
-    status: Mapped[str] = mapped_column(default=PlayerStatus.SEARCH)
+    color: Mapped[int] = mapped_column(default=StoneColor.NONE)
 
     game: Mapped["GameModel"] = relationship()

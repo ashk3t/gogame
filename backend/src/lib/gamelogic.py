@@ -269,7 +269,7 @@ class GameBoard:
         board.turn_color = StoneColor(turn_color - 1)
         board.pass_counter = pass_counter
         board.finished_players = set(
-            map(lambda v: StoneColor(int(v) - 1), finished_players.split(""))
+            map(lambda v: StoneColor(int(v) - 1), finished_players)
         )
 
         pos = 0
@@ -312,6 +312,7 @@ class GameBoard:
                     self.turn_color + 1,
                     self.pass_counter,
                     "".join(map(lambda v: str(v + 1), self.finished_players)),
+                    rep
                 ],
             )
         )

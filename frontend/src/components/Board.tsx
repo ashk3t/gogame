@@ -1,18 +1,14 @@
 import styles from "../styles/Board.module.css"
 import {useMemo, useState} from "react"
-import {useActions, useAppSelector} from "../redux/hooks"
+import {useActions} from "../redux/hooks"
 import CircleSvg from "../assets/CircleSvg"
 import {BoardIntersectionStyler} from "../utils"
-import {GameBoard, InvalidTurnError, Stone, splitIJ} from "../lib/gamelogic"
+import {GameBoard, Stone, splitIJ} from "../lib/gamelogic"
 import {hexColors, stoneHexColors} from "../consts/utils"
-import {GameMode} from "../types/game"
 
 export default function Board(props: {board: GameBoard}) {
   const {board} = props
-  const {setGameRep, setTurnError, setGameWinner} = useActions()
-  const winner = useAppSelector((state) => state.gameReducer.winner)
-  const settings = useAppSelector((state) => state.gameReducer.settings)
-  const draftRep = useAppSelector((state) => state.gameReducer.draftRep)
+  const {takeTurn} = useActions()
 
   const [intersectionStyler] = useState(new BoardIntersectionStyler(board.height, board.width))
   const [libertyHints, setLibertyHints] = useState<Array<Array<boolean>>>(
@@ -24,23 +20,6 @@ export default function Board(props: {board: GameBoard}) {
     return useMemo(() => {
       return intersectionStyler.getBackground(i, j)
     }, [i, j])
-  }
-
-  function takeTurn(i: number, j: number) {
-    if (winner != null) return
-
-    try {
-      board.takeTurn(i, j)
-    } catch (error) {
-      if (error instanceof InvalidTurnError) setTurnError(error.message)
-      else throw error
-      return
-    }
-    setTurnError(null)
-
-    if (settings.mode == GameMode.ATARI && board.killer && !draftRep)
-      setGameWinner(board.killer)
-    setGameRep(board.toRep())
   }
 
   function updateHints(i: number, j: number) {
@@ -70,7 +49,7 @@ export default function Board(props: {board: GameBoard}) {
             key={`(${i}, ${j})`}
             className={styles.intersection}
             style={getIntersectionBackground(i, j)}
-            onClick={() => takeTurn(i, j)}
+            onClick={() => takeTurn(i, j, board)}
             onMouseOver={() => updateHints(i, j)}
           >
             {stone && (

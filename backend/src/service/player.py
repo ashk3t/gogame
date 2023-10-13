@@ -9,8 +9,8 @@ from .generic import generate_basic_service_methods
 
 
 class PlayerService:
-    get, get_all, _, update, delete = generate_basic_service_methods(
-        PlayerModel, PlayerResponse, PlayerCreate, PlayerUpdate
+    get, get_all, _, _, delete = generate_basic_service_methods(
+        PlayerModel, PlayerResponse, PlayerCreate, None
     )
 
     @staticmethod

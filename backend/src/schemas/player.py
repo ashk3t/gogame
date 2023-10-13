@@ -1,38 +1,31 @@
 import uuid
-from enum import Enum
-from pydantic import BaseModel as BaseSchema, ConfigDict, ValidationError
+from pydantic import BaseModel as BaseSchema, ConfigDict
 
-
-class PlayerStatus(str, Enum):
-    PLAYING = "PLAYING"
-    SPECTATOR = "SPECTATOR"
-    SEARCH = "SEARCH"
+from src.lib.gamelogic import StoneColor
 
 
 class PlayerBase(BaseSchema):
     nickname: str
+    color: StoneColor
 
 
 class PlayerCreate(PlayerBase):
     game_id: int
     token: str
 
-    def __init__(self, nickname: str, game_id: int):
+    def __init__(self, nickname: str, game_id: int, color: StoneColor):
         super().__init__(
             nickname=nickname,
+            color=color,
             game_id=game_id,  # pyright: ignore
             token=str(uuid.uuid4()),  # pyright: ignore
         )
 
 
-class PlayerUpdate(PlayerBase):
-    status: PlayerStatus
+class PlayerResponse(PlayerBase):
+    id: int
 
     model_config = ConfigDict(from_attributes=True)
-
-
-class PlayerResponse(PlayerUpdate):
-    id: int
 
 class PlayerWithTokenResponse(PlayerResponse):
     token: str

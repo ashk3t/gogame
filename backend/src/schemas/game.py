@@ -2,8 +2,6 @@ from datetime import datetime
 from enum import Enum
 from pydantic import BaseModel as BaseSchema, ConfigDict
 
-from ..schemas.player import PlayerBase
-
 
 class GameMode(str, Enum):
     CLASSIC = "CLASSIC"
@@ -52,5 +50,5 @@ class GameExtendedResponse(GameResponse):
     settings: GameSettingsResponse
 
 
-class GameSearchRequest(GameSettingsBase, PlayerBase):
-    pass
+class GameSearchRequest(GameSettingsBase):
+    nickname: str

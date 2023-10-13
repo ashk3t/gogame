@@ -30,7 +30,9 @@ def generate_basic_service_methods(Model, ResponseSchema, CreateSchema, UpdateSc
             .values(**schema.model_dump())
             .returning(Model)
         )
-        return ResponseSchema.model_validate(result.scalars().one())
+        model = result.scalars().one()
+        await add_commit_refresh(model)
+        return ResponseSchema.model_validate(model)
 
     @staticmethod
     async def delete(id: int) -> None:

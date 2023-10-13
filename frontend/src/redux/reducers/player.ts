@@ -1,5 +1,6 @@
 import {PayloadAction, createSlice} from "@reduxjs/toolkit"
-import {Player, PlayerStatus} from "../../types/player"
+import {Player} from "../../types/player"
+import {StoneColor} from "../../lib/gamelogic"
 
 interface PlayersData {
   thisPlayer: Player
@@ -7,7 +8,7 @@ interface PlayersData {
 }
 
 const initialState: PlayersData = {
-  thisPlayer: {id: null, token: null, nickname: "", status: PlayerStatus.SEARCH},
+  thisPlayer: {id: null, token: null, nickname: "", color: StoneColor.NONE},
   players: [],
 }
 

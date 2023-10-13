@@ -24,3 +24,6 @@ def equal_game_settings(settings):
         GameSettingsModel.players == settings.players,
         GameSettingsModel.mode == settings.mode,
     )
+
+def turn_color(game_rep: str):
+    return StoneColor(int(game_rep.split(";")[3]) - 1)

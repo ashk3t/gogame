@@ -10,13 +10,22 @@ from ..dependencies import session
 from ..schemas import *
 from ..models import GameModel, GameSettingsModel
 from .generic import generate_basic_service_methods
-from ..service.utils import equal_game_settings
+from ..service.utils import add_commit_refresh, equal_game_settings
 
 
 class GameService:
     get, get_all, create, update, delete = generate_basic_service_methods(
         GameModel, GameResponse, GameCreate, GameUpdate
     )
+
+    @staticmethod
+    async def get_ext(id: int) -> GameExtendedResponse:
+        result = await session.execute(
+            select(GameModel)
+            .options(selectinload(GameModel.settings))
+            .where(GameModel.id == id)
+        )
+        return GameExtendedResponse.model_validate(result.scalars().one())
 
     @staticmethod
     async def get_all_ext(skip: int = 0, limit: int = 10) -> list[GameExtendedResponse]:
@@ -33,7 +42,6 @@ class GameService:
         try:
             result = await session.execute(
                 select(GameModel)
-                # .options(selectinload(GameModel.settings))
                 .where(
                     and_(
                         GameModel.start_time == None,
@@ -46,19 +54,18 @@ class GameService:
             return
 
     @staticmethod
-    async def start(id: int, settings: GameSettingsBase) -> GameResponse:
+    async def start(id: int) -> GameResponse:
+        settings = (await GameService.get_ext(id)).settings
+        rep = GameBoard(settings.height, settings.width, settings.players).to_rep()
         result = await session.execute(
             alc.update(GameModel)
             .where(GameModel.id == id)
-            .values(
-                rep=GameBoard(
-                    settings.height, settings.width, settings.players
-                ).to_rep(),
-                start_time=datetime.utcnow(),
-            )
+            .values(rep=rep, start_time=datetime.utcnow())
             .returning(GameModel)
         )
-        return GameResponse.model_validate(result.scalars().one())
+        model = result.scalars().one()
+        await add_commit_refresh(model)
+        return GameResponse.model_validate(model)
 
     @staticmethod
     async def delete_all():
@@ -121,3 +128,7 @@ class GameSearchManager:
 
     async def wait(self):
         await self.websocket.receive()
+
+    async def wait_turn(self) -> tuple[int, int]:
+        data: dict[str, str] = await self.websocket.receive_json()
+        return int(data["i"]), int(data["j"])

@@ -11,6 +11,10 @@ export default class GameService {
     return response.data
   }
 
+  static notify() {
+    GameService.socket?.send("")
+  }
+
   static startSearch(nickname: string, settings: GameSettings): WebSocket {
     const socket = new WebSocket(WS_API_URL + GameService.baseUrl + "/search")
     socket.onopen = (_) => {
@@ -30,6 +34,10 @@ export default class GameService {
     }
     GameService.socket = socket
     return socket
+  }
+
+  static takeTurn(i: number, j: number) {
+    GameService.socket?.send(JSON.stringify({i, j}))
   }
 
   static endGame() {
