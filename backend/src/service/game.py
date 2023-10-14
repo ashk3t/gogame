@@ -104,6 +104,7 @@ class GameConnectionManager:
             self.connections[game_id] = {}
         self.connections[game_id][player_id] = self.websocket
 
+    # TODO: notify other players if somebody has disconnected
     async def unbind_connection(self):
         if self.game_id and self.player_id:
             self.connections[self.game_id].pop(self.player_id)
@@ -116,7 +117,7 @@ class GameConnectionManager:
     async def get_data(self):
         return await self.websocket.receive_json()
 
-    async def send_self(self, data_type: str, **data):
+    async def send_self(self, data_type: MessageType, **data):
         data["type"] = data_type
         await self.websocket.send_json(data)
 
@@ -127,7 +128,3 @@ class GameConnectionManager:
 
     async def wait(self):
         await self.websocket.receive()
-
-    async def wait_turn(self) -> tuple[int, int]:
-        data: dict[str, str] = await self.websocket.receive_json()
-        return int(data["i"]), int(data["j"])

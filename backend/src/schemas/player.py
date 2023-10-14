@@ -2,7 +2,7 @@ import uuid
 from pydantic import BaseModel as BaseSchema, ConfigDict
 
 from ..lib.gamelogic import StoneColor
-from ..schemas.game import GameResponse
+from .game import GameResponse
 
 
 class PlayerBase(BaseSchema):

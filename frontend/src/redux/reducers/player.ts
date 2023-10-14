@@ -7,8 +7,15 @@ interface PlayersData {
   players: Array<Player>
 }
 
+const initialPlayer: Player = {
+  id: null,
+  token: null,
+  nickname: "",
+  color: StoneColor.NONE,
+}
+
 const initialState: PlayersData = {
-  thisPlayer: {id: null, token: null, nickname: "", color: StoneColor.NONE},
+  thisPlayer: initialPlayer,
   players: [],
 }
 
@@ -27,6 +34,9 @@ export const playerSlice = createSlice({
     },
     popPlayer(state, action: PayloadAction<number>) {
       state.players = state.players.filter((player) => player.id != action.payload)
+    },
+    clearPlayerData(state) {
+      return {thisPlayer: {...initialPlayer, nickname: state.thisPlayer.nickname}, players: []}
     },
   },
 })

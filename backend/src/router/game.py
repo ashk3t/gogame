@@ -53,7 +53,7 @@ async def reconnect(websocket: WebSocket):
         token = (await manager.get_data())["token"]
         player = await PlayerService.get_by_token(token)
         manager.bind_connection(player.game_id, player.id)
-        await manager.send_self("reconnect", rep=player.game.rep)
+        await manager.send_self(MessageType.GAME_RECONNECT, rep=player.game.rep)
         await game_loop(manager, player.game, player)
 
 
@@ -73,7 +73,9 @@ async def game_first_connect(
     )
     game_players.append(PlayerResponse(**player.model_dump()))
     manager.bind_connection(game.id, player.id)
-    await manager.send_all("player_connect", players=list_model_dump(game_players))
+    await manager.send_all(
+        MessageType.SEARCH_CONNECT, players=list_model_dump(game_players)
+    )
     if len(manager.connections[game.id]) == settings.players:  # last player connect
         game = await GameService.start(game.id)
         await manager.wait()
@@ -81,7 +83,9 @@ async def game_first_connect(
         await manager.wait()
 
     init_rep = GameBoard(settings.height, settings.width, settings.players).to_rep()
-    await manager.send_self("game_start", player=player.model_dump(), rep=init_rep)
+    await manager.send_self(
+        MessageType.GAME_START, player=player.model_dump(), rep=init_rep
+    )
     return player
 
 
@@ -89,7 +93,7 @@ async def game_loop(
     manager: GameConnectionManager, game: GameResponse, player: PlayerResponse
 ):
     while True:
-        i, j = await manager.wait_turn()
+        turn = TurnRequest(**(await manager.get_data()))
 
         game = await GameService.get(game.id)
         if game.rep is None or turn_color(game.rep) != player.color:
@@ -97,10 +101,16 @@ async def game_loop(
 
         board = GameBoard.from_rep(game.rep)
         try:
-            board.take_turn(i, j)
+            match turn.type:
+                case TurnType.BASIC:
+                    board.take_turn(turn.i, turn.j)
+                case TurnType.PASS:
+                    board.pass_turn()
+                case TurnType.FINISH:
+                    board.finish_turns_turn()
         except InvalidTurnException as error:
-            await manager.send_all("bad_turn", error=str(error))
+            await manager.send_all(MessageType.BAD_TURN, error=str(error))
         else:
             rep = board.to_rep()
-            await manager.send_all("good_turn", rep=rep)
+            await manager.send_all(MessageType.GOOD_TURN, rep=rep)
             await GameService.update(game.id, GameUpdate(rep=rep))

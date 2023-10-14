@@ -1,6 +1,7 @@
 import {publicConfig} from "../api"
 import {WS_API_URL} from "../consts/api"
 import {GameSettings} from "../types/game"
+import {TurnType} from "../types/gameApi"
 
 export default class GameService {
   static baseUrl = "/games"
@@ -36,8 +37,8 @@ export default class GameService {
     return socket
   }
 
-  static takeTurn(i: number, j: number) {
-    GameService.connection?.send(JSON.stringify({i, j}))
+  static doTurn(turnType: TurnType, i?: number, j?: number) {
+    GameService.connection?.send(JSON.stringify({type: turnType, i, j}))
   }
 
   static reconnect(token: string): WebSocket {

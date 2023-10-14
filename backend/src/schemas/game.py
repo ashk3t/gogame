@@ -48,12 +48,3 @@ class GameResponse(GameBase):
 
 class GameExtendedResponse(GameResponse):
     settings: GameSettingsResponse
-
-
-class GameSearchRequest(GameSettingsBase):
-    nickname: str
-
-
-class GameJoinRequest(BaseSchema):
-    nickname: str
-    game_id: int

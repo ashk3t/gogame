@@ -9,26 +9,10 @@ import ScaryButton from "./buttons/ScaryButton"
 
 export default function GameControl(props: {board: GameBoard}) {
   const {board} = props
-  const {setDraftMode, stepBackDraft, setTurnError, setGameRep, setGameWinner, endGame} =
-    useActions()
+  const {setDraftMode, stepBackDraft, endGame, passTurn, finishTurnsTurn} = useActions()
   const winner = useAppSelector((state) => state.gameReducer.winner)
   const settings = useAppSelector((state) => state.gameReducer.settings)
   const draftRep = useAppSelector((state) => state.gameReducer.draftRep)
-
-  function passTurn() {
-    board.passTurn()
-    updateGameData(board)
-  }
-  function finishTurnsTurn() {
-    board.finishTurnsTurn()
-    updateGameData(board)
-  }
-  function updateGameData(board: GameBoard) {
-    setTurnError(null)
-    if (board.passCounter >= board.players - board.finishedPlayers.size)
-      setGameWinner(board.scores.indexOf(Math.max(...board.scores)))
-    setGameRep(board.toRep())
-  }
 
   return (
     <div className={styles.controlContainer}>
@@ -43,10 +27,10 @@ export default function GameControl(props: {board: GameBoard}) {
       {winner == null && !draftRep && (
         <>
           <NiceButton onClick={() => setDraftMode(true)}>Draft mode</NiceButton>
-          {settings.mode != GameMode.ATARI && <NiceButton onClick={passTurn}>Pass</NiceButton>}
+          {settings.mode != GameMode.ATARI && <NiceButton onClick={() => passTurn(board)}>Pass</NiceButton>}
           <h6></h6>
           {settings.mode != GameMode.ATARI && (
-            <ScaryButton onClick={finishTurnsTurn}>Finish turns</ScaryButton>
+            <ScaryButton onClick={() => finishTurnsTurn(board)}>Finish turns</ScaryButton>
           )}
         </>
       )}
@@ -56,4 +40,4 @@ export default function GameControl(props: {board: GameBoard}) {
     </div>
   )
 }
-// TODO: endGame or Finish + end if online
+// TODO: Finish + end if online

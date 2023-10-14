@@ -5,6 +5,7 @@ import {playerSlice} from "../reducers/player"
 import {gameListSlice} from "../reducers/gameList"
 import {GameBoard, InvalidTurnError} from "../../lib/gamelogic"
 import {GameMode} from "../../types/game"
+import {MessageType, SocketMessage, TurnType} from "../../types/gameApi"
 
 export const fetchAllGames = () => async (dispatch: AppDispatch) => {
   const data = await GameService.getAll()
@@ -28,8 +29,8 @@ export const startGame = () => async (dispatch: AppDispatch, getState: () => Roo
 export const takeTurn =
   (i: number, j: number, board: GameBoard) =>
   async (dispatch: AppDispatch, getState: () => RootState) => {
-    const state = getState()
-    const game = state.gameReducer
+    const game = getState().gameReducer
+    const playerColor = getState().playerReducer.thisPlayer.color
     if (game.winner != null) return
 
     if (game.settings.offline) {
@@ -46,10 +47,27 @@ export const takeTurn =
       if (game.settings.mode == GameMode.ATARI && board.killer && !game.draftRep)
         dispatch(gameSlice.actions.setGameWinner(board.killer))
       dispatch(gameSlice.actions.setGameRep(board.toRep()))
-    } else {
-      if (board.turnColor != state.playerReducer.thisPlayer.color) return
-      GameService.takeTurn(i, j)
-    }
+    } else if (board.turnColor == playerColor) GameService.doTurn(TurnType.BASIC, i, j)
+  }
+
+export const passTurn =
+  (board: GameBoard) => async (dispatch: AppDispatch, getState: () => RootState) => {
+    const settings = getState().gameReducer.settings
+    const playerColor = getState().playerReducer.thisPlayer.color
+    if (settings.offline) {
+      board.passTurn()
+      updateGameData(dispatch, board)
+    } else if (board.turnColor == playerColor) GameService.doTurn(TurnType.PASS)
+  }
+
+export const finishTurnsTurn =
+  (board: GameBoard) => async (dispatch: AppDispatch, getState: () => RootState) => {
+    const settings = getState().gameReducer.settings
+    const playerColor = getState().playerReducer.thisPlayer.color
+    if (settings.offline) {
+      board.finishTurnsTurn()
+      updateGameData(dispatch, board)
+    } else if (board.turnColor == playerColor) GameService.doTurn(TurnType.FINISH)
   }
 
 export const tryReconnect = () => async (dispatch: AppDispatch, getState: () => RootState) => {
@@ -62,37 +80,49 @@ export const tryReconnect = () => async (dispatch: AppDispatch, getState: () => 
   }
 }
 
-export const endGame = () => async (dispatch: AppDispatch) => {
-  GameService.endGame()
-  dispatch(gameSlice.actions.clearGamedata())
-}
+export const endGame =
+  () => async (dispatch: AppDispatch, getState: () => RootState) => {
+    // const settings = getState().gameReducer.settings
+    // const playerColor = getState().playerReducer.thisPlayer.color
+    GameService.endGame()
+    dispatch(gameSlice.actions.clearGameData())
+    // TODO: Do delayed finish
+    // if (!settings.offline && board.turnColor == playerColor) GameService.doTurn(TurnType.FINISH)
+  }
 
 function bindHandlers(dispatch: AppDispatch, connection: WebSocket) {
   connection.onmessage = (event) => {
-    const data = JSON.parse(event.data)
+    const data: SocketMessage = JSON.parse(event.data)
 
     switch (data.type) {
-      case "player_connect":
+      case MessageType.SEARCH_CONNECT:
         dispatch(playerSlice.actions.setPlayers(data.players))
         GameService.notify()
         break
-      case "player_disconnect":
+      case MessageType.SEARCH_DISCONNECT:
         dispatch(playerSlice.actions.popPlayer(data.player_id))
         break
-      case "game_start":
+      case MessageType.GAME_START:
         dispatch(playerSlice.actions.setThisPlayer(data.player))
         dispatch(gameSlice.actions.setGameRep(data.rep))
         break
-      case "good_turn":
-      case "reconnect":
+      case MessageType.GOOD_TURN:
+      case MessageType.GAME_RECONNECT:
         dispatch(gameSlice.actions.setGameRep(data.rep))
         break
-      case "bad_turn":
+      case MessageType.BAD_TURN:
         dispatch(gameSlice.actions.setTurnError(data.error))
     }
   }
 
   connection.onclose = () => {
-    dispatch(playerSlice.actions.setPlayers([]))
+    dispatch(playerSlice.actions.clearPlayerData())
   }
+}
+
+function updateGameData(dispatch: AppDispatch, board: GameBoard) {
+  dispatch(gameSlice.actions.setTurnError(null))
+  if (board.passCounter >= board.players - board.finishedPlayers.size)
+    dispatch(gameSlice.actions.setGameWinner(board.scores.indexOf(Math.max(...board.scores))))
+  dispatch(gameSlice.actions.setGameRep(board.toRep()))
 }

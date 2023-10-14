@@ -44,7 +44,7 @@ export const gameSlice = createSlice({
     setGameWinner(state, action: PayloadAction<StoneColor>) {
       state.winner = action.payload
     },
-    clearGamedata(state) {
+    clearGameData(state) {
       return {...initialState, settings: state.settings}
     },
   },
