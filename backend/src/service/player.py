@@ -1,5 +1,6 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from ..dependencies import session
 from ..schemas.player import *
@@ -14,11 +15,13 @@ class PlayerService:
     )
 
     @staticmethod
-    async def get_by_token(token: str) -> PlayerResponse | None:
+    async def get_by_token(token: str) -> PlayerWithGameResponse:
         result = await session.execute(
-            select(PlayerModel).where(PlayerModel.token == token)
+            select(PlayerModel)
+            .options(selectinload(PlayerModel.game))
+            .where(PlayerModel.token == token)
         )
-        return PlayerResponse.model_validate(result.scalars().one())
+        return PlayerWithGameResponse.model_validate(result.scalars().one())
 
     @staticmethod
     async def get_by_game_id(game_id: int) -> list[PlayerResponse]:

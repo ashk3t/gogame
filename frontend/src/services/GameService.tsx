@@ -4,7 +4,7 @@ import {GameSettings} from "../types/game"
 
 export default class GameService {
   static baseUrl = "/games"
-  static socket: WebSocket | null = null
+  static connection: WebSocket | null = null
 
   static async getAll() {
     const response = await publicConfig.get(this.baseUrl)
@@ -12,7 +12,7 @@ export default class GameService {
   }
 
   static notify() {
-    GameService.socket?.send("")
+    GameService.connection?.send("")
   }
 
   static startSearch(nickname: string, settings: GameSettings): WebSocket {
@@ -32,15 +32,25 @@ export default class GameService {
         ),
       )
     }
-    GameService.socket = socket
+    GameService.connection = socket
     return socket
   }
 
   static takeTurn(i: number, j: number) {
-    GameService.socket?.send(JSON.stringify({i, j}))
+    GameService.connection?.send(JSON.stringify({i, j}))
+  }
+
+  static reconnect(token: string): WebSocket {
+    if (GameService.connection) return GameService.connection
+    const socket = new WebSocket(WS_API_URL + GameService.baseUrl + "/reconnect")
+    socket.onopen = (_) => {
+      socket.send(JSON.stringify({token}))
+    }
+    GameService.connection = socket
+    return socket
   }
 
   static endGame() {
-    GameService.socket?.close()
+    GameService.connection?.close()
   }
 }

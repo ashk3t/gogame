@@ -1,2 +1,2 @@
-from .game import GameService, GameSettingsService, GameSearchManager
+from .game import GameService, GameSettingsService, GameConnectionManager
 from .player import PlayerService

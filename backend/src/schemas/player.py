@@ -1,7 +1,8 @@
 import uuid
 from pydantic import BaseModel as BaseSchema, ConfigDict
 
-from src.lib.gamelogic import StoneColor
+from ..lib.gamelogic import StoneColor
+from ..schemas.game import GameResponse
 
 
 class PlayerBase(BaseSchema):
@@ -24,8 +25,12 @@ class PlayerCreate(PlayerBase):
 
 class PlayerResponse(PlayerBase):
     id: int
+    game_id: int
 
     model_config = ConfigDict(from_attributes=True)
 
 class PlayerWithTokenResponse(PlayerResponse):
     token: str
+
+class PlayerWithGameResponse(PlayerResponse):
+    game: GameResponse

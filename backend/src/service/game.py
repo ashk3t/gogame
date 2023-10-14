@@ -79,7 +79,7 @@ class GameSettingsService:
     )
 
 
-class GameSearchManager:
+class GameConnectionManager:
     # {game_id: [player_id: websocket]}
     connections: dict[int, dict[int, WebSocket]] = {}
 
@@ -107,15 +107,14 @@ class GameSearchManager:
     async def unbind_connection(self):
         if self.game_id and self.player_id:
             self.connections[self.game_id].pop(self.player_id)
-            await PlayerService.delete(self.player_id)
+            # await PlayerService.delete(self.player_id)
             await self.send_all("player_disconnect", player_id=self.player_id)
             if len(self.connections[self.game_id]) == 0:
                 self.connections.pop(self.game_id)
                 await GameService.delete(self.game_id)
 
-    async def get_gamedata(self):
-        data = await self.websocket.receive_json()
-        return GameSearchRequest(**data)
+    async def get_data(self):
+        return await self.websocket.receive_json()
 
     async def send_self(self, data_type: str, **data):
         data["type"] = data_type

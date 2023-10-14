@@ -21,33 +21,7 @@ export const startGame = () => async (dispatch: AppDispatch, getState: () => Roo
   } else {
     const nickname = state.playerReducer.thisPlayer.nickname
     const connection = GameService.startSearch(nickname, settings)
-
-    connection.onmessage = (event) => {
-      const data = JSON.parse(event.data)
-
-      switch (data.type) {
-        case "player_connect":
-          dispatch(playerSlice.actions.setPlayers(data.players))
-          GameService.notify()
-          break
-        case "player_disconnect":
-          dispatch(playerSlice.actions.popPlayer(data.player_id))
-          break
-        case "game_start":
-          dispatch(playerSlice.actions.setThisPlayer(data.player))
-          dispatch(gameSlice.actions.setGameRep(data.rep))
-          break
-        case "good_turn":
-          dispatch(gameSlice.actions.setGameRep(data.rep))
-          break
-        case "bad_turn":
-          dispatch(gameSlice.actions.setTurnError(data.error))
-      }
-    }
-
-    connection.onclose = () => {
-      dispatch(playerSlice.actions.setPlayers([]))
-    }
+    bindHandlers(dispatch, connection)
   }
 }
 
@@ -78,7 +52,47 @@ export const takeTurn =
     }
   }
 
+export const tryReconnect = () => async (dispatch: AppDispatch, getState: () => RootState) => {
+  const state = getState()
+  const settings = state.gameReducer.settings
+  const token = state.playerReducer.thisPlayer.token
+  if (!settings.offline && !GameService.connection && token) {
+    const connection = GameService.reconnect(token)
+    bindHandlers(dispatch, connection)
+  }
+}
+
 export const endGame = () => async (dispatch: AppDispatch) => {
   GameService.endGame()
   dispatch(gameSlice.actions.clearGamedata())
+}
+
+function bindHandlers(dispatch: AppDispatch, connection: WebSocket) {
+  connection.onmessage = (event) => {
+    const data = JSON.parse(event.data)
+
+    switch (data.type) {
+      case "player_connect":
+        dispatch(playerSlice.actions.setPlayers(data.players))
+        GameService.notify()
+        break
+      case "player_disconnect":
+        dispatch(playerSlice.actions.popPlayer(data.player_id))
+        break
+      case "game_start":
+        dispatch(playerSlice.actions.setThisPlayer(data.player))
+        dispatch(gameSlice.actions.setGameRep(data.rep))
+        break
+      case "good_turn":
+      case "reconnect":
+        dispatch(gameSlice.actions.setGameRep(data.rep))
+        break
+      case "bad_turn":
+        dispatch(gameSlice.actions.setTurnError(data.error))
+    }
+  }
+
+  connection.onclose = () => {
+    dispatch(playerSlice.actions.setPlayers([]))
+  }
 }
