@@ -15,13 +15,13 @@ class PlayerService:
     )
 
     @staticmethod
-    async def get_by_token(token: str) -> PlayerWithGameResponse:
+    async def get_by_token(token: str) -> PlayerExtendedResponse:
         result = await session.execute(
             select(PlayerModel)
-            .options(selectinload(PlayerModel.game))
+            .options(selectinload(PlayerModel.game).selectinload(PlayerModel.game.settings))
             .where(PlayerModel.token == token)
         )
-        return PlayerWithGameResponse.model_validate(result.scalars().one())
+        return PlayerExtendedResponse.model_validate(result.scalars().one())
 
     @staticmethod
     async def get_by_game_id(game_id: int) -> list[PlayerResponse]:

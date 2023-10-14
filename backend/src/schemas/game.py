@@ -12,7 +12,7 @@ class GameSettingsBase(BaseSchema):
     height: int = 19
     width: int = 19
     players: int = 2
-    mode: str = GameMode.CLASSIC
+    mode: GameMode = GameMode.CLASSIC
 
 
 class GameSettingsCreate(GameSettingsBase):

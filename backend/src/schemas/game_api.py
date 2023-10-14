@@ -11,6 +11,7 @@ class MessageType(str, Enum):
     GOOD_TURN = "GOOD_TURN"
     BAD_TURN = "BAD_TURN"
     GAME_RECONNECT = "GAME_RECONNECT"
+    GAME_END = "GAME_END"
 
 
 class TurnType(str, Enum):

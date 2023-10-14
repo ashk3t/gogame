@@ -108,7 +108,10 @@ function bindHandlers(dispatch: AppDispatch, connection: WebSocket) {
         break
       case MessageType.GOOD_TURN:
       case MessageType.GAME_RECONNECT:
+        dispatch(gameSlice.actions.setTurnError(null))
         dispatch(gameSlice.actions.setGameRep(data.rep))
+        if (data.winner)
+          dispatch(gameSlice.actions.setGameWinner(data.winner))
         break
       case MessageType.BAD_TURN:
         dispatch(gameSlice.actions.setTurnError(data.error))

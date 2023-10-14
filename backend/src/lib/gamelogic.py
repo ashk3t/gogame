@@ -132,6 +132,9 @@ class GameBoard:
         self.prev_turns[self.turn_color] = point
 
     def update_turn_color(self):
+        if len(self.finished_players) >= self.players:
+            self.turn_color = StoneColor.NONE  # Avoid inifinity loop
+            return
         self.turn_color = StoneColor((self.turn_color + 1) % self.players)
         while self.turn_color in self.finished_players:
             self.turn_color = StoneColor((self.turn_color + 1) % self.players)
@@ -237,15 +240,12 @@ class GameBoard:
 
     def pass_turn(self):
         self.prev_turn = (-1, -1)
-        self.pass_counter = 0
+        self.pass_counter += 1
         self.update_turn_color()
 
     def finish_turns_turn(self):
         self.finished_players.add(self.turn_color)
-        if len(self.finished_players) < self.players:
-            self.update_turn_color()
-        else:
-            self.turn_color = StoneColor.NONE  # Avoid inifinity loop
+        self.update_turn_color()
 
     @staticmethod
     def from_rep(rep: str) -> GameBoard:

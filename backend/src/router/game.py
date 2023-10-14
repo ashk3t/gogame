@@ -53,7 +53,10 @@ async def reconnect(websocket: WebSocket):
         token = (await manager.get_data())["token"]
         player = await PlayerService.get_by_token(token)
         manager.bind_connection(player.game_id, player.id)
-        await manager.send_self(MessageType.GAME_RECONNECT, rep=player.game.rep)
+        rep = str(player.game.rep)
+        board = GameBoard.from_rep(rep)
+        winner = check_winner(board, player.game.settings.mode)
+        await manager.send_self(MessageType.GAME_RECONNECT, rep=rep, winner=winner)
         await game_loop(manager, player.game, player)
 
 
@@ -92,6 +95,7 @@ async def game_first_connect(
 async def game_loop(
     manager: GameConnectionManager, game: GameResponse, player: PlayerResponse
 ):
+    settings = await GameSettingsService.get(game.settings_id)
     while True:
         turn = TurnRequest(**(await manager.get_data()))
 
@@ -112,5 +116,13 @@ async def game_loop(
             await manager.send_all(MessageType.BAD_TURN, error=str(error))
         else:
             rep = board.to_rep()
-            await manager.send_all(MessageType.GOOD_TURN, rep=rep)
+            winner = check_winner(board, settings.mode)
+            await manager.send_all(MessageType.GOOD_TURN, rep=rep, winner=winner)
             await GameService.update(game.id, GameUpdate(rep=rep))
+
+
+def check_winner(board: GameBoard, game_mode: GameMode) -> StoneColor | None:
+    if board.pass_counter >= board.players - len(board.finished_players):
+        return StoneColor(board.scores.index(max(board.scores)))
+    elif game_mode == GameMode.ATATRI and board.killer:
+        return board.killer

@@ -159,6 +159,10 @@ export class GameBoard {
   }
 
   updateTurnColor() {
+    if (this.finishedPlayers.size >= this.players) {
+      this.turnColor = StoneColor.NONE // Avoid inifinity loop
+      return
+    }
     this.turnColor = (this.turnColor + 1) % this.players
     while (this.finishedPlayers.has(this.turnColor))
       this.turnColor = (this.turnColor + 1) % this.players
@@ -284,8 +288,7 @@ export class GameBoard {
 
   finishTurnsTurn() {
     this.finishedPlayers.add(this.turnColor)
-    if (this.finishedPlayers.size < this.players) this.updateTurnColor()
-    else this.turnColor = StoneColor.NONE // Avoid inifinity loop
+    this.updateTurnColor()
   }
 
   static fromRep(rep: string): GameBoard {
