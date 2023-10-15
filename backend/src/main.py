@@ -29,7 +29,5 @@ async def startup_event():
 @app.on_event("shutdown")
 async def shutdown_event():
     from .service.game import GameService
-
-    session = SessionMaker()
-    await GameService.delete_all()
-    await session.close()
+    async with SessionMaker() as ss:
+        await GameService.delete_all(ss)

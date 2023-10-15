@@ -2,7 +2,6 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from ..dependencies import session
 from ..schemas.player import *
 from ..models import GameModel, PlayerModel
 from .utils import add_commit_refresh
@@ -15,8 +14,8 @@ class PlayerService:
     )
 
     @staticmethod
-    async def get_by_token(token: str) -> PlayerExtendedResponse:
-        result = await session.execute(
+    async def get_by_token(ss: AsyncSession, token: str) -> PlayerExtendedResponse:
+        result = await ss.execute(
             select(PlayerModel)
             .options(selectinload(PlayerModel.game).selectinload(GameModel.settings))
             .where(PlayerModel.token == token)
@@ -24,15 +23,14 @@ class PlayerService:
         return PlayerExtendedResponse.model_validate(result.scalars().one())
 
     @staticmethod
-    async def get_by_game_id(game_id: int) -> list[PlayerResponse]:
-        result = await session.execute(
+    async def get_by_game_id(ss: AsyncSession, game_id: int) -> list[PlayerResponse]:
+        result = await ss.execute(
             select(PlayerModel).where(PlayerModel.game_id == game_id)
         )
         return list(map(PlayerResponse.model_validate, result.scalars().all()))
 
-
     @staticmethod
-    async def create(schema: PlayerCreate) -> PlayerWithTokenResponse:
+    async def create(ss: AsyncSession, schema: PlayerCreate) -> PlayerWithTokenResponse:
         model = PlayerModel(**schema.model_dump())
-        await add_commit_refresh(model)
+        await add_commit_refresh(ss, model)
         return PlayerWithTokenResponse.model_validate(model)
