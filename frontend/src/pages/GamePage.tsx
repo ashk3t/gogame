@@ -13,7 +13,6 @@ export default function GamePage() {
   const draftRep = useAppSelector((state) => state.gameReducer.draftRep)
 
   useEffect(() => {
-    console.log("UNPACK")
     if (rep) setBoard(GameBoard.fromRep(draftRep || rep))
   }, [rep, draftRep])
 

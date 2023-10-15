@@ -13,6 +13,7 @@ export default function GameControl(props: {board: GameBoard}) {
   const winner = useAppSelector((state) => state.gameReducer.winner)
   const settings = useAppSelector((state) => state.gameReducer.settings)
   const draftRep = useAppSelector((state) => state.gameReducer.draftRep)
+  const thisPlayer = useAppSelector((state) => state.playerReducer.thisPlayer)
 
   return (
     <div className={styles.controlContainer}>
@@ -27,16 +28,17 @@ export default function GameControl(props: {board: GameBoard}) {
       {winner == null && !draftRep && (
         <>
           <NiceButton onClick={() => setDraftMode(true)}>Draft mode</NiceButton>
-          {settings.mode != GameMode.ATARI && <NiceButton onClick={() => passTurn(board)}>Pass</NiceButton>}
+          {settings.mode != GameMode.ATARI &&
+            (settings.offline || thisPlayer.color == board.turnColor) && (
+              <NiceButton onClick={() => passTurn(board)}>Pass</NiceButton>
+            )}
           <h6></h6>
           {settings.mode != GameMode.ATARI && (
             <ScaryButton onClick={() => finishTurnsTurn(board)}>Finish turns</ScaryButton>
           )}
         </>
       )}
-      <NavButton path={START_PATH} callback={endGame} scary={true}>
-        End game
-      </NavButton>
+      <ScaryButton onClick={endGame}>End game</ScaryButton>
     </div>
   )
 }

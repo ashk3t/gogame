@@ -96,11 +96,11 @@ class GameBoard:
         ]
         self.all_groups: list[Group] = []
         self.turn_color: StoneColor = StoneColor.RED
-        self.prev_turns: list[tuple[int, int]] = [(-1, -1)] * players
         self.scores: list[float] = [
             round(i * (8.1 - players), 1) for i in range(players)
         ]
         self.pass_counter: int = 0
+        self.ko_position: tuple[int, int] | None = None
         self.finished_players: set[StoneColor] = set()
         self.killer: StoneColor | None = None
 
@@ -123,17 +123,9 @@ class GameBoard:
         first_group.merge(second_group)
         self.all_groups.remove(second_group)
 
-    @property
-    def prev_turn(self) -> tuple[int, int]:
-        return self.prev_turns[self.turn_color]
-
-    @prev_turn.setter
-    def prev_turn(self, point: tuple[int, int]):
-        self.prev_turns[self.turn_color] = point
-
     def update_turn_color(self):
         if len(self.finished_players) >= self.players:
-            self.turn_color = StoneColor.NONE  # Avoid inifinity loop
+            self.turn_color = StoneColor.NONE
             return
         self.turn_color = StoneColor((self.turn_color + 1) % self.players)
         while self.turn_color in self.finished_players:
@@ -190,6 +182,8 @@ class GameBoard:
                 frontier_group.free(member_i, member_j)
 
         self.increment_score(group.color, -len(group.member_stones))
+        if len(group.member_stones) == 1:
+            self.ko_position = tuple(group.member_stones.keys())[0]
         self.delete_group(group)
 
     def take_turn(self, i: int, j: int):
@@ -197,7 +191,7 @@ class GameBoard:
             raise InvalidTurnException("Invalid (I, J)")
         if self.stones[i][j]:
             raise InvalidTurnException("Point is already occupied")
-        if self.prev_turn == (i, j):
+        if self.ko_position == (i, j):
             raise InvalidTurnException("Ko rule")
 
         stone = Stone(self.turn_color)
@@ -225,6 +219,9 @@ class GameBoard:
         if ally_groups:
             group.liberties.remove((i, j))
 
+        # Reset Ko position
+        self.ko_position = None
+
         # Update opponent liberties
         for opponent_group in opponent_groups:
             opponent_group.liberties.remove((i, j))
@@ -233,13 +230,11 @@ class GameBoard:
                 self.kill(opponent_group)
                 self.killer = stone.color
 
-        self.prev_turn = (i, j)
         self.pass_counter = 0
         self.increment_score(self.turn_color)
         self.update_turn_color()
 
     def pass_turn(self):
-        self.prev_turn = (-1, -1)
         self.pass_counter += 1
         self.update_turn_color()
 
@@ -251,24 +246,32 @@ class GameBoard:
     @staticmethod
     def from_rep(rep: str) -> GameBoard:
         """Format:
-        height;width;players;turn_color;pass_counter;<finished_players>;<board_rep>
+        height;width;players;turn_color;pass_counter;<ko_position>;<finished_players>;<rep>
 
-        <board_rep> is the sequence of numbers,
+        <rep> is the sequence of numbers,
         which represent the color of stone on a specific point
         OR vacant point if 0
         OR length of sequence of vacant points if in ().
         Last vacant points can be skipped.
+        format: '0011(5)2'
 
         <finished_players> is sequence of numbers
         which represent the color of a player
         who will no longer take turns in this game
+        format: '235'
+
+        <ko_position> is a turn position that triggers ko rule
+        format: '1,7'
         """
 
-        *rest_params, finished_players, board_rep = rep.split(";")
+        *rest_params, ko_position, finished_players, board_rep = rep.split(";")
         height, width, players, turn_color, pass_counter = map(int, rest_params)
         board = GameBoard(height, width, players)
         board.turn_color = StoneColor(turn_color - 1)
         board.pass_counter = pass_counter
+        board.ko_position = (
+            tuple(map(int, ko_position.split(","))) if ko_position else None
+        )  # pyright: ignore
         board.finished_players = set(
             map(lambda v: StoneColor(int(v) - 1), finished_players)
         )
@@ -292,17 +295,6 @@ class GameBoard:
         return board
 
     def to_rep(self) -> str:
-        rep = ""
-        zeros_combo = 0
-        for row in self.stones:
-            for stone in row:
-                if stone:
-                    rep += (
-                        f"({zeros_combo})" if zeros_combo > 3 else ("0" * zeros_combo)
-                    ) + str(stone)
-                    zeros_combo = 0
-                else:
-                    zeros_combo += 1
         return ";".join(
             map(
                 str,
@@ -312,10 +304,27 @@ class GameBoard:
                     self.players,
                     self.turn_color + 1,
                     self.pass_counter,
+                    f"{self.ko_position[0]},{self.ko_position[1]}"
+                    if self.ko_position
+                    else "",
                     "".join(map(lambda v: str(v + 1), self.finished_players)),
-                    rep
+                    self.to_board_rep(),
                 ],
             )
         )
+
+    def to_board_rep(self) -> str:
+        board_rep = ""
+        zeros_combo = 0
+        for row in self.stones:
+            for stone in row:
+                if stone:
+                    board_rep += (
+                        f"({zeros_combo})" if zeros_combo > 3 else ("0" * zeros_combo)
+                    ) + str(stone)
+                    zeros_combo = 0
+                else:
+                    zeros_combo += 1
+        return board_rep
 
     to_rep.__doc__ = from_rep.__doc__

@@ -22,7 +22,7 @@ export const startGame = () => async (dispatch: AppDispatch, getState: () => Roo
   } else {
     const nickname = state.playerReducer.thisPlayer.nickname
     const connection = GameService.startSearch(nickname, settings)
-    bindHandlers(dispatch, connection)
+    bindHandlers(dispatch, getState, connection)
   }
 }
 
@@ -33,18 +33,18 @@ export const takeTurn =
     const playerColor = getState().playerReducer.thisPlayer.color
     if (game.winner != null) return
 
-    if (game.settings.offline) {
+    if (game.settings.offline || game.draftRep) {
       try {
         board.takeTurn(i, j)
+        console.log(board)
       } catch (error) {
         if (error instanceof InvalidTurnError)
           dispatch(gameSlice.actions.setTurnError(error.message))
         else throw error
         return
       }
-      dispatch(gameSlice.actions.setTurnError(null))
 
-      if (game.settings.mode == GameMode.ATARI && board.killer && !game.draftRep)
+      if (game.settings.mode == GameMode.ATARI && board.killer != null && !game.draftRep)
         dispatch(gameSlice.actions.setGameWinner(board.killer))
       dispatch(gameSlice.actions.setGameRep(board.toRep()))
     } else if (board.turnColor == playerColor) GameService.doTurn(TurnType.BASIC, {i, j})
@@ -76,7 +76,7 @@ export const tryReconnect = () => async (dispatch: AppDispatch, getState: () => 
   const token = state.playerReducer.thisPlayer.token
   if (!settings.offline && !GameService.connection && token) {
     const connection = GameService.reconnect(token)
-    bindHandlers(dispatch, connection)
+    bindHandlers(dispatch, getState, connection)
   }
 }
 
@@ -88,33 +88,40 @@ export const endGame = () => async (dispatch: AppDispatch, getState: () => RootS
   } else {
     const playerColor = getState().playerReducer.thisPlayer.color
     if (game.rep) {
-      if (GameService.connection != null)
-        GameService.connection.onmessage = null
+      if (GameService.connection != null) GameService.connection.onmessage = null
       GameService.doTurn(TurnType.LEAVE, {color: playerColor})
-    }
-    else GameService.disconnect()
+    } else GameService.disconnect()
   }
 }
 
-function bindHandlers(dispatch: AppDispatch, connection: WebSocket) {
+function bindHandlers(dispatch: AppDispatch, getState: () => RootState, connection: WebSocket) {
   connection.onmessage = (event) => {
     const data: SocketMessage = JSON.parse(event.data)
 
     switch (data.type) {
-      case MessageType.SEARCH_CONNECT:
+      case MessageType.CONNECT:
         dispatch(playerSlice.actions.setPlayers(data.players))
         GameService.notify()
         break
       case MessageType.DISCONNECT:
-        dispatch(playerSlice.actions.popPlayer(data.player_id))
+        if (getState().gameReducer.rep)
+          dispatch(
+            playerSlice.actions.setPlayerDisconnected({playerId: data.player_id, value: true}),
+          )
+        else dispatch(playerSlice.actions.popPlayer(data.player_id))
+        break
+      case MessageType.RECONNECT:
+        dispatch(
+          playerSlice.actions.setPlayerDisconnected({playerId: data.player_id, value: false}),
+        )
         break
       case MessageType.GAME_START:
         dispatch(playerSlice.actions.setThisPlayer(data.player))
         dispatch(gameSlice.actions.setGameRep(data.rep))
         break
+      case MessageType.GAME_CONTINUE:
       case MessageType.GOOD_TURN:
-      case MessageType.GAME_RECONNECT:
-        dispatch(gameSlice.actions.setTurnError(null))
+        dispatch(gameSlice.actions.setDraftMode(false))
         dispatch(gameSlice.actions.setGameRep(data.rep))
         if (data.winner != null) dispatch(gameSlice.actions.setGameWinner(data.winner))
         break
@@ -131,7 +138,6 @@ function bindHandlers(dispatch: AppDispatch, connection: WebSocket) {
 }
 
 function updateGameData(dispatch: AppDispatch, board: GameBoard) {
-  dispatch(gameSlice.actions.setTurnError(null))
   if (board.passCounter >= board.players - board.finishedPlayers.size)
     dispatch(gameSlice.actions.setGameWinner(board.scores.indexOf(Math.max(...board.scores))))
   dispatch(gameSlice.actions.setGameRep(board.toRep()))

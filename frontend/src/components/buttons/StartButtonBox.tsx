@@ -14,7 +14,7 @@ export default function StartButtonBox() {
   return (
     <div className={styles.centeringContainer}>
       <NiceButton onClick={startGame}>Go!</NiceButton>
-      <NavButton path={GAME_LIST_PATH}>Games?</NavButton>
+      {!settings.offline && <NavButton path={GAME_LIST_PATH}>Games?</NavButton>}
     </div>
   )
 }

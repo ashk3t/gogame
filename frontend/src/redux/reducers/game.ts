@@ -26,6 +26,7 @@ export const gameSlice = createSlice({
       } else {
         state.rep = action.payload
       }
+      state.error = null
     },
     setDraftMode(state, action: PayloadAction<boolean>) {
       if (action.payload) {
@@ -38,7 +39,7 @@ export const gameSlice = createSlice({
     stepBackDraft(state) {
       state.draftRep = state.draftHistory.pop() || state.draftRep
     },
-    setTurnError(state, action: PayloadAction<string | null>) {
+    setTurnError(state, action: PayloadAction<string>) {
       state.error = action.payload
     },
     setGameWinner(state, action: PayloadAction<StoneColor>) {

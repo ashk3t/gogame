@@ -17,11 +17,11 @@ import {configureStore} from "@reduxjs/toolkit"
 
 const rootReducer = combineReducers({
   playerReducer: persistReducer(
-    {key: "playerReducer", storage, whitelist: ["thisPlayer"]},
+    {key: "playerReducer", storage},
     playerReducer,
   ),
   gameReducer: persistReducer(
-    {key: "gameReducer", storage, whitelist: ["settings", "rep"]},
+    {key: "gameReducer", storage, whitelist: ["settings", "rep", "winner"]},
     gameReducer,
   ),
   gameListReducer,

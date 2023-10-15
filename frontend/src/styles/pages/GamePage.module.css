@@ -2,7 +2,7 @@
   display: flex;
 }
 
-.mainContainer *:not(div, svg, span) {
+.mainContainer *:not(div, svg, span, h5) {
   margin: var(--default-margin);
 }
 

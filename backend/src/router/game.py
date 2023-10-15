@@ -57,7 +57,8 @@ async def reconnect(websocket: WebSocket, ss: AsyncSession = Depends(get_session
         rep = str(player.game.rep)
         board = GameBoard.from_rep(rep)
         winner = check_winner(board, player.game.settings.mode)
-        await manager.send_self(MessageType.GAME_RECONNECT, rep=rep, winner=winner)
+        await manager.send_all(MessageType.RECONNECT, player_id=player.id)
+        await manager.send_self(MessageType.GAME_CONTINUE, rep=rep, winner=winner)
         await game_loop(manager, player.game, player, winner=winner)
 
 
@@ -80,7 +81,7 @@ async def game_first_connect(
     game_players.append(PlayerResponse(**player.model_dump()))
     manager.bind_connection(game.id, player.id)
     await manager.send_all(
-        MessageType.SEARCH_CONNECT, players=list_model_dump(game_players)
+        MessageType.CONNECT, players=list_model_dump(game_players)
     )
     if len(manager.connections[game.id]) == settings.players:  # last player connect
         game = await GameService.start(ss, game.id)
@@ -142,5 +143,5 @@ async def game_loop(
 def check_winner(board: GameBoard, game_mode: GameMode) -> StoneColor | None:
     if board.pass_counter >= board.players - len(board.finished_players):
         return StoneColor(board.scores.index(max(board.scores)))
-    elif game_mode == GameMode.ATARI and board.killer:
+    elif game_mode == GameMode.ATARI and board.killer is not None:
         return board.killer

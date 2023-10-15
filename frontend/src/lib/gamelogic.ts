@@ -106,9 +106,9 @@ export class GameBoard {
   stones: Array<Array<Stone | null>>
   allGroups: Array<Group>
   turnColor: StoneColor
-  prevTurns: Array<string>
   scores: Array<number>
   passCounter: number
+  koPosition: string
   finishedPlayers: Set<StoneColor>
   killer: StoneColor | null
 
@@ -119,11 +119,11 @@ export class GameBoard {
     this.stones = Array.from(Array(height), () => new Array(width).fill(null))
     this.allGroups = []
     this.turnColor = StoneColor.RED
-    this.prevTurns = Array(players).fill("")
     this.scores = Array(players)
       .fill(0)
       .map((_, i) => round(i * (8.1 - players), 1))
     this.passCounter = 0
+    this.koPosition = ""
     this.finishedPlayers = new Set()
     this.killer = null
   }
@@ -150,17 +150,9 @@ export class GameBoard {
     this.allGroups = this.allGroups.filter((el) => el != secondGroup)
   }
 
-  get prevTurn(): string {
-    return this.prevTurns[this.turnColor]
-  }
-
-  set prevTurn(ij: string) {
-    this.prevTurns[this.turnColor] = ij
-  }
-
   updateTurnColor() {
     if (this.finishedPlayers.size >= this.players) {
-      this.turnColor = StoneColor.NONE // Avoid inifinity loop
+      this.turnColor = StoneColor.NONE
       return
     }
     this.turnColor = (this.turnColor + 1) % this.players
@@ -231,6 +223,8 @@ export class GameBoard {
       for (const memberIJ of Object.keys(group.memberStones)) frontierGroup.free(memberIJ)
 
     this.incrementScore(group.color, -Object.keys(group.memberStones).length)
+    if (Object.keys(group.memberStones).length == 1)
+      this.koPosition = Object.keys(group.memberStones)[0]
     this.deleteGroup(group)
   }
 
@@ -238,7 +232,7 @@ export class GameBoard {
     const ij = joinIJ(i, j)
     if (!this.isValid(i, j)) throw new InvalidTurnError("Invalid (X, Y)")
     if (this.stones[i][j]) throw new InvalidTurnError("Point is already occupied")
-    if (this.prevTurn == ij) throw new InvalidTurnError("Ko rule")
+    if (this.koPosition == joinIJ(i, j)) throw new InvalidTurnError("Ko rule")
 
     const stone = new Stone(this.turnColor)
     this.stones[i][j] = stone
@@ -264,6 +258,9 @@ export class GameBoard {
     for (const allyGroup of allyGroups) this.mergeGroups(group, allyGroup)
     if (allyGroups.size > 0) group.liberties.delete(ij)
 
+    // Reset ko position
+    this.koPosition = ""
+
     // Update opponent liberties
     for (const opponentGroup of opponentGroups) {
       opponentGroup.liberties.delete(ij)
@@ -274,14 +271,12 @@ export class GameBoard {
       }
     }
 
-    this.prevTurn = ij
     this.passCounter = 0
     this.incrementScore(this.turnColor)
     this.updateTurnColor()
   }
 
   passTurn() {
-    this.prevTurn = ""
     this.passCounter++
     this.updateTurnColor()
   }
@@ -293,12 +288,12 @@ export class GameBoard {
 
   static fromRep(rep: string): GameBoard {
     const repSplit = rep.split(";")
-    const boardRep = repSplit.pop() || ""
-    const finishedPlayers = repSplit.pop() || ""
+    const [koPosition, finishedPlayers, boardRep] = repSplit.splice(-3)
     const [height, width, players, turnColor, passCounter] = repSplit.map((v) => parseInt(v))
     const board = new GameBoard(height, width, players)
     board.turnColor = turnColor - 1
     board.passCounter = passCounter
+    board.koPosition = koPosition.replace(",", " ")
     board.finishedPlayers = new Set(finishedPlayers.split("").map((v) => parseInt(v) - 1))
 
     let pos = 0
@@ -325,25 +320,31 @@ export class GameBoard {
   }
 
   toRep(): string {
-    let rep = ""
-    let zerosCombo = 0
-    for (const row of this.stones)
-      for (const stone of row) {
-        if (stone) {
-          rep += (zerosCombo > 3 ? `(${zerosCombo})` : "0".repeat(zerosCombo)) + stone.toString()
-          zerosCombo = 0
-        } else zerosCombo++
-      }
     return [
       this.height,
       this.width,
       this.players,
       this.turnColor + 1,
       this.passCounter,
+      this.koPosition.replace(" ", ","),
       Array.from(this.finishedPlayers)
         .map((v) => v + 1)
         .join(""),
-      rep,
+      this.toBoardRep(),
     ].join(";")
+  }
+
+  toBoardRep(): string {
+    let boardRep = ""
+    let zerosCombo = 0
+    for (const row of this.stones)
+      for (const stone of row) {
+        if (stone) {
+          boardRep +=
+            (zerosCombo > 3 ? `(${zerosCombo})` : "0".repeat(zerosCombo)) + stone.toString()
+          zerosCombo = 0
+        } else zerosCombo++
+      }
+    return boardRep
   }
 }

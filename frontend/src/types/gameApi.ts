@@ -4,12 +4,13 @@ export interface SocketMessage {
 }
 
 export enum MessageType {
-  SEARCH_CONNECT = "SEARCH_CONNECT",
+  CONNECT = "CONNECT",
   DISCONNECT = "DISCONNECT",
+  RECONNECT = "RECONNECT",
   GAME_START = "GAME_START",
+  GAME_CONTINUE = "GAME_CONTINUE",
   GOOD_TURN = "GOOD_TURN",
   BAD_TURN = "BAD_TURN",
-  GAME_RECONNECT = "GAME_RECONNECT",
 }
 
 export enum TurnType {
