@@ -142,5 +142,5 @@ async def game_loop(
 def check_winner(board: GameBoard, game_mode: GameMode) -> StoneColor | None:
     if board.pass_counter >= board.players - len(board.finished_players):
         return StoneColor(board.scores.index(max(board.scores)))
-    elif game_mode == GameMode.ATATRI and board.killer:
+    elif game_mode == GameMode.ATARI and board.killer:
         return board.killer

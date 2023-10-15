@@ -5,7 +5,7 @@ import {TurnType} from "../types/gameApi"
 
 export default class GameService {
   static baseUrl = "/games"
-  static connection: WebSocket
+  static connection: WebSocket | null = null
 
   static async getAll() {
     const response = await publicConfig.get(this.baseUrl)

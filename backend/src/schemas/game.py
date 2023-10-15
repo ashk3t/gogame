@@ -5,7 +5,7 @@ from pydantic import BaseModel as BaseSchema, ConfigDict
 
 class GameMode(str, Enum):
     CLASSIC = "CLASSIC"
-    ATATRI = "ATATRI"
+    ATARI = "ATARI"
 
 
 class GameSettingsBase(BaseSchema):

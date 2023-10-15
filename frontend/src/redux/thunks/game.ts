@@ -88,9 +88,9 @@ export const endGame = () => async (dispatch: AppDispatch, getState: () => RootS
   } else {
     const playerColor = getState().playerReducer.thisPlayer.color
     if (game.rep) {
-      GameService.doTurn(TurnType.LEAVE, {color: playerColor})
       if (GameService.connection != null)
         GameService.connection.onmessage = null
+      GameService.doTurn(TurnType.LEAVE, {color: playerColor})
     }
     else GameService.disconnect()
   }
