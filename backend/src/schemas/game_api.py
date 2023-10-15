@@ -20,6 +20,7 @@ class TurnType(str, Enum):
     BASIC = "BASIC"
     PASS = "PASS"
     FINISH = "FINISH"
+    LEAVE = "LEAVE"
 
 
 class GameSearchRequest(GameSettingsBase):
@@ -36,4 +37,3 @@ class TurnRequest(BaseSchema):
     i: int = -1
     j: int = -1
     color: StoneColor = StoneColor.NONE
-    leave: bool = False

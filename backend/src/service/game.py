@@ -1,4 +1,4 @@
-from fastapi.websockets import WebSocketDisconnect
+from fastapi.websockets import WebSocketDisconnect, WebSocketState
 from sqlalchemy.ext.asyncio import AsyncSession
 from websockets.exceptions import ConnectionClosedOK
 from fastapi import WebSocket
@@ -86,15 +86,15 @@ class GameSettingsService:
 
 
 class GameConnectionManager:
-    # {game_id: [player_id: websocket]}
+    # {game_id: {player_id: websocket}}
     connections: dict[int, dict[int, WebSocket]] = {}
 
     def __init__(self, ss: AsyncSession, websocket: WebSocket):
-        self.ss = ss
-        self.websocket = websocket
-        self.game_id = 0
-        self.player_id = 0
-        self.in_game = False
+        self.ss: AsyncSession = ss
+        self.websocket: WebSocket = websocket
+        self.game_id: int = 0
+        self.player_id: int = 0
+        self.in_game: bool = False
 
     async def __aenter__(self):
         await self.websocket.accept()
@@ -105,6 +105,8 @@ class GameConnectionManager:
         if not self.in_game:
             await self.permanent_disconnect()
         await self.send_all(MessageType.DISCONNECT, player_id=self.player_id)
+        if self.websocket.client_state == WebSocketState.CONNECTED:
+            await self.websocket.close()
         if not exc_value or exc_type in [WebSocketDisconnect, ConnectionClosedOK]:
             return True
 

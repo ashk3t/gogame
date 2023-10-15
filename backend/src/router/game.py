@@ -58,7 +58,7 @@ async def reconnect(websocket: WebSocket, ss: AsyncSession = Depends(get_session
         board = GameBoard.from_rep(rep)
         winner = check_winner(board, player.game.settings.mode)
         await manager.send_self(MessageType.GAME_RECONNECT, rep=rep, winner=winner)
-        await game_loop(manager, player.game, player)
+        await game_loop(manager, player.game, player, winner=winner)
 
 
 async def game_first_connect(
@@ -92,7 +92,6 @@ async def game_first_connect(
     await manager.send_self(
         MessageType.GAME_START, player=player.model_dump(), rep=init_rep
     )
-    manager.in_game = True
     return player
 
 
@@ -100,15 +99,22 @@ async def game_loop(
     manager: GameConnectionManager,
     game: GameResponse,
     player: PlayerResponse,
+    winner: StoneColor | None = None,
 ):
+    manager.in_game = True
     ss = manager.ss
     settings = await GameSettingsService.get(ss, game.settings_id)
     while True:
         turn = TurnRequest(**(await manager.get_data()))
 
         game = await GameService.get(ss, game.id)
-        if game.rep is None or (
-            turn_color(game.rep) != player.color and turn.type != TurnType.FINISH
+        if (
+            game.rep is None
+            or (turn.type != TurnType.LEAVE and winner is not None)
+            or (
+                turn.type in [TurnType.BASIC, TurnType.PASS]
+                and turn_color(game.rep) != player.color
+            )
         ):
             continue
 
@@ -119,7 +125,7 @@ async def game_loop(
                     board.take_turn(turn.i, turn.j)
                 case TurnType.PASS:
                     board.pass_turn()
-                case TurnType.FINISH:
+                case TurnType.FINISH | TurnType.LEAVE:
                     board.finish_turns_turn(turn.color)
         except InvalidTurnException as error:
             await manager.send_self(MessageType.BAD_TURN, error=str(error))
@@ -128,7 +134,7 @@ async def game_loop(
             winner = check_winner(board, settings.mode)
             await manager.send_all(MessageType.GOOD_TURN, rep=rep, winner=winner)
             await GameService.update(ss, game.id, GameUpdate(rep=rep))
-            if turn.leave:
+            if turn.type == TurnType.LEAVE:
                 manager.in_game = False
                 return
 

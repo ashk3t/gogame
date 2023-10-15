@@ -286,9 +286,9 @@ export class GameBoard {
     this.updateTurnColor()
   }
 
-  finishTurnsTurn(color: StoneColor | null = null) {
-    this.finishedPlayers.add(color || this.turnColor)
-    this.updateTurnColor()
+  finishTurnsTurn(color?: StoneColor) {
+    this.finishedPlayers.add(color == null ? this.turnColor : color)
+    if (color == null || color == this.turnColor) this.updateTurnColor()
   }
 
   static fromRep(rep: string): GameBoard {

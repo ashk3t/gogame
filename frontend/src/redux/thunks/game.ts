@@ -82,13 +82,18 @@ export const tryReconnect = () => async (dispatch: AppDispatch, getState: () => 
 
 export const endGame = () => async (dispatch: AppDispatch, getState: () => RootState) => {
   const game = getState().gameReducer
-  if (!game.settings.offline) {
+  if (game.settings.offline) {
+    dispatch(playerSlice.actions.clearPlayerData())
+    dispatch(gameSlice.actions.clearGameData())
+  } else {
     const playerColor = getState().playerReducer.thisPlayer.color
-    if (game.rep) GameService.doTurn(TurnType.FINISH, {color: playerColor, leave: true})
-    GameService.disconnect()
+    if (game.rep) {
+      GameService.doTurn(TurnType.LEAVE, {color: playerColor})
+      if (GameService.connection != null)
+        GameService.connection.onmessage = null
+    }
+    else GameService.disconnect()
   }
-  dispatch(playerSlice.actions.clearPlayerData())
-  dispatch(gameSlice.actions.clearGameData())
 }
 
 function bindHandlers(dispatch: AppDispatch, connection: WebSocket) {
@@ -111,11 +116,17 @@ function bindHandlers(dispatch: AppDispatch, connection: WebSocket) {
       case MessageType.GAME_RECONNECT:
         dispatch(gameSlice.actions.setTurnError(null))
         dispatch(gameSlice.actions.setGameRep(data.rep))
-        if (data.winner) dispatch(gameSlice.actions.setGameWinner(data.winner))
+        if (data.winner != null) dispatch(gameSlice.actions.setGameWinner(data.winner))
         break
       case MessageType.BAD_TURN:
         dispatch(gameSlice.actions.setTurnError(data.error))
     }
+  }
+
+  connection.onclose = () => {
+    dispatch(playerSlice.actions.clearPlayerData())
+    dispatch(gameSlice.actions.clearGameData())
+    GameService.connection = null
   }
 }
 

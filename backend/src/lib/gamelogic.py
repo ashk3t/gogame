@@ -244,8 +244,9 @@ class GameBoard:
         self.update_turn_color()
 
     def finish_turns_turn(self, color: StoneColor | None = None):
-        self.finished_players.add(color or self.turn_color)
-        self.update_turn_color()
+        self.finished_players.add(self.turn_color if color is None else color)
+        if color is None or color == self.turn_color:
+            self.update_turn_color()
 
     @staticmethod
     def from_rep(rep: str) -> GameBoard:

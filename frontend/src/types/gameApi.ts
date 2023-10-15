@@ -16,4 +16,5 @@ export enum TurnType {
   BASIC = "BASIC",
   PASS = "PASS",
   FINISH = "FINISH",
+  LEAVE = "LEAVE",
 }
