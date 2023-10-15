@@ -4,7 +4,7 @@ from sqlalchemy.orm import selectinload
 
 from ..dependencies import session
 from ..schemas.player import *
-from ..models import PlayerModel
+from ..models import GameModel, PlayerModel
 from .utils import add_commit_refresh
 from .generic import generate_basic_service_methods
 
@@ -18,7 +18,7 @@ class PlayerService:
     async def get_by_token(token: str) -> PlayerExtendedResponse:
         result = await session.execute(
             select(PlayerModel)
-            .options(selectinload(PlayerModel.game).selectinload(PlayerModel.game.settings))
+            .options(selectinload(PlayerModel.game).selectinload(GameModel.settings))
             .where(PlayerModel.token == token)
         )
         return PlayerExtendedResponse.model_validate(result.scalars().one())

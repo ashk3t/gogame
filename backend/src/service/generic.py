@@ -1,13 +1,15 @@
 import sqlalchemy as alc
 from sqlalchemy import select
 
-from ..dependencies import session
+from src.dependencies import get_session
+
 from .utils import add_commit_refresh
 
 
 def generate_basic_service_methods(Model, ResponseSchema, CreateSchema, UpdateSchema):
     @staticmethod
     async def get(id: int) -> ResponseSchema:
+        session = get_session()
         result = await session.execute(select(Model).where(Model.id == id))
         return ResponseSchema.model_validate(result.scalars().one())
 

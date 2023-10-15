@@ -1,5 +1,6 @@
 import {capitalize} from "lodash"
 import {nicknameLabels} from "./consts/utils"
+import {StoneColor} from "./lib/gamelogic"
 
 export function loadScript(src: string) {
   return new Promise<void>((resolve, reject) => {
@@ -70,4 +71,8 @@ export class BoardIntersectionStyler {
       `,
     }
   }
+}
+
+export function turnColor(gameRep: string): StoneColor {
+    return parseInt(gameRep.split(";")[3]) - 1
 }

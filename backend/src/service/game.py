@@ -1,4 +1,5 @@
 from fastapi.websockets import WebSocketDisconnect
+from websockets.exceptions import ConnectionClosedOK
 from fastapi import WebSocket
 import sqlalchemy as alc
 from sqlalchemy import and_, delete, desc, select
@@ -47,7 +48,8 @@ class GameService:
                         GameModel.start_time == None,
                         GameModel.settings.has(equal_game_settings(settings)),
                     )
-                ).order_by(desc(GameModel.search_start_time)),
+                )
+                .order_by(desc(GameModel.search_start_time)),
             )
             return GameResponse.model_validate(result.scalars().one())
         except:
@@ -87,14 +89,18 @@ class GameConnectionManager:
         self.websocket = websocket
         self.game_id = 0
         self.player_id = 0
+        self.in_game = False
 
     async def __aenter__(self):
         await self.websocket.accept()
         return self
 
     async def __aexit__(self, exc_type, exc_value, exc_tb):
-        await self.unbind_connection()
-        if not exc_value or exc_type is WebSocketDisconnect:
+        self.unbind_connection()
+        if not self.in_game:
+            await self.permanent_disconnect()
+        await self.send_all(MessageType.DISCONNECT, player_id=self.player_id)
+        if not exc_value or exc_type in [WebSocketDisconnect, ConnectionClosedOK]:
             return True
 
     def bind_connection(self, game_id: int, player_id: int):
@@ -104,15 +110,16 @@ class GameConnectionManager:
             self.connections[game_id] = {}
         self.connections[game_id][player_id] = self.websocket
 
-    # TODO: notify other players if somebody has disconnected
-    async def unbind_connection(self):
+    def unbind_connection(self):
         if self.game_id and self.player_id:
             self.connections[self.game_id].pop(self.player_id)
-            # await PlayerService.delete(self.player_id)
-            await self.send_all("player_disconnect", player_id=self.player_id)
-            if len(self.connections[self.game_id]) == 0:
-                self.connections.pop(self.game_id)
-                await GameService.delete(self.game_id)
+
+    async def permanent_disconnect(self):
+        await PlayerService.delete(self.player_id)
+        game_players = await PlayerService.get_by_game_id(self.game_id)
+        if len(game_players) == 0:
+            self.connections.pop(self.game_id)
+            await GameService.delete(self.game_id)
 
     async def get_data(self):
         return await self.websocket.receive_json()
@@ -123,8 +130,9 @@ class GameConnectionManager:
 
     async def send_all(self, data_type: str, **data):
         data["type"] = data_type
-        for connection in self.connections[self.game_id].values():
-            await connection.send_json(data)
+        if self.game_id in self.connections:
+            for connection in self.connections[self.game_id].values():
+                await connection.send_json(data)
 
     async def wait(self):
-        await self.websocket.receive()
+        await self.websocket.receive_text()

@@ -1,10 +1,9 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .config import settings
 from .database import SessionMaker, clear_tables
 from .router import routers
-from .dependencies import session
 
 
 app = FastAPI()
@@ -19,19 +18,6 @@ app.add_middleware(
 
 for router in routers:
     app.include_router(router)
-
-
-@app.middleware("http")
-async def update_global_db_session(request: Request, call_next):
-    session = SessionMaker()
-    try:
-        response = await call_next(request)
-    except:
-        await session.rollback()
-    else:
-        return response
-    finally:
-        await session.close()
 
 
 @app.on_event("startup")

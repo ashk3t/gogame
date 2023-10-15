@@ -5,7 +5,7 @@ export interface SocketMessage {
 
 export enum MessageType {
   SEARCH_CONNECT = "SEARCH_CONNECT",
-  SEARCH_DISCONNECT = "SEARCH_DISCONNECT",
+  DISCONNECT = "DISCONNECT",
   GAME_START = "GAME_START",
   GOOD_TURN = "GOOD_TURN",
   BAD_TURN = "BAD_TURN",

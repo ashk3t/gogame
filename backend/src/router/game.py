@@ -89,6 +89,7 @@ async def game_first_connect(
     await manager.send_self(
         MessageType.GAME_START, player=player.model_dump(), rep=init_rep
     )
+    manager.in_game = True
     return player
 
 
@@ -100,7 +101,9 @@ async def game_loop(
         turn = TurnRequest(**(await manager.get_data()))
 
         game = await GameService.get(game.id)
-        if game.rep is None or turn_color(game.rep) != player.color:
+        if game.rep is None or (
+            turn_color(game.rep) != player.color and turn.type != TurnType.FINISH
+        ):
             continue
 
         board = GameBoard.from_rep(game.rep)
@@ -111,14 +114,17 @@ async def game_loop(
                 case TurnType.PASS:
                     board.pass_turn()
                 case TurnType.FINISH:
-                    board.finish_turns_turn()
+                    board.finish_turns_turn(turn.color)
         except InvalidTurnException as error:
-            await manager.send_all(MessageType.BAD_TURN, error=str(error))
+            await manager.send_self(MessageType.BAD_TURN, error=str(error))
         else:
             rep = board.to_rep()
             winner = check_winner(board, settings.mode)
             await manager.send_all(MessageType.GOOD_TURN, rep=rep, winner=winner)
             await GameService.update(game.id, GameUpdate(rep=rep))
+            if turn.leave:
+                manager.in_game = False
+                return
 
 
 def check_winner(board: GameBoard, game_mode: GameMode) -> StoneColor | None:

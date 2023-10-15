@@ -243,8 +243,8 @@ class GameBoard:
         self.pass_counter += 1
         self.update_turn_color()
 
-    def finish_turns_turn(self):
-        self.finished_players.add(self.turn_color)
+    def finish_turns_turn(self, color: StoneColor | None = None):
+        self.finished_players.add(color or self.turn_color)
         self.update_turn_color()
 
     @staticmethod

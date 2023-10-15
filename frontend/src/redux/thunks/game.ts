@@ -47,7 +47,7 @@ export const takeTurn =
       if (game.settings.mode == GameMode.ATARI && board.killer && !game.draftRep)
         dispatch(gameSlice.actions.setGameWinner(board.killer))
       dispatch(gameSlice.actions.setGameRep(board.toRep()))
-    } else if (board.turnColor == playerColor) GameService.doTurn(TurnType.BASIC, i, j)
+    } else if (board.turnColor == playerColor) GameService.doTurn(TurnType.BASIC, {i, j})
   }
 
 export const passTurn =
@@ -67,7 +67,7 @@ export const finishTurnsTurn =
     if (settings.offline) {
       board.finishTurnsTurn()
       updateGameData(dispatch, board)
-    } else if (board.turnColor == playerColor) GameService.doTurn(TurnType.FINISH)
+    } else GameService.doTurn(TurnType.FINISH, {color: playerColor})
   }
 
 export const tryReconnect = () => async (dispatch: AppDispatch, getState: () => RootState) => {
@@ -80,15 +80,16 @@ export const tryReconnect = () => async (dispatch: AppDispatch, getState: () => 
   }
 }
 
-export const endGame =
-  () => async (dispatch: AppDispatch, getState: () => RootState) => {
-    // const settings = getState().gameReducer.settings
-    // const playerColor = getState().playerReducer.thisPlayer.color
-    GameService.endGame()
-    dispatch(gameSlice.actions.clearGameData())
-    // TODO: Do delayed finish
-    // if (!settings.offline && board.turnColor == playerColor) GameService.doTurn(TurnType.FINISH)
+export const endGame = () => async (dispatch: AppDispatch, getState: () => RootState) => {
+  const game = getState().gameReducer
+  if (!game.settings.offline) {
+    const playerColor = getState().playerReducer.thisPlayer.color
+    if (game.rep) GameService.doTurn(TurnType.FINISH, {color: playerColor, leave: true})
+    GameService.disconnect()
   }
+  dispatch(playerSlice.actions.clearPlayerData())
+  dispatch(gameSlice.actions.clearGameData())
+}
 
 function bindHandlers(dispatch: AppDispatch, connection: WebSocket) {
   connection.onmessage = (event) => {
@@ -99,7 +100,7 @@ function bindHandlers(dispatch: AppDispatch, connection: WebSocket) {
         dispatch(playerSlice.actions.setPlayers(data.players))
         GameService.notify()
         break
-      case MessageType.SEARCH_DISCONNECT:
+      case MessageType.DISCONNECT:
         dispatch(playerSlice.actions.popPlayer(data.player_id))
         break
       case MessageType.GAME_START:
@@ -110,16 +111,11 @@ function bindHandlers(dispatch: AppDispatch, connection: WebSocket) {
       case MessageType.GAME_RECONNECT:
         dispatch(gameSlice.actions.setTurnError(null))
         dispatch(gameSlice.actions.setGameRep(data.rep))
-        if (data.winner)
-          dispatch(gameSlice.actions.setGameWinner(data.winner))
+        if (data.winner) dispatch(gameSlice.actions.setGameWinner(data.winner))
         break
       case MessageType.BAD_TURN:
         dispatch(gameSlice.actions.setTurnError(data.error))
     }
-  }
-
-  connection.onclose = () => {
-    dispatch(playerSlice.actions.clearPlayerData())
   }
 }
 

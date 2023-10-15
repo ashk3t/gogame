@@ -37,8 +37,8 @@ export default class GameService {
     return socket
   }
 
-  static doTurn(turnType: TurnType, i?: number, j?: number) {
-    GameService.connection?.send(JSON.stringify({type: turnType, i, j}))
+  static doTurn(turnType: TurnType, turnData?: any) {
+    GameService.connection?.send(JSON.stringify({type: turnType, ...turnData}))
   }
 
   static reconnect(token: string): WebSocket {
@@ -51,7 +51,7 @@ export default class GameService {
     return socket
   }
 
-  static endGame() {
+  static disconnect() {
     GameService.connection?.close()
   }
 }
