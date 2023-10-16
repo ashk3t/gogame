@@ -61,7 +61,9 @@ async def reconnect(websocket: WebSocket, ss: AsyncSession = Depends(get_session
             spectators = await PlayerService.get_by_game_id(
                 ss, player.game_id, player.spectator
             )
-            await manager.send_all(MessageType.RECONNECT, spectators=list_model_dump(spectators))
+            await manager.send_all(
+                MessageType.RECONNECT, spectators=list_model_dump(spectators)
+            )
         else:
             await manager.send_all(MessageType.RECONNECT, player_id=player.id)
 
@@ -78,13 +80,16 @@ async def game_connect(
 ) -> PlayerResponse:
     ss = manager.ss
     game_players = await PlayerService.get_by_game_id(ss, game.id)
+    if spectator:
+        color = StoneColor.NONE
+    else:
+        color = StoneColor(
+            min(set(range(settings.players)) - set(p.color for p in game_players))
+        )
     player = await PlayerService.create(
         ss,
         PlayerCreate(
-            nickname=nickname,
-            game_id=game.id,
-            color=StoneColor.NONE if spectator else StoneColor(len(game_players)),
-            spectator=spectator,
+            nickname=nickname, game_id=game.id, color=color, spectator=spectator
         ),
     )
 

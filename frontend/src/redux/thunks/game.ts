@@ -135,8 +135,7 @@ function bindHandlers(dispatch: AppDispatch, getState: () => RootState, connecti
         break
       case MessageType.GAME_CONTINUE:
       case MessageType.GOOD_TURN:
-        dispatch(gameSlice.actions.setDraftMode(false))
-        dispatch(gameSlice.actions.setGameRep(data.rep))
+        dispatch(gameSlice.actions.setMainGameRep(data.rep))
         if (data.winner != null) dispatch(gameSlice.actions.setGameWinner(data.winner))
         break
       case MessageType.BAD_TURN:

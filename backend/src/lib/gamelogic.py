@@ -19,6 +19,10 @@ class StoneColor(int, Enum):
     CYAN = 4
     PURPLE = 5
 
+    @classmethod
+    def set(cls) -> set:
+        return set(list(cls.__members__.values())[1:])
+
 
 class Group:
     UNGROUPED: Group

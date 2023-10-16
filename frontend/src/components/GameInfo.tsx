@@ -5,6 +5,7 @@ import {GameBoard, StoneColor} from "../lib/gamelogic"
 import {hexColors, stoneHexColors} from "../consts/utils"
 import ScoreBoard from "./ScoreBoard"
 import SpectatorsSection from "./SpectatorsSection"
+import {turnColor} from "../utils"
 
 export default function GameInfo(props: {board: GameBoard}) {
   const {board} = props
@@ -13,6 +14,7 @@ export default function GameInfo(props: {board: GameBoard}) {
   const turnError = useAppSelector((state) => state.gameReducer.error)
   const thisPlayer = useAppSelector((state) => state.playerReducer.thisPlayer)
   const connectedPlayers = useAppSelector((state) => state.playerReducer.players)
+  const mainRep = useAppSelector((state) => state.gameReducer.rep)
 
   function getPlayerNameByColor(color: StoneColor) {
     return settings.offline
@@ -23,7 +25,7 @@ export default function GameInfo(props: {board: GameBoard}) {
   return (
     <div className={styles.infoContainer}>
       <section>
-        {thisPlayer.color == board.turnColor && (
+        {thisPlayer.color == turnColor(mainRep!) && (
           <h4 style={{color: stoneHexColors[thisPlayer.color], textAlign: "center"}}>Your turn</h4>
         )}
         <ScoreBoard board={board} />

@@ -29,6 +29,9 @@ export const gameSlice = createSlice({
       }
       state.error = null
     },
+    setMainGameRep(state, action: PayloadAction<string>) {
+      state.rep = action.payload
+    },
     setDraftMode(state, action: PayloadAction<boolean>) {
       if (action.payload) {
         state.draftRep = state.rep
