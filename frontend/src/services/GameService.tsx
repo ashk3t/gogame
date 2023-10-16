@@ -37,6 +37,15 @@ export default class GameService {
     return socket
   }
 
+  static join(nickname: string, gameId: number): WebSocket {
+    const socket = new WebSocket(WS_API_URL + GameService.baseUrl + "/join")
+    socket.onopen = (_) => {
+      socket.send(JSON.stringify({nickname, game_id: gameId}))
+    }
+    GameService.connection = socket
+    return socket
+  }
+
   static doTurn(turnType: TurnType, turnData?: any) {
     GameService.connection?.send(JSON.stringify({type: turnType, ...turnData}))
   }

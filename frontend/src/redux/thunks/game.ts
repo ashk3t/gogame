@@ -26,6 +26,13 @@ export const startGame = () => async (dispatch: AppDispatch, getState: () => Roo
   }
 }
 
+export const joinGame = (gameId: number) => async (dispatch: AppDispatch, getState: () => RootState) => {
+  const state = getState()
+  const nickname = state.playerReducer.thisPlayer.nickname
+  const connection = GameService.join(nickname, gameId)
+  bindHandlers(dispatch, getState, connection)
+}
+
 export const takeTurn =
   (i: number, j: number, board: GameBoard) =>
   async (dispatch: AppDispatch, getState: () => RootState) => {

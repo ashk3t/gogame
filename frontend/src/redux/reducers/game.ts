@@ -3,6 +3,7 @@ import {GameSettings, Game, defaultGameSettings} from "../../types/game"
 import {StoneColor} from "../../lib/gamelogic"
 
 const initialState: Game = {
+  id: null,
   settings: defaultGameSettings,
   rep: null,
   error: null,

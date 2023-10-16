@@ -15,6 +15,7 @@ export interface GameSettings {
 }
 
 export interface Game {
+  id: number | null
   settings: GameSettings
   rep: string | null
   error: string | null
