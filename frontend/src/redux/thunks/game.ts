@@ -26,12 +26,15 @@ export const startGame = () => async (dispatch: AppDispatch, getState: () => Roo
   }
 }
 
-export const joinGame = (gameId: number) => async (dispatch: AppDispatch, getState: () => RootState) => {
-  const state = getState()
-  const nickname = state.playerReducer.thisPlayer.nickname
-  const connection = GameService.join(nickname, gameId)
-  bindHandlers(dispatch, getState, connection)
-}
+export const joinGame =
+  (gameId: number, spectate: boolean = false) =>
+  async (dispatch: AppDispatch, getState: () => RootState) => {
+    const state = getState()
+    const nickname = state.playerReducer.thisPlayer.nickname
+    const connection = GameService.join(nickname, gameId, spectate)
+    bindHandlers(dispatch, getState, connection)
+  }
+export const spectateGame = (gameId: number) => joinGame(gameId, true)
 
 export const takeTurn =
   (i: number, j: number, board: GameBoard) =>
@@ -107,20 +110,24 @@ function bindHandlers(dispatch: AppDispatch, getState: () => RootState, connecti
 
     switch (data.type) {
       case MessageType.CONNECT:
-        dispatch(playerSlice.actions.setPlayers(data.players))
-        GameService.notify()
+        if (data.players) dispatch(playerSlice.actions.setPlayers(data.players))
+        if (data.spectators) dispatch(playerSlice.actions.setSpectators(data.spectators))
+        if (data.notify_back) GameService.notify()
         break
       case MessageType.DISCONNECT:
-        if (getState().gameReducer.rep)
+        if (data.spectator_id) dispatch(playerSlice.actions.removeSpectator(data.spectator_id))
+        else if (getState().gameReducer.rep) {
           dispatch(
             playerSlice.actions.setPlayerDisconnected({playerId: data.player_id, value: true}),
           )
-        else dispatch(playerSlice.actions.popPlayer(data.player_id))
+        } else dispatch(playerSlice.actions.removePlayer(data.player_id))
         break
       case MessageType.RECONNECT:
-        dispatch(
-          playerSlice.actions.setPlayerDisconnected({playerId: data.player_id, value: false}),
-        )
+        if (data.spectators) dispatch(playerSlice.actions.setSpectators(data.spectators))
+        else
+          dispatch(
+            playerSlice.actions.setPlayerDisconnected({playerId: data.player_id, value: false}),
+          )
         break
       case MessageType.GAME_START:
         dispatch(playerSlice.actions.setThisPlayer(data.player))

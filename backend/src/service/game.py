@@ -92,8 +92,9 @@ class GameConnectionManager:
     def __init__(self, ss: AsyncSession, websocket: WebSocket):
         self.ss: AsyncSession = ss
         self.websocket: WebSocket = websocket
-        self.game_id: int = 0
-        self.player_id: int = 0
+        self.game_id: int = -1
+        self.player_id: int = -1
+        self.spectator: bool = False
         self.in_game: bool = False
 
     async def __aenter__(self):
@@ -104,15 +105,19 @@ class GameConnectionManager:
         self.unbind_connection()
         if not self.in_game:
             await self.permanent_disconnect()
-        await self.send_all(MessageType.DISCONNECT, player_id=self.player_id)
+        await self.send_all(
+            MessageType.DISCONNECT,
+            **{"spectator_id" if self.spectator else "player_id": self.player_id}
+        )
         if self.websocket.client_state == WebSocketState.CONNECTED:
             await self.websocket.close()
         if not exc_value or exc_type in [WebSocketDisconnect, ConnectionClosedOK]:
             return True
 
-    def bind_connection(self, game_id: int, player_id: int):
+    def bind_connection(self, game_id: int, player_id: int, spectator: bool):
         self.game_id = game_id
         self.player_id = player_id
+        self.spectator = spectator
         if not game_id in self.connections:
             self.connections[game_id] = {}
         self.connections[game_id][player_id] = self.websocket

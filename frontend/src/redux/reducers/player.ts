@@ -5,6 +5,7 @@ import {StoneColor} from "../../lib/gamelogic"
 interface PlayersData {
   thisPlayer: Player
   players: Array<Player>
+  spectators: Array<Player>
 }
 
 const initialPlayer: Player = {
@@ -18,6 +19,7 @@ const initialPlayer: Player = {
 const initialState: PlayersData = {
   thisPlayer: initialPlayer,
   players: [],
+  spectators: [],
 }
 
 export const playerSlice = createSlice({
@@ -33,8 +35,14 @@ export const playerSlice = createSlice({
     setPlayers(state, action: PayloadAction<Array<Player>>) {
       state.players = action.payload.sort((p, n) => p.color - n.color)
     },
-    popPlayer(state, action: PayloadAction<number>) {
+    setSpectators(state, action: PayloadAction<Array<Player>>) {
+      state.spectators = action.payload
+    },
+    removePlayer(state, action: PayloadAction<number>) {
       state.players = state.players.filter((player) => player.id != action.payload)
+    },
+    removeSpectator(state, action: PayloadAction<number>) {
+      state.spectators = state.spectators.filter((spectator) => spectator.id != action.payload)
     },
     setPlayerDisconnected(state, action: PayloadAction<{playerId: number; value: boolean}>) {
       state.players = state.players.map((player) =>
@@ -44,7 +52,7 @@ export const playerSlice = createSlice({
       )
     },
     clearPlayerData(state) {
-      return {thisPlayer: {...initialPlayer, nickname: state.thisPlayer.nickname}, players: []}
+      return {thisPlayer: {...initialPlayer, nickname: state.thisPlayer.nickname}, players: [], spectators: []}
     },
   },
 })

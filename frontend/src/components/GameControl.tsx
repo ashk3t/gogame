@@ -38,7 +38,7 @@ export default function GameControl(props: {board: GameBoard}) {
           )}
         </>
       )}
-      <ScaryButton onClick={endGame}>End game</ScaryButton>
+      <ScaryButton onClick={endGame}>Leave game</ScaryButton>
     </div>
   )
 }

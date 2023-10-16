@@ -23,7 +23,7 @@ class TurnType(str, Enum):
     LEAVE = "LEAVE"
 
 
-class GameSearchRequest(GameSettingsBase):
+class GameCreateRequest(GameSettingsBase):
     nickname: str
 
 

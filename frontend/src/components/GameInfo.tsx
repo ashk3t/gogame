@@ -3,8 +3,8 @@ import {capitalize} from "lodash"
 import {useAppSelector} from "../redux/hooks"
 import {GameBoard, StoneColor} from "../lib/gamelogic"
 import {hexColors, stoneHexColors} from "../consts/utils"
-import {GameMode} from "../types/game"
 import ScoreBoard from "./ScoreBoard"
+import SpectatorsSection from "./SpectatorsSection"
 
 export default function GameInfo(props: {board: GameBoard}) {
   const {board} = props
@@ -36,6 +36,7 @@ export default function GameInfo(props: {board: GameBoard}) {
           {turnError && <h5 style={{color: hexColors.love}}>{turnError}!</h5>}
         </section>
       )}
+      <SpectatorsSection />
     </div>
   )
 }

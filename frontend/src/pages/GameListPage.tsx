@@ -10,7 +10,7 @@ import {GameBoard} from "../lib/gamelogic"
 
 export default function GameListPage() {
   const games = useAppSelector((state) => state.gameListReducer.games)
-  const {fetchAllGames, joinGame} = useActions()
+  const {fetchAllGames, joinGame, spectateGame} = useActions()
 
   useEffect(() => {
     fetchAllGames()
@@ -36,6 +36,7 @@ export default function GameListPage() {
             </div>
             {game.rep && <StaticBoard board={GameBoard.fromRep(game.rep)}></StaticBoard>}
             <NiceButton onClick={() => joinGame(game.id!)}>Join</NiceButton>
+            <NiceButton onClick={() => spectateGame(game.id!)}>Spectate</NiceButton>
           </div>
         ))}
       </div>
