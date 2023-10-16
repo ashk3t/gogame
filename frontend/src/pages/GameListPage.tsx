@@ -5,6 +5,8 @@ import styles from "../styles/base.module.css"
 import {START_PATH} from "../consts/pages"
 import NavButton from "../components/buttons/NavButton"
 import NiceButton from "../components/buttons/NiceButton"
+import StaticBoard from "../components/StaticBoard"
+import {GameBoard} from "../lib/gamelogic"
 
 export default function GameListPage() {
   const games = useAppSelector((state) => state.gameListReducer.games)
@@ -12,12 +14,12 @@ export default function GameListPage() {
 
   useEffect(() => {
     fetchAllGames()
-  })
+  }, [])
 
   useEffect(() => {
     const timer = setTimeout(() => {
       fetchAllGames()
-    }, 3000)
+    }, 5000)
     return () => clearTimeout(timer)
   }, [games])
 
@@ -32,6 +34,7 @@ export default function GameListPage() {
             <div>
               {game.settings.width}x{game.settings.height}
             </div>
+            {game.rep && <StaticBoard board={GameBoard.fromRep(game.rep)}></StaticBoard>}
             <NiceButton onClick={() => joinGame(game.id!)}>Join</NiceButton>
           </div>
         ))}

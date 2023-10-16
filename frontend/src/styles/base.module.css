@@ -1,4 +1,4 @@
-.defaultMargin *:not(div),
+.defaultMargin *:not(div, svg),
 .marginEverything * {
   margin: var(--default-margin);
 }

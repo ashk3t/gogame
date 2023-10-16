@@ -27,34 +27,22 @@ export default function ScoreBoard(props: {board: GameBoard}) {
     return name
   }
 
-  return (
-    <section>
-      {connectedPlayers.length > 0
-        ? connectedPlayers.map((player, idx) => (
-            <h5 key={idx} style={{color: stoneHexColors[player.color]}}>
-              {wrapActivePlayer(player.nickname, player.color).padStart(maxNicknameLength)}
-              {": " +
-                board.scores[player.color].toFixed(0).padEnd(4) +
-                (board.finishedPlayers.has(idx)
-                  ? " finished"
-                  : passedPlayers[idx]
-                  ? " passed"
-                  : "") +
-                (player.disconnected ? " disconnected" : "")}
-            </h5>
-          ))
-        : board.scores.map((score, idx) => (
-            <h5 key={idx} style={{color: stoneHexColors[idx]}}>
-              {wrapActivePlayer(capitalize(StoneColor[idx]), idx).padStart(8)}
-              {": " +
-                score.toFixed(0).padEnd(4) +
-                (board.finishedPlayers.has(idx)
-                  ? " finished"
-                  : passedPlayers[idx]
-                  ? " passed"
-                  : "")}
-            </h5>
-          ))}
-    </section>
-  )
+  return connectedPlayers.length > 0
+    ? connectedPlayers.map((player, idx) => (
+        <h5 key={idx} style={{color: stoneHexColors[player.color]}}>
+          {wrapActivePlayer(player.nickname, player.color).padStart(maxNicknameLength)}
+          {": " +
+            board.scores[player.color].toFixed(0).padEnd(4) +
+            (board.finishedPlayers.has(idx) ? " finished" : passedPlayers[idx] ? " passed" : "") +
+            (player.disconnected ? " disconnected" : "")}
+        </h5>
+      ))
+    : board.scores.map((score, idx) => (
+        <h5 key={idx} style={{color: stoneHexColors[idx]}}>
+          {wrapActivePlayer(capitalize(StoneColor[idx]), idx).padStart(8)}
+          {": " +
+            score.toFixed(0).padEnd(4) +
+            (board.finishedPlayers.has(idx) ? " finished" : passedPlayers[idx] ? " passed" : "")}
+        </h5>
+      ))
 }

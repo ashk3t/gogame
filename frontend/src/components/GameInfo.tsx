@@ -11,6 +11,7 @@ export default function GameInfo(props: {board: GameBoard}) {
   const winner = useAppSelector((state) => state.gameReducer.winner)
   const settings = useAppSelector((state) => state.gameReducer.settings)
   const turnError = useAppSelector((state) => state.gameReducer.error)
+  const thisPlayer = useAppSelector((state) => state.playerReducer.thisPlayer)
   const connectedPlayers = useAppSelector((state) => state.playerReducer.players)
 
   function getPlayerNameByColor(color: StoneColor) {
@@ -21,15 +22,18 @@ export default function GameInfo(props: {board: GameBoard}) {
 
   return (
     <div className={styles.infoContainer}>
-      <ScoreBoard board={board} />
-      {turnError && (
+      <section>
+        {thisPlayer.color == board.turnColor && (
+          <h4 style={{color: stoneHexColors[thisPlayer.color], textAlign: "center"}}>Your turn</h4>
+        )}
+        <ScoreBoard board={board} />
+      </section>
+      {(winner != null || turnError) && (
         <section>
-          <h5 style={{color: hexColors.love}}>{turnError}!</h5>
-        </section>
-      )}
-      {winner != null && (
-        <section>
-          <h4 style={{color: stoneHexColors[winner]}}>Winner: {getPlayerNameByColor(winner)}!</h4>
+          {winner != null && (
+            <h4 style={{color: stoneHexColors[winner]}}>Winner: {getPlayerNameByColor(winner)}!</h4>
+          )}
+          {turnError && <h5 style={{color: hexColors.love}}>{turnError}!</h5>}
         </section>
       )}
     </div>
