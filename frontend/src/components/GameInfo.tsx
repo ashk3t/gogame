@@ -22,7 +22,7 @@ export default function GameInfo(props: {board: GameBoard}) {
   return (
     <div className={styles.infoContainer}>
       <section>
-        {thisPlayer.color == turnColor(game.rep!) && (
+        {game.rep && thisPlayer.color == turnColor(game.rep) && (
           <h4 style={{color: stoneHexColors[thisPlayer.color], textAlign: "center"}}>Your turn</h4>
         )}
         <ScoreBoard board={board} />
