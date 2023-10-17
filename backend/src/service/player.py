@@ -28,7 +28,10 @@ class PlayerService:
     ) -> list[PlayerResponse]:
         result = await ss.execute(
             select(PlayerModel).where(
-                and_(PlayerModel.game_id == game_id, PlayerModel.spectator == spectator)
+                and_(
+                    PlayerModel.game_id == game_id,
+                    PlayerModel.spectator == spectator
+                )
             )
         )
         return list(map(PlayerResponse.model_validate, result.scalars().all()))

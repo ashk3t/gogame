@@ -1,6 +1,8 @@
 from datetime import datetime
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import relationship, Mapped, mapped_column
+# from sqlalchemy.util import hybridproperty
+from sqlalchemy.ext.hybrid import hybrid_property
 
 from .lib.gamelogic import StoneColor
 from .schemas.game import GameMode
@@ -41,7 +43,11 @@ class PlayerModel(BaseModel):
     game_id: Mapped[int] = mapped_column(ForeignKey("game.id", ondelete="CASCADE"), index=True)
     token: Mapped[str] = mapped_column(unique=True, index=True)
     nickname: Mapped[str] = mapped_column()
-    color: Mapped[int] = mapped_column(default=StoneColor.NONE)
-    spectator: Mapped[bool] = mapped_column(default=False)
+    color: Mapped[int] = mapped_column()  # StoneColor.NONE is used for spectator players
+
+    @hybrid_property
+    def spectator(self):
+        return self.color == StoneColor.NONE
+
 
     game: Mapped["GameModel"] = relationship()

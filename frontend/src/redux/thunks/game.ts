@@ -21,7 +21,7 @@ export const startGame = () => async (dispatch: AppDispatch, getState: () => Roo
     dispatch(gameSlice.actions.setGameRep(newGameRep))
   } else {
     const nickname = state.playerReducer.thisPlayer.nickname
-    const connection = GameService.startSearch(nickname, settings)
+    const connection = GameService.startGame(nickname, settings)
     bindHandlers(dispatch, getState, connection)
   }
 }

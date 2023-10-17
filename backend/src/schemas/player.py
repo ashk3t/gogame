@@ -13,26 +13,27 @@ class PlayerBase(BaseSchema):
 class PlayerCreate(PlayerBase):
     game_id: int
     token: str
-    spectator: bool = False
 
     def __init__(
-        self, nickname: str, game_id: int, color: StoneColor, spectator: bool = False
+        self, nickname: str, game_id: int, color: StoneColor
     ):
         super().__init__(
             nickname=nickname,
             color=color,
             game_id=game_id,  # pyright: ignore
             token=str(uuid.uuid4()),  # pyright: ignore
-            spectator=spectator,  # pyright: ignore
         )
 
 
 class PlayerResponse(PlayerBase):
     id: int
     game_id: int
-    spectator: bool
 
     model_config = ConfigDict(from_attributes=True)
+
+    @property
+    def spectator(self) -> bool:
+        return self.color == StoneColor.NONE
 
 
 class PlayerWithTokenResponse(PlayerResponse):

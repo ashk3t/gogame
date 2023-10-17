@@ -33,11 +33,11 @@ export const gameSlice = createSlice({
       state.rep = action.payload
     },
     setDraftMode(state, action: PayloadAction<boolean>) {
+      state.draftHistory = []
       if (action.payload) {
         state.draftRep = state.rep
       } else {
         state.draftRep = null
-        state.draftHistory = []
       }
     },
     stepBackDraft(state) {

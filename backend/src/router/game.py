@@ -16,15 +16,22 @@ async def get_games(ss: AsyncSession = Depends(get_session)):
     return await GameService.get_all_ext(ss)
 
 
+@router.websocket("/new")
 @router.websocket("/search")
 async def search_game(websocket: WebSocket, ss: AsyncSession = Depends(get_session)):
     async with GameConnectionManager(ss, websocket) as manager:
         gamedata = GameCreateRequest(**(await manager.get_data()))
         settings = GameSettingsCreate(**gamedata.model_dump())
+        settings = (
+            found_settings
+            if (found_settings := await GameSettingsService.find_same(ss, settings))
+            else await GameSettingsService.create(ss, settings)
+        )
 
-        game = await GameService.find_relevant(ss, settings)
+        game = None
+        if "/search" in websocket.url.path:
+            game = await GameService.find_relevant(ss, settings.id)
         if not game:
-            settings = await GameSettingsService.create(ss, settings)
             game = await GameService.create(ss, GameCreate(settings_id=settings.id))
 
         player = await game_connect(manager, game, settings, gamedata.nickname)
@@ -43,7 +50,7 @@ async def join_game(websocket: WebSocket, ss: AsyncSession = Depends(get_session
             game,
             game.settings,
             gamedata.nickname,
-            "spectate" in websocket.url.path,
+            "/spectate" in websocket.url.path,
         )
         await game_loop(manager, game, player)
 
@@ -80,16 +87,16 @@ async def game_connect(
 ) -> PlayerResponse:
     ss = manager.ss
     game_players = await PlayerService.get_by_game_id(ss, game.id)
-    if spectator:
-        color = StoneColor.NONE
-    else:
-        color = StoneColor(
-            min(set(range(settings.players)) - set(p.color for p in game_players))
-        )
     player = await PlayerService.create(
         ss,
         PlayerCreate(
-            nickname=nickname, game_id=game.id, color=color, spectator=spectator
+            nickname=nickname,
+            game_id=game.id,
+            color=StoneColor.NONE
+            if spectator
+            else StoneColor(
+                min(set(range(settings.players)) - set(p.color for p in game_players))
+            ),
         ),
     )
 
@@ -131,9 +138,11 @@ async def game_loop(
     settings = await GameSettingsService.get(ss, game.settings_id)
     while True:
         turn = TurnRequest(**(await manager.get_data()))
-        if turn.type == TurnType.LEAVE and (winner or player.spectator):
-            manager.in_game = False
-            return
+        if winner or player.spectator:
+            if turn.type == TurnType.LEAVE:
+                manager.in_game = False
+                return
+            continue
 
         game = await GameService.get(ss, game.id)
         if game.rep is None or (

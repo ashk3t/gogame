@@ -1,9 +1,10 @@
 import {useActions, useAppSelector} from "../redux/hooks"
-import {GameBoard} from "../lib/gamelogic"
+import {GameBoard, StoneColor} from "../lib/gamelogic"
 import styles from "../styles/GameControl.module.css"
 import {GameMode} from "../types/game"
 import NiceButton from "./buttons/NiceButton"
 import ScaryButton from "./buttons/ScaryButton"
+import Space from "./Space"
 
 export default function GameControl(props: {board: GameBoard}) {
   const {board} = props
@@ -18,7 +19,7 @@ export default function GameControl(props: {board: GameBoard}) {
           <NiceButton onClick={() => stepBackDraft()}>Undo</NiceButton>
           <NiceButton onClick={() => setDraftMode(true)}>Reset</NiceButton>
           <NiceButton onClick={() => setDraftMode(false)}>Finish draft</NiceButton>
-          <h6></h6>
+          <Space />
         </>
       )}
       {game.winner == null && !game.draftRep && (
@@ -28,10 +29,11 @@ export default function GameControl(props: {board: GameBoard}) {
             (game.settings.offline || thisPlayer.color == board.turnColor) && (
               <NiceButton onClick={() => passTurn(board)}>Pass</NiceButton>
             )}
-          <h6></h6>
-          {game.settings.mode != GameMode.ATARI && (
-            <ScaryButton onClick={() => finishTurnsTurn(board)}>Finish turns</ScaryButton>
-          )}
+          <Space />
+          {game.settings.mode != GameMode.ATARI &&
+            (game.settings.offline || thisPlayer.color != StoneColor.NONE) && (
+              <ScaryButton onClick={() => finishTurnsTurn(board)}>Finish turns</ScaryButton>
+            )}
         </>
       )}
       <ScaryButton onClick={endGame}>Leave game</ScaryButton>

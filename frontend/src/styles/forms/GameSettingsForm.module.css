@@ -1,0 +1,16 @@
+.settingsContainer {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  column-gap: 24px;
+}
+
+.settingsContainer > div {
+  display: flex;
+  align-items: center;
+}
+.settingsContainer > div:nth-child(odd) {
+  justify-content: flex-end;
+}
+.settingsContainer > div:nth-child(even) {
+  justify-content: flex-start;
+}

@@ -1,9 +1,12 @@
 from fastapi.websockets import WebSocketDisconnect, WebSocketState
+from pydantic import ValidationError
+from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.sql.functions import count
 from websockets.exceptions import ConnectionClosedOK
 from fastapi import WebSocket
+from sqlalchemy import and_, select
 import sqlalchemy as alc
-from sqlalchemy import and_, delete, desc, select
 from sqlalchemy.orm import selectinload
 
 from ..lib.gamelogic import GameBoard
@@ -41,22 +44,20 @@ class GameService:
         return list(map(GameExtendedResponse.model_validate, result.scalars().all()))
 
     @staticmethod
-    async def find_relevant(
-        ss: AsyncSession, settings: GameSettingsBase
-    ) -> GameResponse | None:
+    async def find_relevant(ss: AsyncSession, settings_id: int) -> GameResponse | None:
         try:
             result = await ss.execute(
                 select(GameModel)
                 .where(
                     and_(
                         GameModel.start_time == None,
-                        GameModel.settings.has(equal_game_settings(settings)),
+                        GameModel.settings_id == settings_id,
                     )
                 )
-                .order_by(desc(GameModel.search_start_time)),
+                .order_by(GameModel.search_start_time),
             )
-            return GameResponse.model_validate(result.scalars().one())
-        except:
+            return GameResponse.model_validate(result.scalars().first())
+        except ValidationError:
             return
 
     @staticmethod
@@ -75,7 +76,7 @@ class GameService:
 
     @staticmethod
     async def delete_all(ss: AsyncSession):
-        await ss.execute(delete(GameModel))
+        await ss.execute(alc.delete(GameModel))
         await ss.commit()
 
 
@@ -83,6 +84,32 @@ class GameSettingsService:
     get, get_all, create, _, delete = generate_basic_service_methods(
         GameSettingsModel, GameSettingsResponse, GameSettingsCreate, None
     )
+
+    @staticmethod
+    async def find_same(
+        ss: AsyncSession, settings: GameSettingsBase
+    ) -> GameSettingsResponse | None:
+        try:
+            result = await ss.execute(
+                select(GameSettingsModel).where(equal_game_settings(settings))
+            )
+            return GameSettingsResponse.model_validate(result.scalars().one())
+        except NoResultFound:
+            return
+
+    @staticmethod
+    async def clear(ss: AsyncSession) -> GameSettingsResponse | None:
+        await ss.execute(
+            alc.delete(GameSettingsModel).where(
+                GameSettingsModel.id.in_(
+                    select(GameSettingsModel.id)
+                    .outerjoin(GameModel)
+                    .group_by(GameSettingsModel.id)
+                    .having(count(GameModel.id) == 0)
+                )
+            )
+        )
+        await ss.commit()
 
 
 class GameConnectionManager:
@@ -123,7 +150,7 @@ class GameConnectionManager:
         self.connections[game_id][player_id] = self.websocket
 
     def unbind_connection(self):
-        if self.game_id and self.player_id:
+        if self.game_id and self.player_id and self.game_id in self.connections:
             self.connections[self.game_id].pop(self.player_id)
 
     async def permanent_disconnect(self):
@@ -132,6 +159,7 @@ class GameConnectionManager:
         if len(game_players) == 0:
             self.connections.pop(self.game_id)
             await GameService.delete(self.ss, self.game_id)
+            await GameSettingsService.clear(self.ss)
 
     async def get_data(self):
         return await self.websocket.receive_json()

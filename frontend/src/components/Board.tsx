@@ -37,12 +37,7 @@ export default function Board(props: {board: GameBoard}) {
   }
 
   return (
-    <div
-      className={styles.board}
-      style={{
-        gridTemplateColumns: `repeat(${board.width}, 1fr)`,
-      }}
-    >
+    <div className={styles.board} style={{gridTemplateColumns: `repeat(${board.width}, 1fr)`}}>
       {board.stones.map((row: Array<Stone | null>, i: number) =>
         row.map((stone: Stone | null, j: number) => (
           <div

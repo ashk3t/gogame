@@ -2,6 +2,9 @@
 .marginEverything * {
   margin: var(--default-margin);
 }
+.space {
+  margin: var(--default-margin);
+}
 
 .centeringContainer,
 .vcenteringContainer {
@@ -15,6 +18,9 @@
 ul.vcenteringContainer > li {
   font-size: 1.2em;
   margin: 0.2em 0;
+}
+.gridContainer {
+  display: grid;
 }
 
 .frame {
@@ -76,6 +82,9 @@ ul.vcenteringContainer > li {
 
 .niceCheckbox {
   visibility: hidden;
+}
+input[type='checkbox'].niceCheckbox {
+  margin: 16px;
 }
 .niceCheckbox,
 .niceCheckbox::after {

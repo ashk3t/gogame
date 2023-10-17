@@ -16,8 +16,10 @@ export default class GameService {
     GameService.connection?.send("")
   }
 
-  static startSearch(nickname: string, settings: GameSettings): WebSocket {
-    const socket = new WebSocket(WS_API_URL + GameService.baseUrl + "/search")
+  static startGame(nickname: string, settings: GameSettings): WebSocket {
+    const socket = new WebSocket(
+      WS_API_URL + GameService.baseUrl + (settings.new ? "/new" : "/search"),
+    )
     socket.onopen = (_) => {
       socket.send(
         JSON.stringify(

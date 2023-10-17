@@ -6,12 +6,13 @@ export enum GameMode {
 }
 
 export interface GameSettings {
+  custom: boolean
   height: number
   width: number
   players: number
   mode: GameMode
+  new: boolean
   offline: boolean
-  custom: boolean
 }
 
 export interface Game {
@@ -30,5 +31,6 @@ export const defaultGameSettings: GameSettings = {
   width: 19,
   players: 2,
   mode: GameMode.CLASSIC,
+  new: false,
   offline: false,
 }
