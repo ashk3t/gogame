@@ -39,10 +39,8 @@ export default class GameService {
     return socket
   }
 
-  static join(nickname: string, gameId: number, spectate: boolean = false): WebSocket {
-    const socket = new WebSocket(
-      WS_API_URL + GameService.baseUrl + (spectate ? "/spectate" : "/join"),
-    )
+  static join(nickname: string, gameId: number): WebSocket {
+    const socket = new WebSocket(WS_API_URL + GameService.baseUrl + "/join")
     socket.onopen = (_) => {
       socket.send(JSON.stringify({nickname: nickname, game_id: gameId}))
     }

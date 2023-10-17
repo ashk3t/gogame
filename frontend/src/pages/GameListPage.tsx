@@ -1,5 +1,5 @@
-import {useEffect, useState} from "react"
-import {useActions, useAppDispatch, useAppSelector} from "../redux/hooks"
+import {useEffect} from "react"
+import {useActions, useAppSelector} from "../redux/hooks"
 import {Game} from "../types/game"
 import styles from "../styles/base.module.css"
 import {START_PATH} from "../consts/pages"
@@ -10,7 +10,7 @@ import {GameBoard} from "../lib/gamelogic"
 
 export default function GameListPage() {
   const games = useAppSelector((state) => state.gameListReducer.games)
-  const {fetchAllGames, joinGame, spectateGame} = useActions()
+  const {fetchAllGames, joinGame} = useActions()
 
   useEffect(() => {
     fetchAllGames()
@@ -36,7 +36,6 @@ export default function GameListPage() {
             </div>
             {game.rep && <StaticBoard board={GameBoard.fromRep(game.rep)}></StaticBoard>}
             <NiceButton onClick={() => joinGame(game.id!)}>Join</NiceButton>
-            <NiceButton onClick={() => spectateGame(game.id!)}>Spectate</NiceButton>
           </div>
         ))}
       </div>

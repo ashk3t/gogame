@@ -29,16 +29,12 @@ export const stoneHexColors = [
 ]
 
 export const nicknameLabels: string[] = [
-  "Fighter",
   "Warrior",
   "Berserk",
   "Gigachad",
-  "Knight",
-  "Hero",
   "Sage",
   "Thinker",
   "Conqueror",
-  "Champion",
   "Gladiator",
   "Annihilator",
   "Destroyer",

@@ -39,19 +39,12 @@ async def search_game(websocket: WebSocket, ss: AsyncSession = Depends(get_sessi
 
 
 @router.websocket("/join")
-@router.websocket("/spectate")
 async def join_game(websocket: WebSocket, ss: AsyncSession = Depends(get_session)):
     async with GameConnectionManager(ss, websocket) as manager:
         gamedata = GameJoinRequest(**(await manager.get_data()))
         game = await GameService.get_ext(ss, gamedata.game_id)
 
-        player = await game_connect(
-            manager,
-            game,
-            game.settings,
-            gamedata.nickname,
-            "/spectate" in websocket.url.path,
-        )
+        player = await game_connect(manager, game, game.settings, gamedata.nickname)
         await game_loop(manager, game, player)
 
 
@@ -83,10 +76,10 @@ async def game_connect(
     game: GameResponse,
     settings: GameSettingsBase,
     nickname: str,
-    spectator: bool = False,
 ) -> PlayerResponse:
     ss = manager.ss
     game_players = await PlayerService.get_by_game_id(ss, game.id)
+    spectator = len(game_players) >= settings.players
     player = await PlayerService.create(
         ss,
         PlayerCreate(
