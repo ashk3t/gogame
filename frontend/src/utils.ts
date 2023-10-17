@@ -74,5 +74,14 @@ export class BoardIntersectionStyler {
 }
 
 export function turnColor(gameRep: string): StoneColor {
-    return parseInt(gameRep.split(";")[3]) - 1
+  return parseInt(gameRep.split(";")[3]) - 1
+}
+
+export function finishedPlayers(gameRep: string): Set<number> {
+  return new Set(
+    gameRep
+      .split(";")[6]
+      .split("")
+      .map((v) => parseInt(v) - 1),
+  )
 }

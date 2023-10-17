@@ -6,6 +6,7 @@ import {gameListSlice} from "../reducers/gameList"
 import {GameBoard, InvalidTurnError} from "../../lib/gamelogic"
 import {GameMode} from "../../types/game"
 import {MessageType, SocketMessage, TurnType} from "../../types/gameApi"
+import {finishedPlayers} from "../../utils"
 
 export const fetchAllGames = () => async (dispatch: AppDispatch) => {
   const data = await GameService.getAll()
@@ -27,8 +28,7 @@ export const startGame = () => async (dispatch: AppDispatch, getState: () => Roo
 }
 
 export const joinGame =
-  (gameId: number) =>
-  async (dispatch: AppDispatch, getState: () => RootState) => {
+  (gameId: number) => async (dispatch: AppDispatch, getState: () => RootState) => {
     const state = getState()
     const nickname = state.playerReducer.thisPlayer.nickname
     const connection = GameService.join(nickname, gameId)
@@ -114,8 +114,13 @@ function bindHandlers(dispatch: AppDispatch, getState: () => RootState, connecti
         if (data.notify_back) GameService.notify()
         break
       case MessageType.DISCONNECT:
+        const rep = getState().gameReducer.rep
+        const players = getState().playerReducer.players
         if (data.spectator_id) dispatch(playerSlice.actions.removeSpectator(data.spectator_id))
-        else if (getState().gameReducer.rep) {
+        else if (
+          rep &&
+          !finishedPlayers(rep).has(players.find((p) => p.id == data.player_id)?.color ?? -1)
+        ) {
           dispatch(
             playerSlice.actions.setPlayerDisconnected({playerId: data.player_id, value: true}),
           )
