@@ -104,6 +104,14 @@ async def game_connect(
         await manager.send_all(
             MessageType.CONNECT, spectators=list_model_dump(game_spectators)
         )
+        await manager.send_self(
+            MessageType.GAME_CONTINUE,
+            player=player.model_dump(),
+            rep=game.rep,
+            winner=check_winner(GameBoard.from_rep(game.rep), settings.mode)
+            if game.rep
+            else None,
+        )
     else:
         game_players.append(PlayerResponse(**player.model_dump()))
         await manager.send_all(
@@ -114,11 +122,10 @@ async def game_connect(
             await manager.wait()
         while len(manager.connections[game.id]) < settings.players:
             await manager.wait()
-
-    init_rep = GameBoard(settings.height, settings.width, settings.players).to_rep()
-    await manager.send_self(
-        MessageType.GAME_START, player=player.model_dump(), rep=init_rep
-    )
+        init_rep = GameBoard(settings.height, settings.width, settings.players).to_rep()
+        await manager.send_self(
+            MessageType.GAME_START, player=player.model_dump(), rep=init_rep
+        )
     return player
 
 

@@ -21,33 +21,26 @@ export default function ScoreBoard(props: {board: GameBoard}) {
   })()
 
   const maxNicknameLength =
-    Math.max(...connectedPlayers.map((player) => player.nickname.length)) + (winner == null ? 2 : 0)
+    Math.max(...connectedPlayers.map((player) => player.nickname.length), 6) +
+    (winner == null ? 2 : 0)
 
   function wrapActivePlayer(name: string, color: StoneColor) {
     if (color == board.turnColor && winner == null) return `>${name}<`
     return name
   }
 
-  return connectedPlayers.length > 0
-    ? connectedPlayers.map((player) => (
-        <h5 key={player.color} style={{color: stoneHexColors[player.color]}}>
-          {wrapActivePlayer(player.nickname, player.color).padStart(maxNicknameLength)}
-          {": " +
-            board.scores[player.color].toFixed(0).padEnd(4) +
-            (board.finishedPlayers.has(player.color)
-              ? " finished"
-              : passedPlayers[player.color]
-              ? " passed"
-              : "") +
-            (player.disconnected ? " disconnected" : "")}
-        </h5>
-      ))
-    : board.scores.map((score, idx) => (
-        <h5 key={idx} style={{color: stoneHexColors[idx]}}>
-          {wrapActivePlayer(capitalize(StoneColor[idx]), idx).padStart(8)}
-          {": " +
-            score.toFixed(0).padEnd(4) +
-            (board.finishedPlayers.has(idx) ? " finished" : passedPlayers[idx] ? " passed" : "")}
-        </h5>
-      ))
+  return board.scores.map((_, color) => {
+    const player = connectedPlayers.find((p) => p.color == color)
+    const name = player?.nickname ?? capitalize(StoneColor[color])
+    const disconnected = player?.disconnected ?? false
+    return (
+      <h5 key={color} style={{color: stoneHexColors[color]}}>
+        {wrapActivePlayer(name, color).padStart(maxNicknameLength)}
+        {": " +
+          board.scores[color].toFixed(0).padEnd(4) +
+          (board.finishedPlayers.has(color) ? " finished" : passedPlayers[color] ? " passed" : "") +
+          (disconnected ? " disconnected" : "")}
+      </h5>
+    )
+  })
 }

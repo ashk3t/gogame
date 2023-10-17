@@ -114,13 +114,8 @@ function bindHandlers(dispatch: AppDispatch, getState: () => RootState, connecti
         if (data.notify_back) GameService.notify()
         break
       case MessageType.DISCONNECT:
-        const rep = getState().gameReducer.rep
-        const players = getState().playerReducer.players
         if (data.spectator_id) dispatch(playerSlice.actions.removeSpectator(data.spectator_id))
-        else if (
-          rep &&
-          !finishedPlayers(rep).has(players.find((p) => p.id == data.player_id)?.color ?? -1)
-        ) {
+        else if (getState().gameReducer.rep) {
           dispatch(
             playerSlice.actions.setPlayerDisconnected({playerId: data.player_id, value: true}),
           )
@@ -134,11 +129,9 @@ function bindHandlers(dispatch: AppDispatch, getState: () => RootState, connecti
           )
         break
       case MessageType.GAME_START:
-        dispatch(playerSlice.actions.setThisPlayer(data.player))
-        dispatch(gameSlice.actions.setGameRep(data.rep))
-        break
       case MessageType.GAME_CONTINUE:
       case MessageType.GOOD_TURN:
+        if (data.player) dispatch(playerSlice.actions.setThisPlayer(data.player))
         dispatch(gameSlice.actions.setMainGameRep(data.rep))
         if (data.winner != null) dispatch(gameSlice.actions.setGameWinner(data.winner))
         break
