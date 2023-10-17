@@ -14,15 +14,14 @@ export default function GameInfo(props: {board: GameBoard}) {
   const connectedPlayers = useAppSelector((state) => state.playerReducer.players)
 
   function getPlayerNameByColor(color: StoneColor) {
-    return connectedPlayers.length > 0
-      ? connectedPlayers.find((player) => player.color == color)?.nickname
-      : capitalize(StoneColor[color])
+    const name = connectedPlayers.find((player) => player.color == color)?.nickname
+    return name || capitalize(StoneColor[color])
   }
 
   return (
     <div className={styles.infoContainer}>
       <section>
-        {game.rep && thisPlayer.color == turnColor(game.rep) && (
+        {game.rep && thisPlayer.color == turnColor(game.rep) && game.winner == null && (
           <h4 style={{color: stoneHexColors[thisPlayer.color], textAlign: "center"}}>Your turn</h4>
         )}
         <ScoreBoard board={board} />

@@ -282,8 +282,21 @@ export class GameBoard {
   }
 
   finishTurnsTurn(color: StoneColor | null = null) {
-    if (color != StoneColor.NONE) this.finishedPlayers.add(color == null ? this.turnColor : color)
-    if (color == null || color == this.turnColor) this.updateTurnColor()
+    if (color == StoneColor.NONE) return
+
+    if (color == null || color == this.turnColor) {
+      this.finishedPlayers.add(this.turnColor)
+      this.updateTurnColor()
+    } else {
+      for (let i = 1; i <= this.passCounter; i++) {
+        // Pass + Finish != accident win
+        if ((this.turnColor - i) % this.players == color) {
+          this.passCounter--
+          break
+        }
+      }
+      this.finishedPlayers.add(color)
+    }
   }
 
   static fromRep(rep: string): GameBoard {

@@ -243,10 +243,18 @@ class GameBoard:
         self.update_turn_color()
 
     def finish_turns_turn(self, color: StoneColor | None = None):
-        if color != StoneColor.NONE:
-            self.finished_players.add(self.turn_color if color is None else color)
+        if color == StoneColor.NONE:
+            return
+
         if color is None or color == self.turn_color:
+            self.finished_players.add(self.turn_color)
             self.update_turn_color()
+        else:
+            for i in range(1, self.pass_counter + 1):  # Pass + Finish != accident win
+                if (self.turn_color - i) % self.players == color:
+                    self.pass_counter -= 1
+                    break
+            self.finished_players.add(color)
 
     @staticmethod
     def from_rep(rep: str) -> GameBoard:

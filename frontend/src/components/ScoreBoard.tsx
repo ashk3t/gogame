@@ -6,6 +6,7 @@ import {stoneHexColors} from "../consts/utils"
 export default function ScoreBoard(props: {board: GameBoard}) {
   const {board} = props
   const connectedPlayers = useAppSelector((state) => state.playerReducer.players)
+  const winner = useAppSelector((state) => state.gameReducer.winner)
 
   const passedPlayers: boolean[] = (() => {
     const passedPlayers = Array(board.players).fill(false)
@@ -20,20 +21,24 @@ export default function ScoreBoard(props: {board: GameBoard}) {
   })()
 
   const maxNicknameLength =
-    Math.max(...connectedPlayers.map((player) => player.nickname.length)) + 2
+    Math.max(...connectedPlayers.map((player) => player.nickname.length)) + (winner == null ? 2 : 0)
 
   function wrapActivePlayer(name: string, color: StoneColor) {
-    if (color == board.turnColor) return `>${name}<`
+    if (color == board.turnColor && winner == null) return `>${name}<`
     return name
   }
 
   return connectedPlayers.length > 0
-    ? connectedPlayers.map((player, idx) => (
-        <h5 key={idx} style={{color: stoneHexColors[player.color]}}>
+    ? connectedPlayers.map((player) => (
+        <h5 key={player.color} style={{color: stoneHexColors[player.color]}}>
           {wrapActivePlayer(player.nickname, player.color).padStart(maxNicknameLength)}
           {": " +
             board.scores[player.color].toFixed(0).padEnd(4) +
-            (board.finishedPlayers.has(idx) ? " finished" : passedPlayers[idx] ? " passed" : "") +
+            (board.finishedPlayers.has(player.color)
+              ? " finished"
+              : passedPlayers[player.color]
+              ? " passed"
+              : "") +
             (player.disconnected ? " disconnected" : "")}
         </h5>
       ))
