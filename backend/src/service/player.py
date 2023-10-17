@@ -1,4 +1,4 @@
-from sqlalchemy import and_, select
+from sqlalchemy import and_, select, true
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -24,13 +24,13 @@ class PlayerService:
 
     @staticmethod
     async def get_by_game_id(
-        ss: AsyncSession, game_id: int, spectator: bool = False
+        ss: AsyncSession, game_id: int, spectator: bool | None = None
     ) -> list[PlayerResponse]:
         result = await ss.execute(
             select(PlayerModel).where(
                 and_(
                     PlayerModel.game_id == game_id,
-                    PlayerModel.spectator == spectator
+                    true() if spectator is None else PlayerModel.spectator == spectator,
                 )
             )
         )

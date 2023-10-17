@@ -112,6 +112,10 @@ class GameSettingsService:
         await ss.commit()
 
 
+class LeaveException(Exception):
+    pass
+
+
 class GameConnectionManager:
     # {game_id: {player_id: websocket}}
     connections: dict[int, dict[int, WebSocket]] = {}
@@ -119,8 +123,8 @@ class GameConnectionManager:
     def __init__(self, ss: AsyncSession, websocket: WebSocket):
         self.ss: AsyncSession = ss
         self.websocket: WebSocket = websocket
-        self.game_id: int = -1
-        self.player_id: int = -1
+        self.game_id: int = 0
+        self.player_id: int = 0
         self.spectator: bool = False
         self.in_game: bool = False
 
@@ -129,16 +133,22 @@ class GameConnectionManager:
         return self
 
     async def __aexit__(self, exc_type, exc_value, exc_tb):
-        self.unbind_connection()
-        if not self.in_game:
-            await self.permanent_disconnect()
-        await self.send_all(
-            MessageType.DISCONNECT,
-            **{"spectator_id" if self.spectator else "player_id": self.player_id}
-        )
+        if self.player_id and self.game_id:
+            self.unbind_connection()
+            if not self.in_game:
+                await self.permanent_disconnect()
+            await self.send_all(
+                MessageType.DISCONNECT,
+                **{"spectator_id" if self.spectator else "player_id": self.player_id}
+            )
         if self.websocket.client_state == WebSocketState.CONNECTED:
             await self.websocket.close()
-        if not exc_value or exc_type in [WebSocketDisconnect, ConnectionClosedOK]:
+
+        if not exc_value or exc_type in [
+            WebSocketDisconnect,
+            ConnectionClosedOK,
+            LeaveException,
+        ]:
             return True
 
     def bind_connection(self, game_id: int, player_id: int, spectator: bool):
@@ -150,8 +160,11 @@ class GameConnectionManager:
         self.connections[game_id][player_id] = self.websocket
 
     def unbind_connection(self):
-        if self.game_id and self.player_id and self.game_id in self.connections:
-            self.connections[self.game_id].pop(self.player_id)
+        self.connections[self.game_id].pop(self.player_id)
+
+    def permanent_exit(self):
+        self.in_game = False
+        raise LeaveException
 
     async def permanent_disconnect(self):
         await PlayerService.delete(self.ss, self.player_id)

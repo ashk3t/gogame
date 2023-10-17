@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Request, WebSocket
+from fastapi import APIRouter, Depends, WebSocket
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..dependencies import get_session
@@ -78,8 +78,8 @@ async def game_connect(
     nickname: str,
 ) -> PlayerResponse:
     ss = manager.ss
-    game_players = await PlayerService.get_by_game_id(ss, game.id)
-    spectator = len(game_players) >= settings.players
+    game_players = await PlayerService.get_by_game_id(ss, game.id, spectator=False)
+    spectator = game.start_time is not None
     player = await PlayerService.create(
         ss,
         PlayerCreate(
@@ -95,7 +95,9 @@ async def game_connect(
 
     manager.bind_connection(game.id, player.id, spectator)
     if spectator:
-        game_spectators = await PlayerService.get_by_game_id(ss, game.id, True)
+        game_spectators = await PlayerService.get_by_game_id(
+            ss, game.id, spectator=True
+        )
         await manager.send_self(
             MessageType.CONNECT, players=list_model_dump(game_players)
         )
@@ -133,8 +135,7 @@ async def game_loop(
         turn = TurnRequest(**(await manager.get_data()))
         if winner or player.spectator:
             if turn.type == TurnType.LEAVE:
-                manager.in_game = False
-                return
+                manager.permanent_exit()
             continue
 
         game = await GameService.get(ss, game.id)
@@ -161,8 +162,7 @@ async def game_loop(
             await manager.send_all(MessageType.GOOD_TURN, rep=rep, winner=winner)
             await GameService.update(ss, game.id, GameUpdate(rep=rep))
             if turn.type == TurnType.LEAVE:
-                manager.in_game = False
-                return
+                manager.permanent_exit()
 
 
 def check_winner(board: GameBoard, game_mode: GameMode) -> StoneColor | None:

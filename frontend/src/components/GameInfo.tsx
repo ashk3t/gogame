@@ -14,9 +14,9 @@ export default function GameInfo(props: {board: GameBoard}) {
   const connectedPlayers = useAppSelector((state) => state.playerReducer.players)
 
   function getPlayerNameByColor(color: StoneColor) {
-    return game.settings.offline
-      ? capitalize(StoneColor[color])
-      : connectedPlayers.find((player) => player.color == color)?.nickname
+    return connectedPlayers.length > 0
+      ? connectedPlayers.find((player) => player.color == color)?.nickname
+      : capitalize(StoneColor[color])
   }
 
   return (
