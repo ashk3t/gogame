@@ -41,7 +41,7 @@ class GameService:
             .offset(skip)
             .limit(limit)
         )
-        return list(map(GameExtendedResponse.model_validate, result.scalars().all()))
+        return list(map(GameExtendedResponse.model_validate, result.scalars()))
 
     @staticmethod
     async def find_relevant(ss: AsyncSession, settings_id: int) -> GameResponse | None:

@@ -2,7 +2,7 @@ import uuid
 from pydantic import BaseModel as BaseSchema, ConfigDict
 
 from ..lib.gamelogic import StoneColor
-from .game import GameExtendedResponse, GameResponse
+from .game import GameExtendedResponse
 
 
 class PlayerBase(BaseSchema):
@@ -38,7 +38,3 @@ class PlayerResponse(PlayerBase):
 
 class PlayerWithTokenResponse(PlayerResponse):
     token: str
-
-
-class PlayerExtendedResponse(PlayerResponse):
-    game: GameExtendedResponse

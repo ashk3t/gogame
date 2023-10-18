@@ -16,7 +16,7 @@ def generate_basic_service_methods(Model, ResponseSchema, CreateSchema, UpdateSc
     @staticmethod
     async def get_all(ss: AsyncSession, skip: int = 0, limit: int = 10) -> list[ResponseSchema]:
         result = await ss.execute(select(Model).offset(skip).limit(limit))
-        return list(map(ResponseSchema.model_validate, result.scalars().all()))
+        return list(map(ResponseSchema.model_validate, result.scalars()))
 
     @staticmethod
     async def create(ss: AsyncSession, schema: CreateSchema) -> ResponseSchema:

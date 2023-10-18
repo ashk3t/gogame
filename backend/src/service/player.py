@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from ..schemas.player import *
+from ..schemas.game_player import *
 from ..models import GameModel, PlayerModel
 from .utils import add_commit_refresh
 from .generic import generate_basic_service_methods
@@ -34,7 +35,7 @@ class PlayerService:
                 )
             )
         )
-        return list(map(PlayerResponse.model_validate, result.scalars().all()))
+        return list(map(PlayerResponse.model_validate, result.scalars()))
 
     @staticmethod
     async def create(ss: AsyncSession, schema: PlayerCreate) -> PlayerWithTokenResponse:
