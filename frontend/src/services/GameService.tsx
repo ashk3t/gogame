@@ -12,6 +12,11 @@ export default class GameService {
     return response.data
   }
 
+  static async getAllFull() {
+    const response = await publicConfig.get(this.baseUrl + "/full")
+    return response.data
+  }
+
   static notify() {
     GameService.connection?.send("")
   }

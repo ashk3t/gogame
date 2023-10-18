@@ -1,4 +1,5 @@
 import {GameBoard, InvalidTurnError, StoneColor} from "../lib/gamelogic"
+import {Player} from "./player"
 
 export enum GameMode {
   CLASSIC = "CLASSIC",
@@ -31,6 +32,7 @@ export interface GameResponse extends BaseGame {
   id: number
   searchStartTime: string
   startTime: string | null
+  players: Array<Player>
 }
 
 export const defaultGameSettings: GameSettings = {

@@ -8,8 +8,8 @@ import {GameMode} from "../../types/game"
 import {MessageType, SocketMessage, TurnType} from "../../types/gameApi"
 import {camelize} from "../../utils"
 
-export const fetchAllGames = () => async (dispatch: AppDispatch) => {
-  const data = await GameService.getAll()
+export const loadGames = () => async (dispatch: AppDispatch) => {
+  const data = await GameService.getAllFull()
   dispatch(gameListSlice.actions.setGames(data.map(camelize)))
 }
 
@@ -91,15 +91,15 @@ export const tryReconnect = () => async (dispatch: AppDispatch, getState: () => 
 
 export const endGame = () => async (dispatch: AppDispatch, getState: () => RootState) => {
   const game = getState().gameReducer
-  if (game.settings.offline) {
+  if (!game.settings.offline && game.rep) {
+    const playerColor = getState().playerReducer.thisPlayer.color
+    if (GameService.connection != null) GameService.connection.onmessage = null
+    GameService.doTurn(TurnType.LEAVE, {color: playerColor})
+  } else if (GameService.connection) {
+    GameService.disconnect()
+  } else {
     dispatch(playerSlice.actions.clearPlayerData())
     dispatch(gameSlice.actions.clearGameData())
-  } else {
-    const playerColor = getState().playerReducer.thisPlayer.color
-    if (game.rep) {
-      if (GameService.connection != null) GameService.connection.onmessage = null
-      GameService.doTurn(TurnType.LEAVE, {color: playerColor})
-    } else GameService.disconnect()
   }
 }
 

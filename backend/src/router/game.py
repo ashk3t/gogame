@@ -11,9 +11,19 @@ from ..service.utils import list_model_dump, turn_color
 router = APIRouter(prefix="/games")
 
 
-@router.get("", response_model=list[GameExtendedResponse])
+@router.get("", response_model=list[GameResponse])
 async def get_games(ss: AsyncSession = Depends(get_session)):
+    return await GameService.get_all(ss)
+
+
+@router.get("/extended", response_model=list[GameExtendedResponse])
+async def get_games_extended(ss: AsyncSession = Depends(get_session)):
     return await GameService.get_all_ext(ss)
+
+
+@router.get("/full", response_model=list[GameExtendedWithPlayers])
+async def get_games_full(ss: AsyncSession = Depends(get_session)):
+    return await GamePlayerService.get_games_ext_with_players(ss)
 
 
 @router.websocket("/new")

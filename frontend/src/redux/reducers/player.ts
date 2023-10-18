@@ -1,10 +1,10 @@
 import {PayloadAction, createSlice} from "@reduxjs/toolkit"
-import {Player} from "../../types/player"
+import {ConnectedPlayer, Player} from "../../types/player"
 import {StoneColor} from "../../lib/gamelogic"
 
 interface PlayersData {
   thisPlayer: Player
-  players: Array<Player>
+  players: Array<ConnectedPlayer>
   spectators: Array<Player>
 }
 
@@ -13,7 +13,6 @@ const initialPlayer: Player = {
   token: null,
   nickname: "",
   color: StoneColor.NONE,
-  disconnected: false,
 }
 
 const initialState: PlayersData = {
@@ -32,7 +31,7 @@ export const playerSlice = createSlice({
     setThisPlayer(state, action: PayloadAction<Player>) {
       state.thisPlayer = action.payload
     },
-    setPlayers(state, action: PayloadAction<Array<Player>>) {
+    setPlayers(state, action: PayloadAction<Array<ConnectedPlayer>>) {
       state.players = action.payload.sort((p, n) => p.color - n.color)
     },
     setSpectators(state, action: PayloadAction<Array<Player>>) {

@@ -1,6 +1,5 @@
-from sqlalchemy import select
+from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
-
 
 from ..models import *
 from ..schemas.player import *
@@ -11,14 +10,19 @@ from .player import PlayerService
 
 class GamePlayerService:
     @staticmethod
-    async def get_all_ext_with_players(
+    async def get_games_ext_with_players(
         ss: AsyncSession, skip: int = 0, limit: int = 10
     ) -> list[GameExtendedWithPlayers]:
-        games = await GameService.get_all_ext(ss)
+        games = await GameService.get_all_ext(ss, skip, limit)
         result = await ss.execute(
-            select(PlayerModel).where(PlayerModel.game_id.in_(g.id for g in games))
+            select(PlayerModel).where(
+                and_(
+                    PlayerModel.game_id.in_(game.id for game in games),
+                    PlayerModel.spectator == False,
+                )
+            )
         )
-        players = list(map(PlayerResponse.model_validate, result.all()))
+        players = list(map(PlayerResponse.model_validate, result.scalars()))
 
         games_by_id = {
             game.id: GameExtendedWithPlayers(**game.model_dump()) for game in games

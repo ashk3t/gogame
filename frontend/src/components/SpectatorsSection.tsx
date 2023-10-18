@@ -11,8 +11,8 @@ export default function SpectatorsSection() {
     <section>
       <h4>Spectators: {connectedSpectators.length}</h4>
       {connectedSpectators.length <= 6 &&
-        connectedSpectators.map((spectator, idx) => (
-          <h6 key={idx}>{spectator.nickname.padStart(maxNicknameLength)}</h6>
+        connectedSpectators.map((spectator) => (
+          <h6 key={spectator.id}>{spectator.nickname.padStart(maxNicknameLength)}</h6>
         ))}
     </section>
   )

@@ -5,5 +5,8 @@ export interface Player {
   token: string | null
   nickname: string
   color: StoneColor
+}
+
+export interface ConnectedPlayer extends Player {
   disconnected: boolean
 }

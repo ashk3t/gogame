@@ -9,18 +9,19 @@ import StaticBoard from "../components/StaticBoard"
 import {GameBoard} from "../lib/gamelogic"
 import {capitalize} from "lodash"
 import {timePassed} from "../utils"
+import PlayerList from "../components/lists/PlayerList"
 
 export default function GameListPage() {
   const games = useAppSelector((state) => state.gameListReducer.games)
-  const {fetchAllGames, joinGame} = useActions()
+  const {loadGames, joinGame} = useActions()
 
   useEffect(() => {
-    fetchAllGames()
+    loadGames()
   }, [])
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      fetchAllGames()
+      loadGames()
     }, 5000)
     return () => clearTimeout(timer)
   }, [games])
@@ -31,8 +32,8 @@ export default function GameListPage() {
         Back
       </NavButton>
       <div className={styles.vcenteringContainer}>
-        {games.map((game: GameResponse, key) => (
-          <div key={key} className={`${styles.frame} ${styles.vcenteringContainer}`}>
+        {games.map((game: GameResponse) => (
+          <div key={game.id} className={`${styles.frame} ${styles.vcenteringContainer}`}>
             {game.rep ? (
               <>
                 <StaticBoard board={GameBoard.fromRep(game.rep)}></StaticBoard>
@@ -42,11 +43,12 @@ export default function GameListPage() {
               <>
                 <div>{timePassed(new Date(game.searchStartTime))}</div>
                 <div>
-                  {game.settings.width}x{game.settings.height}, {capitalize(game.settings.mode)}
+                  {game.settings.height}x{game.settings.width}, {capitalize(game.settings.mode)}
                 </div>
                 <div>
                   {0}/{game.settings.players}:
                 </div>
+                <PlayerList players={game.players} />
                 <NiceButton onClick={() => joinGame(game.id!)}>Join</NiceButton>
               </>
             )}
