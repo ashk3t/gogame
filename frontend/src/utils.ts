@@ -1,4 +1,4 @@
-import {capitalize} from "lodash"
+import {capitalize, camelCase, isArray, transform, isObject} from "lodash"
 import {nicknameLabels} from "./consts/utils"
 import {StoneColor} from "./lib/gamelogic"
 
@@ -84,4 +84,33 @@ export function finishedPlayers(gameRep: string): Set<number> {
       .split("")
       .map((v) => parseInt(v) - 1),
   )
+}
+
+export const camelize = (obj: Record<string, unknown>) =>
+  transform(obj, (result: Record<string, unknown>, value: unknown, key: string, target) => {
+    const camelKey = isArray(target) ? key : camelCase(key)
+    result[camelKey] = isObject(value) ? camelize(value as Record<string, unknown>) : value
+  })
+
+export function utcNow() {
+  return Date.now() + new Date().getTimezoneOffset() * 60 * 1000
+}
+
+export function msToTime(duration: number) {
+  const seconds = Math.floor((duration / 1000) % 60)
+  const minutes = Math.floor((duration / (1000 * 60)) % 60)
+  const hours = Math.floor((duration / (1000 * 60 * 60)) % 24)
+  const days = Math.floor(duration / (1000 * 60 * 60 * 24))
+
+  return (
+    (days ? days.toString() + "d " : "") +
+    (hours ? hours.toString() + ":" : "") +
+    minutes.toString().padStart(2, "0") +
+    ":" +
+    seconds.toString().padStart(2, "0")
+  )
+}
+
+export function timePassed(time: Date) {
+  return msToTime(utcNow() - time.getTime())
 }

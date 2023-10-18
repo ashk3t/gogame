@@ -40,6 +40,7 @@ class GameUpdate(GameBase):
 class GameResponse(GameBase):
     id: int
     settings_id: int
+    search_start_time: datetime
     start_time: datetime | None
     rep: str | None
 

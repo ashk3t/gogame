@@ -6,11 +6,11 @@ import {gameListSlice} from "../reducers/gameList"
 import {GameBoard, InvalidTurnError} from "../../lib/gamelogic"
 import {GameMode} from "../../types/game"
 import {MessageType, SocketMessage, TurnType} from "../../types/gameApi"
-import {finishedPlayers} from "../../utils"
+import {camelize} from "../../utils"
 
 export const fetchAllGames = () => async (dispatch: AppDispatch) => {
   const data = await GameService.getAll()
-  dispatch(gameListSlice.actions.setGames(data))
+  dispatch(gameListSlice.actions.setGames(data.map(camelize)))
 }
 
 export const startGame = () => async (dispatch: AppDispatch, getState: () => RootState) => {

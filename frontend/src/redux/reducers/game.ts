@@ -1,15 +1,14 @@
 import {PayloadAction, createSlice} from "@reduxjs/toolkit"
-import {GameSettings, Game, defaultGameSettings} from "../../types/game"
+import {GameSettings, GameState, defaultGameSettings} from "../../types/game"
 import {StoneColor} from "../../lib/gamelogic"
 
-const initialState: Game = {
-  id: null,
+const initialState: GameState = {
   settings: defaultGameSettings,
   rep: null,
-  error: null,
   winner: null,
   draftRep: null,
   draftHistory: [],
+  error: null,
 }
 
 export const gameSlice = createSlice({
@@ -43,11 +42,11 @@ export const gameSlice = createSlice({
     stepBackDraft(state) {
       state.draftRep = state.draftHistory.pop() || state.draftRep
     },
-    setTurnError(state, action: PayloadAction<string>) {
-      state.error = action.payload
-    },
     setGameWinner(state, action: PayloadAction<StoneColor>) {
       state.winner = action.payload
+    },
+    setTurnError(state, action: PayloadAction<string>) {
+      state.error = action.payload
     },
     clearGameData(state) {
       return {...initialState, settings: state.settings}

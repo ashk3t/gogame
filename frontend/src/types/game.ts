@@ -15,14 +15,22 @@ export interface GameSettings {
   offline: boolean
 }
 
-export interface Game {
-  id: number | null
+interface BaseGame {
   settings: GameSettings
   rep: string | null
-  error: string | null
+}
+
+export interface GameState extends BaseGame {
   winner: StoneColor | null
   draftRep: string | null
   draftHistory: string[]
+  error: string | null
+}
+
+export interface GameResponse extends BaseGame {
+  id: number
+  searchStartTime: string
+  startTime: string | null
 }
 
 export const defaultGameSettings: GameSettings = {

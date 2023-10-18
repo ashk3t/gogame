@@ -1,12 +1,14 @@
 import {useEffect} from "react"
 import {useActions, useAppSelector} from "../redux/hooks"
-import {Game} from "../types/game"
+import {GameResponse} from "../types/game"
 import styles from "../styles/base.module.css"
 import {START_PATH} from "../consts/pages"
 import NavButton from "../components/buttons/NavButton"
 import NiceButton from "../components/buttons/NiceButton"
 import StaticBoard from "../components/StaticBoard"
 import {GameBoard} from "../lib/gamelogic"
+import {capitalize} from "lodash"
+import {timePassed} from "../utils"
 
 export default function GameListPage() {
   const games = useAppSelector((state) => state.gameListReducer.games)
@@ -29,13 +31,25 @@ export default function GameListPage() {
         Back
       </NavButton>
       <div className={styles.vcenteringContainer}>
-        {games.map((game: Game, key) => (
+        {games.map((game: GameResponse, key) => (
           <div key={key} className={`${styles.frame} ${styles.vcenteringContainer}`}>
-            <div>
-              {game.settings.width}x{game.settings.height}
-            </div>
-            {game.rep && <StaticBoard board={GameBoard.fromRep(game.rep)}></StaticBoard>}
-            <NiceButton onClick={() => joinGame(game.id!)}>Join</NiceButton>
+            {game.rep ? (
+              <>
+                <StaticBoard board={GameBoard.fromRep(game.rep)}></StaticBoard>
+                <NiceButton onClick={() => joinGame(game.id!)}>Spectate</NiceButton>
+              </>
+            ) : (
+              <>
+                <div>{timePassed(new Date(game.searchStartTime))}</div>
+                <div>
+                  {game.settings.width}x{game.settings.height}, {capitalize(game.settings.mode)}
+                </div>
+                <div>
+                  {0}/{game.settings.players}:
+                </div>
+                <NiceButton onClick={() => joinGame(game.id!)}>Join</NiceButton>
+              </>
+            )}
           </div>
         ))}
       </div>
