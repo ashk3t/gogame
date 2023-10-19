@@ -28,9 +28,6 @@ export default function GameListPage() {
 
   return (
     <main className={`${styles.centeringContainer} ${styles.defaultMargin}`}>
-      <NavButton path={START_PATH} scary={true}>
-        Back
-      </NavButton>
       <div className={styles.vcenteringContainer}>
         {games.map((game: GameResponse) => (
           <div key={game.id} className={`${styles.frame} ${styles.vcenteringContainer}`}>
@@ -54,6 +51,9 @@ export default function GameListPage() {
             )}
           </div>
         ))}
+      <NavButton path={START_PATH} scary={true}>
+        Back
+      </NavButton>
       </div>
     </main>
   )

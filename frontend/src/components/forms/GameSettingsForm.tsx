@@ -6,7 +6,6 @@ import IntegerInput from "../inputs/IntegerInput"
 import Space from "../Space"
 import NiceCheckbox from "../inputs/NiceCheckbox"
 import NiceSelect from "../inputs/NiceSelect"
-import VCenteringContainer from "../containers/VCenteringContainer"
 import CenteringContainer from "../containers/CenteringContainer"
 
 export default function GameSettingsForm() {
@@ -24,7 +23,7 @@ export default function GameSettingsForm() {
   }
 
   return (
-    <VCenteringContainer>
+    <CenteringContainer vertical={true}>
       <CenteringContainer>
         <h3>Custom game</h3>
         <NiceCheckbox
@@ -78,6 +77,6 @@ export default function GameSettingsForm() {
           </div>
         </div>
       )}
-    </VCenteringContainer>
+    </CenteringContainer>
   )
 }
