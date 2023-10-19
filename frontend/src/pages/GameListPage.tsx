@@ -6,37 +6,51 @@ import MainContainer from "../components/containers/MainContainer"
 import CenteringContainer from "../components/containers/CenteringContainer"
 import GameTiles from "../components/lists/GameTiles"
 import NiceButton from "../components/buttons/NiceButton"
-import {GameResponse} from "../types/game"
+import {GameResponse, stripGameSettings} from "../types/game"
 import {gameExample, searchGameExample} from "../consts/test"
 import NiceCheckbox from "../components/inputs/NiceCheckbox"
 import Space from "../components/Space"
 import NiceInput from "../components/inputs/NiceInput"
 import PageInput from "../components/inputs/PageInput"
+import GameService from "../services/GameService"
+import useUpdater from "../hooks/useUpdater"
 
 export default function GameListPage() {
-  // const games = useAppSelector((state) => state.gameListReducer.games)
-  const {loadGames} = useActions()
-  const [filterByNickname, setFilterByNickname] = useState("")
-  const [filterBySettings, setfilterBySettings] = useState(false)
+  const {firstLoadGames, updateLoadedGames} = useActions()
+
+  const games = useAppSelector((state) => state.gameListReducer.games)
+  const settings = useAppSelector((state) => state.gameReducer.settings)
+  const [nicknameFilter, setNicknameFilter] = useState("")
+  const [settingsFilter, setSettingsFilter] = useState(false)
   const [skipSearch, setSkipSearch] = useState(false)
   const [page, setPage] = useState(1)
+  const [pageCount, setPageCount] = useState(1)
+  const [loader, loadData] = useUpdater()
 
-  const [games, setGames] = useState<Array<GameResponse>>([])
+  const filters = {
+    nickname: nicknameFilter || undefined,
+    skip_search: skipSearch || undefined,
+    ...(settingsFilter ? stripGameSettings(settings) : undefined),
+  }
+
+  async function updatePageCount() {
+    const count = await GameService.count(filters)
+    setPageCount(count)
+  }
+
   useEffect(() => {
-    // loadGames()
-    const data = new Array(6).fill(gameExample)
-    data[1] = searchGameExample
-    data[2] = searchGameExample
-    data[5] = searchGameExample
-    setGames(data)
-  }, [])
+    firstLoadGames(page, filters)
+    updatePageCount()
+  }, [page, settingsFilter, skipSearch, loader])
 
-  // useEffect(() => {
-  //   const timer = setTimeout(() => {
-  //     loadGames()
-  //   }, 5000)
-  //   return () => clearTimeout(timer)
-  // }, [games])
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (games.length > 0) updateLoadedGames(games.map((g) => g.id))
+      else firstLoadGames(page, filters)
+      updatePageCount()
+    }, 5000)
+    return () => clearTimeout(timer)
+  }, [games])
 
   return (
     <MainContainer>
@@ -48,14 +62,18 @@ export default function GameListPage() {
           <Space />
           <h6>By nickname:</h6>
           <NiceInput
-            value={filterByNickname}
-            onChange={(e) => setFilterByNickname(e.target.value)}
+            value={nicknameFilter}
+            onChange={(e) => setNicknameFilter(e.target.value)}
+            onBlur={loadData}
+            onKeyDown={(event) => {
+              if (event.key == "Enter") loadData()
+            }}
           ></NiceInput>
           <Space />
           <h6>By settings:</h6>
           <NiceCheckbox
-            checked={filterBySettings}
-            onChange={(event) => setfilterBySettings(event.target.checked)}
+            checked={settingsFilter}
+            onChange={(event) => setSettingsFilter(event.target.checked)}
           />
           <Space />
           <h6>Skip search:</h6>
@@ -66,9 +84,13 @@ export default function GameListPage() {
         </CenteringContainer>
         <GameTiles games={games} />
         <CenteringContainer>
-          <NiceButton very={true}>Prev</NiceButton>
-          <PageInput page={page} setPage={setPage} pageCount={420}/>
-          <NiceButton very={true}>Next</NiceButton>
+          <NiceButton very={true} onClick={() => setPage(page - 1)}>
+            Prev
+          </NiceButton>
+          <PageInput page={page} setPage={setPage} pageCount={pageCount} />
+          <NiceButton very={true} onClick={() => setPage(page + 1)}>
+            Next
+          </NiceButton>
         </CenteringContainer>
       </CenteringContainer>
     </MainContainer>

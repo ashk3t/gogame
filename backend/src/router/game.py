@@ -23,7 +23,12 @@ async def get_games_extended(ss: AsyncSession = Depends(get_session)):
 
 @router.get("/full", response_model=list[GameExtendedWithPlayers])
 async def get_games_full(ss: AsyncSession = Depends(get_session)):
-    return await GamePlayerService.get_games_ext_with_players(ss)
+    return await GamePlayerService.get_games_full(ss)
+
+
+@router.post("/full_by_ids", response_model=list[GameExtendedWithPlayers])
+async def get_games_full_by_ids(ids: list[int], ss: AsyncSession = Depends(get_session)):
+    return await GamePlayerService.get_games_full_by_ids(ss, ids)
 
 
 @router.websocket("/new")

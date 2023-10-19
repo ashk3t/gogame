@@ -4,12 +4,20 @@ import {gameSlice} from "../reducers/game"
 import {playerSlice} from "../reducers/player"
 import {gameListSlice} from "../reducers/gameList"
 import {GameBoard, InvalidTurnError} from "../../lib/gamelogic"
-import {GameMode} from "../../types/game"
+import {GameMode, GameSettingsRequest} from "../../types/game"
 import {MessageType, SocketMessage, TurnType} from "../../types/gameApi"
 import {camelize} from "../../utils"
 
-export const loadGames = () => async (dispatch: AppDispatch) => {
-  const data = await GameService.getAllFull()
+export const firstLoadGames = (page: number, filters: any) => async (dispatch: AppDispatch) => {
+  const data = await GameService.getAllFull({
+    page,
+    ...filters,
+  })
+  dispatch(gameListSlice.actions.setGames(data.map(camelize)))
+}
+
+export const updateLoadedGames = (ids: number[]) => async (dispatch: AppDispatch) => {
+  const data = await GameService.getAllFullByIds({ids})
   dispatch(gameListSlice.actions.setGames(data.map(camelize)))
 }
 
@@ -45,7 +53,6 @@ export const takeTurn =
     if (game.settings.offline || game.draftRep) {
       try {
         board.takeTurn(i, j)
-        console.log(board)
       } catch (error) {
         if (error instanceof InvalidTurnError)
           dispatch(gameSlice.actions.setTurnError(error.message))

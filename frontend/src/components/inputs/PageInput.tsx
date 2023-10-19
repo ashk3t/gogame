@@ -4,17 +4,18 @@ import IntegerInput from "./IntegerInput"
 
 export default function PageInput(props: {
   page: number
-  setPage: React.Dispatch<React.SetStateAction<number>>
+  setPage: (arg0: number) => any
   pageCount: number
 }) {
   const {page, setPage, pageCount} = props
   const [isFocus, setIsFocus] = useState(false)
+  const [tempPage, setTempPage] = useState(page)
 
   return (
     <>
       <IntegerInput
-        value={page}
-        setValue={setPage}
+        value={tempPage}
+        setValue={setTempPage}
         limits={{min: 1, max: pageCount}}
         style={{
           marginRight: 0,
@@ -26,9 +27,12 @@ export default function PageInput(props: {
           padding: 0,
         }}
         onFocus={() => setIsFocus(true)}
-        onBlur={() => setIsFocus(false)}
+        onBlur={() => {
+          setIsFocus(false)
+          setPage(tempPage)
+        }}
         onKeyDown={(event) => {
-          if (event.key == "Enter") alert("NICE")
+          if (event.key == "Enter") setPage(tempPage)
         }}
       />
       <h4 style={{marginLeft: 0}}>/{pageCount}</h4>

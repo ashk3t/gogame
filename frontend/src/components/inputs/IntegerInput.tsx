@@ -3,7 +3,7 @@ import styles from "../../styles/base.module.css"
 
 interface IntegerInputProps extends React.ComponentProps<"input"> {
   value: number
-  setValue: React.Dispatch<React.SetStateAction<number>>
+  setValue: (arg0: number) => any
   style?: CSSProperties
   limits?: {min?: number; max?: number}
 }

@@ -274,8 +274,7 @@ class GameBoard:
         format: '235'
 
         <ko_position> is a turn position that triggers ko rule
-        format: '1,7'
-        """
+        format: '1,7'"""
 
         *rest_params, ko_position, finished_players, board_rep = rep.split(";")
         height, width, players, turn_color, pass_counter = map(int, rest_params)

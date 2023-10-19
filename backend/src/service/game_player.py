@@ -1,6 +1,8 @@
 from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
+from .utils import nest
 from ..models import *
 from ..schemas.player import *
 from ..schemas.game_player import *
@@ -10,23 +12,24 @@ from .player import PlayerService
 
 class GamePlayerService:
     @staticmethod
-    async def get_games_ext_with_players(
-        ss: AsyncSession, skip: int = 0, limit: int = 10
+    async def get_games_full(
+        ss: AsyncSession, offset: int = 0, limit: int = 10
     ) -> list[GameExtendedWithPlayers]:
-        games = await GameService.get_all_ext(ss, skip, limit)
-        result = await ss.execute(
-            select(PlayerModel).where(
-                and_(
-                    PlayerModel.game_id.in_(game.id for game in games),
-                    PlayerModel.spectator == False,
-                )
-            )
+        games = await GameService.get_all_ext(ss, offset, limit)
+        players = await PlayerService.get_by_game_ids(
+            ss, [game.id for game in games], False
         )
-        players = list(map(PlayerResponse.model_validate, result.scalars()))
+        return nest(games, players, "id", "game_id", GameExtendedWithPlayers)
 
-        games_by_id = {
-            game.id: GameExtendedWithPlayers(**game.model_dump()) for game in games
-        }
-        for player in players:
-            games_by_id[player.game_id].players.append(player)
-        return list(games_by_id.values())
+    @staticmethod
+    async def get_games_full_by_ids(
+        ss: AsyncSession, ids: list[int]
+    ) -> list[GameExtendedWithPlayers]:
+        result = await ss.execute(
+            select(GameModel)
+            .where(GameModel.id.in_(ids))
+            .options(selectinload(GameModel.settings))
+        )
+        games = list(map(GameExtendedResponse.model_validate, result.scalars()))
+        players = await PlayerService.get_by_game_ids(ss, ids, False)
+        return nest(games, players, "id", "game_id", GameExtendedWithPlayers)

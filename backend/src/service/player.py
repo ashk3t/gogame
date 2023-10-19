@@ -27,10 +27,16 @@ class PlayerService:
     async def get_by_game_id(
         ss: AsyncSession, game_id: int, spectator: bool | None = None
     ) -> list[PlayerResponse]:
+        return await PlayerService.get_by_game_ids(ss, [game_id], spectator)
+
+    @staticmethod
+    async def get_by_game_ids(
+        ss: AsyncSession, ids: list[int], spectator: bool | None = None
+    ) -> list[PlayerResponse]:
         result = await ss.execute(
             select(PlayerModel).where(
                 and_(
-                    PlayerModel.game_id == game_id,
+                    PlayerModel.game_id.in_(ids),
                     true() if spectator is None else PlayerModel.spectator == spectator,
                 )
             )

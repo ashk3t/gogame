@@ -33,12 +33,12 @@ class GameService:
 
     @staticmethod
     async def get_all_ext(
-        ss: AsyncSession, skip: int = 0, limit: int = 10
+        ss: AsyncSession, offset: int = 0, limit: int = 10
     ) -> list[GameExtendedResponse]:
         result = await ss.execute(
             select(GameModel)
             .options(selectinload(GameModel.settings))
-            .offset(skip)
+            .offset(offset)
             .limit(limit)
         )
         return list(map(GameExtendedResponse.model_validate, result.scalars()))

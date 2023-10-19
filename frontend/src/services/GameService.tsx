@@ -1,5 +1,5 @@
 import {publicConfig} from "../api"
-import {WS_API_URL} from "../consts/api"
+import {DEFAULT_PAGE_SIZE, WS_API_URL} from "../consts/api"
 import {GameSettings} from "../types/game"
 import {TurnType} from "../types/gameApi"
 
@@ -12,8 +12,18 @@ export default class GameService {
     return response.data
   }
 
-  static async getAllFull() {
-    const response = await publicConfig.get(this.baseUrl + "/full")
+  static async getAllFull(params: any) {
+    const response = await publicConfig.get(this.baseUrl + "/full", {params})
+    return response.data
+  }
+
+  static async getAllFullByIds(body: any) {
+    const response = await publicConfig.get(this.baseUrl + "/full_by_ids", {data: body})
+    return response.data
+  }
+
+  static async count(params: any) {
+    const response = await publicConfig.get(this.baseUrl + "/count", {params})
     return response.data
   }
 

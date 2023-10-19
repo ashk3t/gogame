@@ -6,12 +6,15 @@ export enum GameMode {
   ATARI = "ATARI",
 }
 
-export interface GameSettings {
-  custom: boolean
+export interface GameSettingsRequest {
   height: number
   width: number
   players: number
   mode: GameMode
+}
+
+export interface GameSettings extends GameSettingsRequest {
+  custom: boolean
   new: boolean
   offline: boolean
 }
@@ -43,4 +46,13 @@ export const defaultGameSettings: GameSettings = {
   mode: GameMode.CLASSIC,
   new: false,
   offline: false,
+}
+
+export function stripGameSettings(settings: GameSettings): GameSettingsRequest {
+  return {
+    height: settings.height,
+    width: settings.width,
+    players: settings.players,
+    mode: settings.mode,
+  }
 }

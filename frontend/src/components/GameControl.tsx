@@ -40,4 +40,3 @@ export default function GameControl(props: {board: GameBoard}) {
     </div>
   )
 }
-// TODO: Finish + end if online
