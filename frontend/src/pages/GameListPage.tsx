@@ -11,6 +11,7 @@ import {gameExample, searchGameExample} from "../consts/test"
 import NiceCheckbox from "../components/inputs/NiceCheckbox"
 import Space from "../components/Space"
 import NiceInput from "../components/inputs/NiceInput"
+import PageInput from "../components/inputs/PageInput"
 
 export default function GameListPage() {
   // const games = useAppSelector((state) => state.gameListReducer.games)
@@ -18,6 +19,7 @@ export default function GameListPage() {
   const [filterByNickname, setFilterByNickname] = useState("")
   const [filterBySettings, setfilterBySettings] = useState(false)
   const [skipSearch, setSkipSearch] = useState(false)
+  const [page, setPage] = useState(1)
 
   const [games, setGames] = useState<Array<GameResponse>>([])
   useEffect(() => {
@@ -64,9 +66,8 @@ export default function GameListPage() {
         </CenteringContainer>
         <GameTiles games={games} />
         <CenteringContainer>
-          <NiceButton very={true}>First</NiceButton>
           <NiceButton very={true}>Prev</NiceButton>
-          <h4>228/420</h4>
+          <PageInput page={page} setPage={setPage} pageCount={420}/>
           <NiceButton very={true}>Next</NiceButton>
         </CenteringContainer>
       </CenteringContainer>

@@ -1,13 +1,15 @@
 import {CSSProperties} from "react"
 import styles from "../../styles/base.module.css"
 
-export default function IntegerInput(props: {
+interface IntegerInputProps extends React.ComponentProps<"input"> {
   value: number
-  setValue: any
+  setValue: React.Dispatch<React.SetStateAction<number>>
   style?: CSSProperties
   limits?: {min?: number; max?: number}
-}) {
-  const {setValue, limits, ...rest} = props
+}
+
+export default function IntegerInput(props: IntegerInputProps) {
+  const {setValue, limits, onBlur, ...rest} = props
 
   return (
     <input
@@ -23,6 +25,7 @@ export default function IntegerInput(props: {
         if (limits.min) value = Math.max(limits.min, value)
         if (limits.max) value = Math.min(limits.max, value)
         setValue(value)
+        onBlur?.(event)
       }}
       className={styles.niceInput}
     />
