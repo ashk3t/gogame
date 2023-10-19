@@ -1,11 +1,18 @@
 import styles from "../../styles/base.module.css"
-import {useNavigate} from "react-router-dom"
 
-export default function NiceButton(props: React.ComponentProps<"button">) {
-  const {children, ...rest} = props
+interface NiceButtonProps extends React.ComponentProps<"button"> {
+  very: boolean
+}
+
+export default function NiceButton(props: NiceButtonProps) {
+  const {very, children, ...rest} = props
   return (
-    <button className={styles.niceButton} {...rest}>
+    <button className={`${styles.niceButton} ${very && styles.very}`} {...rest}>
       {children}
     </button>
   )
+}
+
+NiceButton.defaultProps = {
+  very: false,
 }

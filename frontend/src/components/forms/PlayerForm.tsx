@@ -1,7 +1,8 @@
 import {useState} from "react"
 import {useActions, useAppSelector} from "../../redux/hooks"
-import styles from "../../styles/base.module.css"
 import {getRandomNicknameLabel} from "../../utils"
+import CenteringContainer from "../containers/CenteringContainer"
+import NiceInput from "../inputs/NiceInput"
 
 export default function PlayerForm() {
   const nickname = useAppSelector((state) => state.playerReducer.thisPlayer.nickname)
@@ -12,13 +13,9 @@ export default function PlayerForm() {
   if (settings.offline) return <></>
 
   return (
-    <div className={styles.vcenteringContainer}>
+    <CenteringContainer vertical={true}>
       <h3>{nicknameLabel}'s name:</h3>
-      <input
-        className={styles.niceInput}
-        value={nickname}
-        onChange={(e) => setNickname(e.target.value)}
-      ></input>
-    </div>
+      <NiceInput value={nickname} onChange={(e) => setNickname(e.target.value)}></NiceInput>
+    </CenteringContainer>
   )
 }

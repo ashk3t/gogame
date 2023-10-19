@@ -1,60 +1,75 @@
-import {useEffect} from "react"
+import {useEffect, useState} from "react"
 import {useActions, useAppSelector} from "../redux/hooks"
-import {GameResponse} from "../types/game"
-import styles from "../styles/base.module.css"
 import {START_PATH} from "../consts/pages"
 import NavButton from "../components/buttons/NavButton"
+import MainContainer from "../components/containers/MainContainer"
+import CenteringContainer from "../components/containers/CenteringContainer"
+import GameTiles from "../components/lists/GameTiles"
 import NiceButton from "../components/buttons/NiceButton"
-import StaticBoard from "../components/StaticBoard"
-import {GameBoard} from "../lib/gamelogic"
-import {capitalize} from "lodash"
-import {timePassed} from "../utils"
-import PlayerList from "../components/lists/PlayerList"
+import {GameResponse} from "../types/game"
+import {gameExample, searchGameExample} from "../consts/test"
+import NiceCheckbox from "../components/inputs/NiceCheckbox"
+import Space from "../components/Space"
+import NiceInput from "../components/inputs/NiceInput"
 
 export default function GameListPage() {
-  const games = useAppSelector((state) => state.gameListReducer.games)
-  const {loadGames, joinGame} = useActions()
+  // const games = useAppSelector((state) => state.gameListReducer.games)
+  const {loadGames} = useActions()
+  const [filterByNickname, setFilterByNickname] = useState("")
+  const [filterBySettings, setfilterBySettings] = useState(false)
+  const [skipSearch, setSkipSearch] = useState(false)
 
+  const [games, setGames] = useState<Array<GameResponse>>([])
   useEffect(() => {
-    loadGames()
+    // loadGames()
+    const data = new Array(6).fill(gameExample)
+    data[1] = searchGameExample
+    data[2] = searchGameExample
+    data[5] = searchGameExample
+    setGames(data)
   }, [])
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      loadGames()
-    }, 5000)
-    return () => clearTimeout(timer)
-  }, [games])
+  // useEffect(() => {
+  //   const timer = setTimeout(() => {
+  //     loadGames()
+  //   }, 5000)
+  //   return () => clearTimeout(timer)
+  // }, [games])
 
   return (
-    <main className={`${styles.centeringContainer} ${styles.defaultMargin}`}>
-      <div className={styles.vcenteringContainer}>
-        {games.map((game: GameResponse) => (
-          <div key={game.id} className={`${styles.frame} ${styles.vcenteringContainer}`}>
-            {game.rep ? (
-              <>
-                <StaticBoard board={GameBoard.fromRep(game.rep)}></StaticBoard>
-                <NiceButton onClick={() => joinGame(game.id!)}>Spectate</NiceButton>
-              </>
-            ) : (
-              <>
-                <div>{timePassed(new Date(game.searchStartTime))}</div>
-                <div>
-                  {game.settings.height}x{game.settings.width}, {capitalize(game.settings.mode)}
-                </div>
-                <div>
-                  {0}/{game.settings.players}:
-                </div>
-                <PlayerList players={game.players} />
-                <NiceButton onClick={() => joinGame(game.id!)}>Join</NiceButton>
-              </>
-            )}
-          </div>
-        ))}
-      <NavButton path={START_PATH} scary={true}>
-        Back
-      </NavButton>
-      </div>
-    </main>
+    <MainContainer>
+      <CenteringContainer vertical={true}>
+        <CenteringContainer style={{flexWrap: "wrap"}}>
+          <NavButton path={START_PATH} scary={true}>
+            Back
+          </NavButton>
+          <Space />
+          <h6>By nickname:</h6>
+          <NiceInput
+            value={filterByNickname}
+            onChange={(e) => setFilterByNickname(e.target.value)}
+          ></NiceInput>
+          <Space />
+          <h6>By settings:</h6>
+          <NiceCheckbox
+            checked={filterBySettings}
+            onChange={(event) => setfilterBySettings(event.target.checked)}
+          />
+          <Space />
+          <h6>Skip search:</h6>
+          <NiceCheckbox
+            checked={skipSearch}
+            onChange={(event) => setSkipSearch(event.target.checked)}
+          />
+        </CenteringContainer>
+        <GameTiles games={games} />
+        <CenteringContainer>
+          <NiceButton very={true}>First</NiceButton>
+          <NiceButton very={true}>Prev</NiceButton>
+          <h4>228/420</h4>
+          <NiceButton very={true}>Next</NiceButton>
+        </CenteringContainer>
+      </CenteringContainer>
+    </MainContainer>
   )
 }

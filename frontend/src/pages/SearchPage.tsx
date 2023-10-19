@@ -25,7 +25,7 @@ export default function SearchPage() {
           {connectedPlayers.length}/
           {settings.custom ? settings.players : defaultGameSettings.players}
         </h3>
-        <PlayerList players={connectedPlayers} />
+        <PlayerList players={connectedPlayers} big={true} />
       </CenteringContainer>
       <ScaryButton onClick={endGame}>Cancel</ScaryButton>
     </MainContainer>

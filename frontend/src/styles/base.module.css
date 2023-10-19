@@ -16,7 +16,10 @@
   flex-direction: column;
 }
 ul.vcenteringContainer > li {
-  font-size: 1.2em;
+  margin: 0;
+}
+ul.vcenteringContainer > li.big {
+  font-size: 1.3em;
   margin: 0.2em 0;
 }
 .gridContainer {
@@ -26,6 +29,12 @@ ul.vcenteringContainer > li {
 .frame {
   padding: 12px 60px;
   border: 6px solid var(--iris);
+}
+.frame.hoverable {
+  transition: 0.4s all;
+}
+.frame.hoverable:hover {
+  border: 6px solid var(--foam);
 }
 
 .niceButton,
@@ -48,6 +57,12 @@ ul.vcenteringContainer > li {
 }
 .niceButton:hover {
   color: var(--gold);
+}
+.very {
+  border: 4px solid var(--pine);
+}
+.very:hover {
+  color: var(--pine);
 }
 .scaryButton {
   border: 4px solid var(--love);

@@ -21,7 +21,7 @@ export default function StaticBoard(props: {board: GameBoard}) {
       className={styles.board}
       style={{
         gridTemplateColumns: `repeat(${board.width}, 1fr)`,
-        width: "400px"
+        width: "420px"
       }}
     >
       {board.stones.map((row: Array<Stone | null>, i: number) =>
