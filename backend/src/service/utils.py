@@ -1,8 +1,9 @@
 from typing import Any, Sequence
-from sqlalchemy import and_
+from sqlalchemy import and_, true
 from pydantic import BaseModel as BaseSchema
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ..schemas.game import GameSettingsBase, GameSettingsOptional
 from ..database import DBase
 from ..models import *
 
@@ -17,12 +18,14 @@ async def add_commit_refresh(ss: AsyncSession, target: DBase):
     await ss.refresh(target)
 
 
-def equal_game_settings(settings):
+def equal_game_settings(settings: GameSettingsBase | GameSettingsOptional):
     return and_(
-        GameSettingsModel.height == settings.height,
-        GameSettingsModel.width == settings.width,
-        GameSettingsModel.players == settings.players,
-        GameSettingsModel.mode == settings.mode,
+        *[
+            true()
+            if getattr(settings, field) is None
+            else getattr(GameSettingsModel, field) == getattr(settings, field)
+            for field in GameSettingsBase.__fields__
+        ]
     )
 
 

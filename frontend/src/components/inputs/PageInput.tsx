@@ -1,4 +1,4 @@
-import {useState} from "react"
+import {useEffect, useState} from "react"
 import {hexColors} from "../../consts/utils"
 import IntegerInput from "./IntegerInput"
 
@@ -10,6 +10,10 @@ export default function PageInput(props: {
   const {page, setPage, pageCount} = props
   const [isFocus, setIsFocus] = useState(false)
   const [tempPage, setTempPage] = useState(page)
+
+  useEffect(() => {
+    setTempPage(page)
+  }, [page])
 
   return (
     <>

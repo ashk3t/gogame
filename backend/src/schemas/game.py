@@ -15,6 +15,13 @@ class GameSettingsBase(BaseSchema):
     mode: GameMode = GameMode.CLASSIC
 
 
+class GameSettingsOptional(BaseSchema):
+    height: int | None = None
+    width: int | None = None
+    players: int | None = None
+    mode: GameMode | None = None
+
+
 class GameSettingsCreate(GameSettingsBase):
     pass
 

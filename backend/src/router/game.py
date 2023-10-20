@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, WebSocket
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ..config import settings
 from ..dependencies import get_session
 from ..lib.gamelogic import GameBoard, InvalidTurnException
 from ..schemas import *
@@ -11,24 +12,56 @@ from ..service.utils import list_model_dump, turn_color
 router = APIRouter(prefix="/games")
 
 
-@router.get("", response_model=list[GameResponse])
-async def get_games(ss: AsyncSession = Depends(get_session)):
-    return await GameService.get_all(ss)
-
-
-@router.get("/extended", response_model=list[GameExtendedResponse])
-async def get_games_extended(ss: AsyncSession = Depends(get_session)):
-    return await GameService.get_all_ext(ss)
-
-
+# Full > Extended > common response: by payload size and model nesting level
 @router.get("/full", response_model=list[GameExtendedWithPlayers])
-async def get_games_full(ss: AsyncSession = Depends(get_session)):
-    return await GamePlayerService.get_games_full(ss)
+async def get_games_full(
+    page: int,
+    limit: int = settings.default_limit,
+    nickname: str | None = None,
+    skip_search: bool = False,
+    height: int | None = None,
+    width: int | None = None,
+    players: int | None = None,
+    mode: GameMode | None = None,
+    ss: AsyncSession = Depends(get_session),
+):
+    return await GamePlayerService.get_games_full(
+        ss,
+        offset=(page - 1) * limit,
+        limit=limit,
+        nickname=nickname,
+        skip_search=skip_search,
+        settings=GameSettingsOptional(
+            height=height, width=width, players=players, mode=mode
+        ),
+    )
 
 
 @router.post("/full_by_ids", response_model=list[GameExtendedWithPlayers])
-async def get_games_full_by_ids(ids: list[int], ss: AsyncSession = Depends(get_session)):
+async def get_games_full_by_ids(
+    ids: list[int], ss: AsyncSession = Depends(get_session)
+):
     return await GamePlayerService.get_games_full_by_ids(ss, ids)
+
+
+@router.get("/count", response_model=int)
+async def game_count(
+    nickname: str | None = None,
+    skip_search: bool = False,
+    height: int | None = None,
+    width: int | None = None,
+    players: int | None = None,
+    mode: GameMode | None = None,
+    ss: AsyncSession = Depends(get_session),
+):
+    return await GamePlayerService.count_games(
+        ss,
+        nickname=nickname,
+        skip_search=skip_search,
+        settings=GameSettingsOptional(
+            height=height, width=width, players=players, mode=mode
+        ),
+    )
 
 
 @router.websocket("/new")

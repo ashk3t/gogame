@@ -15,6 +15,13 @@ class PlayerService:
     )
 
     @staticmethod
+    async def get_by_nickname(ss: AsyncSession, nickname: str) -> list[PlayerResponse]:
+        result = await ss.execute(
+            select(PlayerModel).where(PlayerModel.nickname.contains(nickname))
+        )
+        return list(map(PlayerResponse.model_validate, result.scalars()))
+
+    @staticmethod
     async def get_by_token(ss: AsyncSession, token: str) -> PlayerExtendedResponse:
         result = await ss.execute(
             select(PlayerModel)

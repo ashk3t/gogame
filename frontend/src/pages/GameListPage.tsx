@@ -6,14 +6,14 @@ import MainContainer from "../components/containers/MainContainer"
 import CenteringContainer from "../components/containers/CenteringContainer"
 import GameTiles from "../components/lists/GameTiles"
 import NiceButton from "../components/buttons/NiceButton"
-import {GameResponse, stripGameSettings} from "../types/game"
-import {gameExample, searchGameExample} from "../consts/test"
+import {stripGameSettings} from "../types/game"
 import NiceCheckbox from "../components/inputs/NiceCheckbox"
 import Space from "../components/Space"
 import NiceInput from "../components/inputs/NiceInput"
 import PageInput from "../components/inputs/PageInput"
 import GameService from "../services/GameService"
 import useUpdater from "../hooks/useUpdater"
+import {DEFAULT_PAGE_SIZE} from "../consts/api"
 
 export default function GameListPage() {
   const {firstLoadGames, updateLoadedGames} = useActions()
@@ -35,7 +35,7 @@ export default function GameListPage() {
 
   async function updatePageCount() {
     const count = await GameService.count(filters)
-    setPageCount(count)
+    setPageCount(Math.ceil(count / DEFAULT_PAGE_SIZE))
   }
 
   useEffect(() => {
@@ -63,7 +63,7 @@ export default function GameListPage() {
           <h6>By nickname:</h6>
           <NiceInput
             value={nicknameFilter}
-            onChange={(e) => setNicknameFilter(e.target.value)}
+            onChange={(event) => setNicknameFilter(event.target.value)}
             onBlur={loadData}
             onKeyDown={(event) => {
               if (event.key == "Enter") loadData()
@@ -84,16 +84,24 @@ export default function GameListPage() {
         </CenteringContainer>
         <GameTiles games={games} />
         <CenteringContainer>
-          {page != 1 && (
-            <NiceButton very={true} onClick={() => setPage(page - 1)}>
-              Prev
-            </NiceButton>
-          )}
-          <PageInput page={page} setPage={setPage} pageCount={pageCount} />
-          {page != pageCount && (
-            <NiceButton very={true} onClick={() => setPage(page + 1)}>
-              Next
-            </NiceButton>
+          {pageCount > 1 && (
+            <>
+              <NiceButton
+                very={true}
+                onClick={() => setPage(page - 1)}
+                style={{visibility: page == 1 ? "hidden" : "visible"}}
+              >
+                Prev
+              </NiceButton>
+              <PageInput page={page} setPage={setPage} pageCount={pageCount} />
+              <NiceButton
+                very={true}
+                onClick={() => setPage(page + 1)}
+                style={{visibility: page == pageCount ? "hidden" : "visible"}}
+              >
+                Next
+              </NiceButton>
+            </>
           )}
         </CenteringContainer>
       </CenteringContainer>

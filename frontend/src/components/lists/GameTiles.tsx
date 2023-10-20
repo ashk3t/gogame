@@ -9,9 +9,13 @@ import {timePassed} from "../../utils"
 import {useActions} from "../../redux/hooks"
 import styles from "../../styles/lists/GameTiles.module.css"
 import Space from "../Space"
-import {hexColors} from "../../consts/utils"
+import {memo} from "react"
 
-export default function GameTiles(props: {games: Array<GameResponse>}) {
+interface GameTilesProps {
+  games: Array<GameResponse>
+}
+
+function GameTiles(props: GameTilesProps) {
   const {games} = props
   const {joinGame} = useActions()
 
@@ -47,3 +51,9 @@ export default function GameTiles(props: {games: Array<GameResponse>}) {
     </div>
   )
 }
+
+function areEqual(prev: GameTilesProps, next: GameTilesProps) {
+  return prev.games == next.games
+}
+
+export default memo(GameTiles, areEqual)

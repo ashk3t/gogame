@@ -22,6 +22,8 @@ class Settings(BaseSettings):
     cors_allow_methods: list = ["*"]
     cors_allow_headers: list = ["*"]
 
+    default_limit: int = 18
+
     model_config = SettingsConfigDict(env_file=".env")
 
 

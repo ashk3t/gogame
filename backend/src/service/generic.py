@@ -2,8 +2,7 @@ import sqlalchemy as alc
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.dependencies import get_session
-
+from ..config import settings
 from .utils import add_commit_refresh
 
 
@@ -14,7 +13,7 @@ def generate_basic_service_methods(Model, ResponseSchema, CreateSchema, UpdateSc
         return ResponseSchema.model_validate(result.scalars().one())
 
     @staticmethod
-    async def get_all(ss: AsyncSession, offset: int = 0, limit: int = 10) -> list[ResponseSchema]:
+    async def get_all(ss: AsyncSession, offset: int = 0, limit: int = settings.default_limit) -> list[ResponseSchema]:
         result = await ss.execute(select(Model).offset(offset).limit(limit))
         return list(map(ResponseSchema.model_validate, result.scalars()))
 

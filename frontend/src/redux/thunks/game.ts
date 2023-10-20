@@ -7,17 +7,19 @@ import {GameBoard, InvalidTurnError} from "../../lib/gamelogic"
 import {GameMode, GameSettingsRequest} from "../../types/game"
 import {MessageType, SocketMessage, TurnType} from "../../types/gameApi"
 import {camelize} from "../../utils"
+import {DEFAULT_PAGE_SIZE} from "../../consts/api"
 
 export const firstLoadGames = (page: number, filters: any) => async (dispatch: AppDispatch) => {
   const data = await GameService.getAllFull({
     page,
+    limit: DEFAULT_PAGE_SIZE,
     ...filters,
   })
   dispatch(gameListSlice.actions.setGames(data.map(camelize)))
 }
 
 export const updateLoadedGames = (ids: number[]) => async (dispatch: AppDispatch) => {
-  const data = await GameService.getAllFullByIds({ids})
+  const data = await GameService.getAllFullByIds(ids)
   dispatch(gameListSlice.actions.setGames(data.map(camelize)))
 }
 
