@@ -16,10 +16,11 @@ export default function PageInput(props: {
       <IntegerInput
         value={tempPage}
         setValue={setTempPage}
+        setExternalValue={setPage}
         limits={{min: 1, max: pageCount}}
         style={{
           marginRight: 0,
-          width: page.toString().length * 0.5 + "em",
+          width: tempPage.toString().length * 0.5 + "em",
           backgroundColor: hexColors.base,
           fontSize: "1.4em",
           color: isFocus ? hexColors.rose : hexColors.foam,
@@ -27,13 +28,7 @@ export default function PageInput(props: {
           padding: 0,
         }}
         onFocus={() => setIsFocus(true)}
-        onBlur={() => {
-          setIsFocus(false)
-          setPage(tempPage)
-        }}
-        onKeyDown={(event) => {
-          if (event.key == "Enter") setPage(tempPage)
-        }}
+        onBlur={() => setIsFocus(false)}
       />
       <h4 style={{marginLeft: 0}}>/{pageCount}</h4>
     </>

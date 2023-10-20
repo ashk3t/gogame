@@ -1,6 +1,6 @@
 import {publicConfig} from "../api"
 import {DEFAULT_PAGE_SIZE, WS_API_URL} from "../consts/api"
-import {GameSettings} from "../types/game"
+import {GameSettings, stripGameSettings} from "../types/game"
 import {TurnType} from "../types/gameApi"
 
 export default class GameService {
@@ -37,17 +37,10 @@ export default class GameService {
     )
     socket.onopen = (_) => {
       socket.send(
-        JSON.stringify(
-          settings.custom
-            ? {
-                nickname: nickname,
-                height: settings.height,
-                width: settings.width,
-                players: settings.players,
-                mode: settings.mode,
-              }
-            : {nickname: nickname},
-        ),
+        JSON.stringify({
+          nickname: nickname,
+          ...(settings.custom ? stripGameSettings(settings) : {}),
+        }),
       )
     }
     GameService.connection = socket

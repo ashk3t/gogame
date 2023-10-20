@@ -30,7 +30,7 @@ export default function GameListPage() {
   const filters = {
     nickname: nicknameFilter || undefined,
     skip_search: skipSearch || undefined,
-    ...(settingsFilter ? stripGameSettings(settings) : undefined),
+    ...(settingsFilter ? stripGameSettings(settings) : {}),
   }
 
   async function updatePageCount() {
@@ -84,13 +84,17 @@ export default function GameListPage() {
         </CenteringContainer>
         <GameTiles games={games} />
         <CenteringContainer>
-          <NiceButton very={true} onClick={() => setPage(page - 1)}>
-            Prev
-          </NiceButton>
+          {page != 1 && (
+            <NiceButton very={true} onClick={() => setPage(page - 1)}>
+              Prev
+            </NiceButton>
+          )}
           <PageInput page={page} setPage={setPage} pageCount={pageCount} />
-          <NiceButton very={true} onClick={() => setPage(page + 1)}>
-            Next
-          </NiceButton>
+          {page != pageCount && (
+            <NiceButton very={true} onClick={() => setPage(page + 1)}>
+              Next
+            </NiceButton>
+          )}
         </CenteringContainer>
       </CenteringContainer>
     </MainContainer>
