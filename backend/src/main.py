@@ -1,12 +1,23 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
 
 from .config import settings
-from .database import SessionMaker, clear_tables
+from .database import clear_tables, create_all
 from .router import routers
 
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    if settings.reset_db_tables:
+        await create_all()
+    await clear_tables()
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
+# app = FastAPI()
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -18,17 +29,3 @@ app.add_middleware(
 
 for router in routers:
     app.include_router(router)
-
-
-@app.on_event("startup")
-async def startup_event():
-    if settings.reset_db_tables:
-        await clear_tables()
-
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    from .service.game import GameService
-
-    async with SessionMaker() as ss:
-        await GameService.delete_all(ss)

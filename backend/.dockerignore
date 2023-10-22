@@ -1,0 +1,7 @@
+bin/
+.venv/
+venv/
+__pycache__/
+pyrightconfig.json
+Dockerfile
+.dockerignore

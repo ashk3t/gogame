@@ -92,11 +92,6 @@ class GameService:
         await add_commit_refresh(ss, model)
         return GameResponse.model_validate(model)
 
-    @staticmethod
-    async def delete_all(ss: AsyncSession):
-        await ss.execute(alc.delete(GameModel))
-        await ss.commit()
-
 
 class GameSettingsService:
     get, get_all, create, _, delete = generate_basic_service_methods(

@@ -29,10 +29,14 @@ def init_database():
     )
 
 
-async def hardreset_database():
+async def create_all():
     from . import models
     async with engine.begin() as conn:
-        await conn.run_sync(DBase.metadata.drop_all)
+        await conn.run_sync(DBase.metadata.create_all)
+
+
+async def drop_all():
+    async with engine.begin() as conn:
         await conn.run_sync(DBase.metadata.create_all)
 
 
