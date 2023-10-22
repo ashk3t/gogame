@@ -16,7 +16,6 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
-# app = FastAPI()
 
 
 app.add_middleware(

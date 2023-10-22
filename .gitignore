@@ -8,6 +8,7 @@ TODO.md
 # Private data
 metadata.json
 .env
+.dev.env
 
 # Python
 __pycache__/

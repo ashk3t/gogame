@@ -37,7 +37,7 @@ async def create_all():
 
 async def drop_all():
     async with engine.begin() as conn:
-        await conn.run_sync(DBase.metadata.create_all)
+        await conn.run_sync(DBase.metadata.drop_all)
 
 
 async def clear_tables():

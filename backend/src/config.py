@@ -1,3 +1,5 @@
+import os
+import sys
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -24,7 +26,13 @@ class Settings(BaseSettings):
 
     default_limit: int = 18
 
-    model_config = SettingsConfigDict(env_file=".env")
+    model_config = SettingsConfigDict(
+        env_file=(
+            ".dev.env"
+            if ("--dev" in sys.argv and os.path.isfile(".dev.env"))
+            else ".env"
+        )
+    )
 
 
 settings = Settings()

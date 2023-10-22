@@ -7,11 +7,11 @@ from src.database import create_all, drop_all
 
 
 if __name__ == "__main__":
-    if "--hardresetdb" in sys.argv:
+    if "--resetdb" in sys.argv:
         uvloop.run(create_all())
         uvloop.run(drop_all())
 
-    elif "--reload" in sys.argv:
+    elif "--dev" in sys.argv:
         uvicorn.run("src.main:app", host="0.0.0.0", port=8000, reload=True)
 
     else:

@@ -14,10 +14,6 @@ services:
         interval: 3s
         timeout: 5s
         retries: 5
-    expose:
-      - 5432
-    ports:
-      - 5433:5432
 
   backend:
     depends_on:
