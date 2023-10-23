@@ -1,3 +1,3 @@
-from . import game, player
+from . import game
 
-routers = [game.router, player.router]
+routers = [game.router]
