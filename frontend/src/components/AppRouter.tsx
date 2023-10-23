@@ -16,6 +16,8 @@ export default function AppRouter() {
   const [routes, setRoutes] = useState(defaultRoutes)
   const [defaultPath, setDefaultPath] = useState(START_PATH)
 
+  console.log(import.meta.env.DEV)
+
   useEffect(() => {
     setRoutes(gameRep ? inGameRoutes : connectedPlayers.length > 0 ? inSearchRoutes : defaultRoutes)
     setDefaultPath(gameRep ? GAME_PATH : connectedPlayers.length > 0 ? SEARCH_PATH : START_PATH)

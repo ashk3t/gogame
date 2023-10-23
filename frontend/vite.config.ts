@@ -8,4 +8,13 @@ export default defineConfig({
     host: true,
     port: 3000,
   },
+  build: {
+    rollupOptions: {
+      output: {
+        assetFileNames: "gogame/assets/[name]-[hash][extname]",
+        chunkFileNames: "gogame/assets/[name]-[hash].js",
+        entryFileNames: "gogame/assets/[name].js",
+      },
+    },
+  },
 })
