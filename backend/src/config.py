@@ -5,7 +5,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     app_name: str = "gogame"
-    reset_db_tables: bool = True
+    reinit_db_tables: bool = True
+    clear_db_tables: bool = True
 
     # Filled by `.env` file
     db_driver: str = ""

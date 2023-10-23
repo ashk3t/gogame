@@ -9,28 +9,22 @@ export default function PageInput(props: {
 }) {
   const {page, setPage, pageCount} = props
   const [isFocus, setIsFocus] = useState(false)
-  const [tempPage, setTempPage] = useState(page)
-
-  useEffect(() => {
-    setTempPage(page)
-  }, [page])
 
   return (
     <>
       <IntegerInput
-        value={tempPage}
-        setValue={setTempPage}
-        setExternalValue={setPage}
+        value={page}
+        setValue={setPage}
         limits={{min: 1, max: pageCount}}
-        style={{
+        dynamicStyle={(internalValue: string) => ({
           marginRight: 0,
-          width: tempPage.toString().length * 0.5 + "em",
+          width: internalValue.length * 0.5 + "em",
           backgroundColor: hexColors.base,
           fontSize: "1.4em",
           color: isFocus ? hexColors.rose : hexColors.foam,
           fontWeight: "bold",
           padding: 0,
-        }}
+        })}
         onFocus={() => setIsFocus(true)}
         onBlur={() => setIsFocus(false)}
       />

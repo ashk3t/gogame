@@ -18,7 +18,7 @@ async def get_games_full(
     page: int,
     limit: int = settings.default_limit,
     nickname: str | None = None,
-    skip_search: bool = False,
+    searching: bool = False,
     height: int | None = None,
     width: int | None = None,
     players: int | None = None,
@@ -30,7 +30,7 @@ async def get_games_full(
         offset=(page - 1) * limit,
         limit=limit,
         nickname=nickname,
-        skip_search=skip_search,
+        searching=searching,
         settings=GameSettingsOptional(
             height=height, width=width, players=players, mode=mode
         ),
@@ -47,7 +47,7 @@ async def get_games_full_by_ids(
 @router.get("/count", response_model=int)
 async def game_count(
     nickname: str | None = None,
-    skip_search: bool = False,
+    searching: bool = False,
     height: int | None = None,
     width: int | None = None,
     players: int | None = None,
@@ -57,7 +57,7 @@ async def game_count(
     return await GamePlayerService.count_games(
         ss,
         nickname=nickname,
-        skip_search=skip_search,
+        searching=searching,
         settings=GameSettingsOptional(
             height=height, width=width, players=players, mode=mode
         ),

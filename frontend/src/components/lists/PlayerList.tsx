@@ -2,7 +2,7 @@ import styles from "../../styles/base.module.css"
 import {stoneHexColors} from "../../consts/utils"
 import {Player} from "../../types/player"
 
-function PlayerList(props: {players: Array<Player>; big: boolean}) {
+function PlayerList(props: {players: Player[]; big: boolean}) {
   const {big, players} = props
 
   return (

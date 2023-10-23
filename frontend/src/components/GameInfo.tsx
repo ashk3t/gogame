@@ -5,12 +5,11 @@ import {GameBoard, StoneColor} from "../lib/gamelogic"
 import {hexColors, stoneHexColors} from "../consts/utils"
 import ScoreBoard from "./ScoreBoard"
 import SpectatorsSection from "./SpectatorsSection"
-import {turnColor} from "../utils"
 
 export default function GameInfo(props: {board: GameBoard}) {
   const {board} = props
-  const game = useAppSelector((state) => state.gameReducer)
-  const thisPlayer = useAppSelector((state) => state.playerReducer.thisPlayer)
+  const winner = useAppSelector((state) => state.gameReducer.winner)
+  const gameError = useAppSelector((state) => state.gameReducer.error)
   const connectedPlayers = useAppSelector((state) => state.playerReducer.players)
 
   function getPlayerNameByColor(color: StoneColor) {
@@ -21,19 +20,14 @@ export default function GameInfo(props: {board: GameBoard}) {
   return (
     <div className={styles.infoContainer}>
       <section>
-        {game.rep && thisPlayer.color == turnColor(game.rep) && game.winner == null && (
-          <h4 style={{color: stoneHexColors[thisPlayer.color], textAlign: "center"}}>Your turn</h4>
-        )}
         <ScoreBoard board={board} />
       </section>
-      {(game.winner != null || game.error) && (
+      {(winner != null || gameError) && (
         <section>
-          {game.winner != null && (
-            <h4 style={{color: stoneHexColors[game.winner]}}>
-              Winner: {getPlayerNameByColor(game.winner)}!
-            </h4>
+          {winner != null && (
+            <h4 style={{color: stoneHexColors[winner]}}>Winner: {getPlayerNameByColor(winner)}!</h4>
           )}
-          {game.error && <h5 style={{color: hexColors.love}}>{game.error}!</h5>}
+          {gameError && <h5 style={{color: hexColors.love}}>{gameError}!</h5>}
         </section>
       )}
       <SpectatorsSection />

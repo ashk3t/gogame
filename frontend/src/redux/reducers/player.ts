@@ -4,8 +4,8 @@ import {StoneColor} from "../../lib/gamelogic"
 
 interface PlayersData {
   thisPlayer: Player
-  players: Array<ConnectedPlayer>
-  spectators: Array<Player>
+  players: ConnectedPlayer[]
+  spectators: Player[]
 }
 
 const initialPlayer: Player = {
@@ -31,10 +31,10 @@ export const playerSlice = createSlice({
     setThisPlayer(state, action: PayloadAction<Player>) {
       state.thisPlayer = action.payload
     },
-    setPlayers(state, action: PayloadAction<Array<ConnectedPlayer>>) {
+    setPlayers(state, action: PayloadAction<ConnectedPlayer[]>) {
       state.players = action.payload.sort((p, n) => p.color - n.color)
     },
-    setSpectators(state, action: PayloadAction<Array<Player>>) {
+    setSpectators(state, action: PayloadAction<Player[]>) {
       state.spectators = action.payload
     },
     removePlayer(state, action: PayloadAction<number>) {

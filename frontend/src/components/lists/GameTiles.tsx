@@ -12,7 +12,7 @@ import Space from "../Space"
 import {memo} from "react"
 
 interface GameTilesProps {
-  games: Array<GameResponse>
+  games: GameResponse[]
 }
 
 function GameTiles(props: GameTilesProps) {
@@ -22,13 +22,17 @@ function GameTiles(props: GameTilesProps) {
   return (
     <div className={styles.gameTilesContainer}>
       {games.map((game: GameResponse) => (
-        <CenteringContainer key={game.id} vertical={true} frame={true} hoverable={true}>
+        <CenteringContainer
+          key={game.id}
+          vertical={true}
+          frame={true}
+          onClick={() => joinGame(game.id)}
+        >
           {game.rep ? (
             <>
               <h6>{timePassed(new Date(game.searchStartTime))}</h6>
               <StaticBoard board={GameBoard.fromRep(game.rep)}></StaticBoard>
               <PlayerList players={game.players} />
-              <NiceButton onClick={() => joinGame(game.id!)}>Spectate</NiceButton>
             </>
           ) : (
             <>
@@ -40,10 +44,7 @@ function GameTiles(props: GameTilesProps) {
               <h3>
                 {game.players.length}/{game.settings.players}
               </h3>
-              <PlayerList players={game.players} big={true} />
-              <NiceButton onClick={() => joinGame(game.id!)} style={{marginTop: "auto"}}>
-                Join
-              </NiceButton>
+              {game.players.length > 0 && <PlayerList players={game.players} big={true} />}
             </>
           )}
         </CenteringContainer>

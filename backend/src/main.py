@@ -9,9 +9,10 @@ from .router import routers
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    if settings.reset_db_tables:
+    if settings.reinit_db_tables:
         await create_all()
-    await clear_tables()
+    if settings.clear_db_tables:
+        await clear_tables()
     yield
 
 

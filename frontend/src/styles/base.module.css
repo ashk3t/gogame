@@ -30,11 +30,12 @@ ul.vcenteringContainer > li.big {
   padding: 12px 60px;
   border: 6px solid var(--iris);
 }
-.frame.hoverable {
-  transition: 0.4s all;
+.frame.clickable {
+  transition: 0.3s all;
+  cursor: pointer;
 }
-.frame.hoverable:hover {
-  border: 6px solid var(--foam);
+.frame.clickable:hover {
+  border: 6px solid var(--gold);
 }
 
 .niceButton,

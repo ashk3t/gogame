@@ -107,6 +107,7 @@ select {
 }
 button, select {
   cursor: pointer;
+  user-select: none;
 }
 input:focus,
 select:focus {

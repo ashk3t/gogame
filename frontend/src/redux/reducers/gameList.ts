@@ -2,7 +2,7 @@ import {PayloadAction, createSlice} from "@reduxjs/toolkit"
 import {GameResponse} from "../../types/game"
 
 interface GameListData {
-  games: Array<GameResponse>
+  games: GameResponse[]
 }
 
 const initialState: GameListData = {
@@ -13,7 +13,7 @@ export const gameListSlice = createSlice({
   name: "gameList",
   initialState,
   reducers: {
-    setGames(state, action: PayloadAction<Array<GameResponse>>) {
+    setGames(state, action: PayloadAction<GameResponse[]>) {
       state.games = action.payload
     },
   },

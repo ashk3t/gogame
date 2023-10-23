@@ -35,7 +35,7 @@ export interface GameResponse extends BaseGame {
   id: number
   searchStartTime: string
   startTime: string | null
-  players: Array<Player>
+  players: Player[]
 }
 
 export const defaultGameSettings: GameSettings = {

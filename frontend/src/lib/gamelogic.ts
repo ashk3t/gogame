@@ -104,9 +104,9 @@ export class GameBoard {
   width: number
   players: number
   stones: Array<Array<Stone | null>>
-  allGroups: Array<Group>
+  allGroups: Group[]
   turnColor: StoneColor
-  scores: Array<number>
+  scores: number[]
   passCounter: number
   koPosition: string
   finishedPlayers: Set<StoneColor>

@@ -1,38 +1,48 @@
 import styles from "../styles/Board.module.css"
-import {useMemo, useState} from "react"
-import {useActions} from "../redux/hooks"
+import {CSSProperties, useEffect, useMemo, useState} from "react"
+import {useActions, useAppSelector} from "../redux/hooks"
 import CircleSvg from "../assets/CircleSvg"
 import {BoardIntersectionStyler} from "../utils"
 import {GameBoard, Stone, splitIJ} from "../lib/gamelogic"
 import {hexColors, stoneHexColors} from "../consts/utils"
+import {turnColor} from "../utils"
 
 export default function Board(props: {board: GameBoard}) {
   const {board} = props
   const {takeTurn} = useActions()
 
-  const [intersectionStyler] = useState(new BoardIntersectionStyler(board.height, board.width))
-  const [libertyHints, setLibertyHints] = useState<Array<Array<boolean>>>(
+  const onlineRep = useAppSelector((state) => state.gameReducer.rep)
+  const winner = useAppSelector((state) => state.gameReducer.winner)
+  const [libertyHints, setLibertyHints] = useState<boolean[][]>(
     Array.from(Array(board.height), () => new Array(board.width).fill(false)),
   )
-  const [hintsHere, setHintsHere] = useState(false) // Optimization: do not rerender if point is empty
+  const [intersectionStyles, setIntersectionStyles] = useState<CSSProperties[][]>(
+    Array.from(Array(board.height), () => new Array(board.width).fill({})),
+  )
 
-  function getIntersectionBackground(i: number, j: number) {
-    return useMemo(() => {
-      return intersectionStyler.getBackground(i, j)
-    }, [i, j])
-  }
+  useEffect(() => {
+    const styler = new BoardIntersectionStyler(board.height, board.width)
+    setIntersectionStyles(
+      intersectionStyles.map((row, i) =>
+        row.map((_, j) =>
+          styler.getStyle(i, j, onlineRep ? turnColor(onlineRep) : board.turnColor, winner),
+        ),
+      ),
+    )
+  }, [board, winner])
 
   function updateHints(i: number, j: number) {
-    if (hintsHere) setLibertyHints(libertyHints.map((row) => row.fill(false)))
     const stone = board.stones[i][j]
-    setHintsHere(stone instanceof Stone)
-
+    setLibertyHints(libertyHints.map((row) => row.fill(false)))
     if (stone) {
       for (const ij of stone.group.liberties) {
         const [i, j] = splitIJ(ij)
         libertyHints[i][j] = true
         setLibertyHints([...libertyHints])
       }
+    } else {
+      libertyHints[i][j] = true
+      setLibertyHints([...libertyHints])
     }
   }
 
@@ -43,7 +53,7 @@ export default function Board(props: {board: GameBoard}) {
           <div
             key={`(${i}, ${j})`}
             className={styles.intersection}
-            style={getIntersectionBackground(i, j)}
+            style={intersectionStyles[i][j]}
             onClick={() => takeTurn(i, j, board)}
             onMouseOver={() => updateHints(i, j)}
           >

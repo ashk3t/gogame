@@ -14,22 +14,24 @@ import PageInput from "../components/inputs/PageInput"
 import GameService from "../services/GameService"
 import useUpdater from "../hooks/useUpdater"
 import {DEFAULT_PAGE_SIZE} from "../consts/api"
+import useUpdateOutGamePath from "../hooks/useUpdateOutGamePath"
 
 export default function GameListPage() {
+  useUpdateOutGamePath()
   const {firstLoadGames, updateLoadedGames} = useActions()
 
   const games = useAppSelector((state) => state.gameListReducer.games)
   const settings = useAppSelector((state) => state.gameReducer.settings)
   const [nicknameFilter, setNicknameFilter] = useState("")
   const [settingsFilter, setSettingsFilter] = useState(false)
-  const [skipSearch, setSkipSearch] = useState(false)
+  const [searching, setSearching] = useState(false)
   const [page, setPage] = useState(1)
   const [pageCount, setPageCount] = useState(1)
   const [loader, loadData] = useUpdater()
 
   const filters = {
     nickname: nicknameFilter || undefined,
-    skip_search: skipSearch || undefined,
+    searching: searching || undefined,
     ...(settingsFilter ? stripGameSettings(settings) : {}),
   }
 
@@ -41,11 +43,11 @@ export default function GameListPage() {
   useEffect(() => {
     firstLoadGames(page, filters)
     updatePageCount()
-  }, [page, settingsFilter, skipSearch, loader])
+  }, [page, settingsFilter, searching, loader])
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (games.length > 0) updateLoadedGames(games.map((g) => g.id))
+      if (page != 1 && games.length > 0) updateLoadedGames(games.map((g) => g.id))
       else firstLoadGames(page, filters)
       updatePageCount()
     }, 5000)
@@ -76,10 +78,10 @@ export default function GameListPage() {
             onChange={(event) => setSettingsFilter(event.target.checked)}
           />
           <Space />
-          <h6>Skip search:</h6>
+          <h6>Searching:</h6>
           <NiceCheckbox
-            checked={skipSearch}
-            onChange={(event) => setSkipSearch(event.target.checked)}
+            checked={searching}
+            onChange={(event) => setSearching(event.target.checked)}
           />
         </CenteringContainer>
         <GameTiles games={games} />

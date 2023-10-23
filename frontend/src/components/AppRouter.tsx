@@ -3,22 +3,22 @@ import {
   GAME_PATH,
   defaultRoutes,
   inGameRoutes,
-  START_PATH,
   inSearchRoutes,
   SEARCH_PATH,
 } from "../consts/pages"
 import {useAppSelector} from "../redux/hooks"
-import {useEffect, useState} from "react"
+import {useMemo} from "react"
 
 export default function AppRouter() {
   const gameRep = useAppSelector((state) => state.gameReducer.rep)
   const connectedPlayers = useAppSelector((state) => state.playerReducer.players)
-  const [routes, setRoutes] = useState(defaultRoutes)
-  const [defaultPath, setDefaultPath] = useState(START_PATH)
+  const outGamePath = useAppSelector((state) => state.navigationReducer.outGameLastPath)
 
-  useEffect(() => {
-    setRoutes(gameRep ? inGameRoutes : connectedPlayers.length > 0 ? inSearchRoutes : defaultRoutes)
-    setDefaultPath(gameRep ? GAME_PATH : connectedPlayers.length > 0 ? SEARCH_PATH : START_PATH)
+  const [routes, defaultPath] = useMemo(() => {
+    return [
+      gameRep ? inGameRoutes : connectedPlayers.length > 0 ? inSearchRoutes : defaultRoutes,
+      gameRep ? GAME_PATH : connectedPlayers.length > 0 ? SEARCH_PATH : outGamePath,
+    ]
   }, [gameRep, connectedPlayers])
 
   return (

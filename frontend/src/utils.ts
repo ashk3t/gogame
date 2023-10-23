@@ -1,5 +1,5 @@
 import {capitalize, camelCase, isArray, transform, isObject} from "lodash"
-import {nicknameLabels} from "./consts/utils"
+import {nicknameLabels, stoneHexColors} from "./consts/utils"
 import {StoneColor} from "./lib/gamelogic"
 
 export function loadScript(src: string) {
@@ -45,30 +45,46 @@ export class BoardIntersectionStyler {
     this.width = width
   }
 
-  getBackground(i: number, j: number) {
-    const fg = "var(--text)"
+  getStyle(i: number, j: number, turnColor: StoneColor, winnerColor: StoneColor | null) {
+    const fg = winnerColor == null ? "var(--text)" : stoneHexColors[winnerColor]
     const bg = "var(--base)"
-    const w = 3
+    const accent = stoneHexColors[winnerColor == null ? turnColor : winnerColor]
+    const w = 3 // Base inersections width (For estimating final width)
+    let reversed = false // Gradient overlay order (For correct border color)
+    let fvw = 2 * w // Final vertical intersection width
+    let fhw = 2 * w // Final horizontal intersection width
 
-    const vColors =
+    // Border trimming
+    let vColors =
       i == 0
         ? `${bg} ${50 - w}%, ${fg} ${50 - w}%`
         : i + 1 == this.height
         ? `${fg} ${50 + w}%, ${bg} ${50 + w}%`
         : `${fg}, ${fg}`
-
-    const hColors =
+    let hColors =
       j == 0
         ? `${bg} ${50 - w}%, ${fg} ${50 - w}%`
         : j + 1 == this.width
         ? `${fg} ${50 + w}%, ${bg} ${50 + w}%`
         : `${fg}, ${fg}`
 
+    // Border coloring
+    if (i == 0 || i + 1 == this.height) {
+      hColors = hColors.replaceAll(fg, accent)
+      fvw = 3 * w
+      reversed = true
+    }
+    if (j == 0 || j + 1 == this.width) {
+      vColors = vColors.replaceAll(fg, accent)
+      fhw = 3 * w
+    }
+
+    const gradients = [
+      `linear-gradient(to bottom, ${vColors}) no-repeat center/${fhw}% 100%`,
+      `linear-gradient(to right,  ${hColors}) no-repeat center/100% ${fvw}%`,
+    ]
     return {
-      background: `
-        linear-gradient(to bottom, ${vColors}) no-repeat center/${2 * w}% 100%,
-        linear-gradient(to right,  ${hColors}) no-repeat center/100% ${2 * w}%
-      `,
+      background: (reversed ? gradients.reverse() : gradients).join("\n,"),
     }
   }
 }

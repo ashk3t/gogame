@@ -12,7 +12,7 @@ export default function StaticBoard(props: {board: GameBoard}) {
 
   function getIntersectionBackground(i: number, j: number) {
     return useMemo(() => {
-      return intersectionStyler.getBackground(i, j)
+      return intersectionStyler.getStyle(i, j)
     }, [i, j])
   }
 
