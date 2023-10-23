@@ -45,7 +45,7 @@ export class BoardIntersectionStyler {
     this.width = width
   }
 
-  getStyle(i: number, j: number, turnColor: StoneColor | null, winnerColor: StoneColor | null) {
+  getStyle(i: number, j: number, turnColor: StoneColor | null = null, winnerColor: StoneColor | null = null) {
     const fg = winnerColor == null ? "var(--text)" : stoneHexColors[winnerColor]
     const bg = "var(--base)"
     const w = 3 // Base inersections width (For estimating final width)
