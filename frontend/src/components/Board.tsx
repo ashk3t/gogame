@@ -13,12 +13,13 @@ export default function Board(props: {board: GameBoard}) {
 
   const onlineRep = useAppSelector((state) => state.gameReducer.rep)
   const winner = useAppSelector((state) => state.gameReducer.winner)
-  const [libertyHints, setLibertyHints] = useState<boolean[][]>(
-    Array.from(Array(board.height), () => new Array(board.width).fill(false)),
-  )
   const [intersectionStyles, setIntersectionStyles] = useState<CSSProperties[][]>(
     Array.from(Array(board.height), () => new Array(board.width).fill({})),
   )
+  const [libertyHints, setLibertyHints] = useState<boolean[][]>(
+    Array.from(Array(board.height), () => new Array(board.width).fill(false)),
+  )
+  const [hintsHere, setHintsHere] = useState(false) // Optimization: do not rerender if point is empty
 
   useEffect(() => {
     const styler = new BoardIntersectionStyler(board.height, board.width)
@@ -32,17 +33,16 @@ export default function Board(props: {board: GameBoard}) {
   }, [board, winner])
 
   function updateHints(i: number, j: number) {
+    if (hintsHere) setLibertyHints(libertyHints.map((row) => row.fill(false)))
     const stone = board.stones[i][j]
-    setLibertyHints(libertyHints.map((row) => row.fill(false)))
+    setHintsHere(stone instanceof Stone)
+
     if (stone) {
       for (const ij of stone.group.liberties) {
         const [i, j] = splitIJ(ij)
         libertyHints[i][j] = true
         setLibertyHints([...libertyHints])
       }
-    } else {
-      libertyHints[i][j] = true
-      setLibertyHints([...libertyHints])
     }
   }
 

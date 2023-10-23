@@ -45,10 +45,9 @@ export class BoardIntersectionStyler {
     this.width = width
   }
 
-  getStyle(i: number, j: number, turnColor: StoneColor, winnerColor: StoneColor | null) {
+  getStyle(i: number, j: number, turnColor: StoneColor | null, winnerColor: StoneColor | null) {
     const fg = winnerColor == null ? "var(--text)" : stoneHexColors[winnerColor]
     const bg = "var(--base)"
-    const accent = stoneHexColors[winnerColor == null ? turnColor : winnerColor]
     const w = 3 // Base inersections width (For estimating final width)
     let reversed = false // Gradient overlay order (For correct border color)
     let fvw = 2 * w // Final vertical intersection width
@@ -69,14 +68,17 @@ export class BoardIntersectionStyler {
         : `${fg}, ${fg}`
 
     // Border coloring
-    if (i == 0 || i + 1 == this.height) {
-      hColors = hColors.replaceAll(fg, accent)
-      fvw = 3 * w
-      reversed = true
-    }
-    if (j == 0 || j + 1 == this.width) {
-      vColors = vColors.replaceAll(fg, accent)
-      fhw = 3 * w
+    if (turnColor != null && winnerColor == null) {
+      const accent = stoneHexColors[turnColor]
+      if (i == 0 || i + 1 == this.height) {
+        hColors = hColors.replaceAll(fg, accent)
+        fvw = 3 * w
+        reversed = true
+      }
+      if (j == 0 || j + 1 == this.width) {
+        vColors = vColors.replaceAll(fg, accent)
+        fhw = 3 * w
+      }
     }
 
     const gradients = [
