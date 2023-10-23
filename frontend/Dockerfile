@@ -1,6 +1,6 @@
 FROM node:21
 WORKDIR /gogame-frontend
-COPY package.json .
+COPY package.json package-lock.json ./
 RUN npm install
 COPY . .
 RUN npm run build
