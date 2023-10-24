@@ -31,7 +31,7 @@
 - Pydantic 2
 #### Deployment
 - Docker
-- Docker compose
+- Docker Compose
 - Uvicorn
 - Nginx
 #### Frontend
