@@ -22,9 +22,9 @@ export const hexColors = {
 export const stoneHexColors = [
   hexColors.love,
   hexColors.gold,
-  hexColors.rose,
   hexColors.pine,
   hexColors.foam,
+  hexColors.rose,
   hexColors.iris,
 ]
 

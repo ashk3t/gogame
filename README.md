@@ -1,4 +1,4 @@
-# Gogame
+# [Gogame](https://shket.space/gogame)
 Веб приложение для игры в [**Го**](https://ru.wikipedia.org/wiki/%D0%93%D0%BE)
 
 ## Возможности
