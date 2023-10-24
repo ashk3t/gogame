@@ -31,7 +31,9 @@ export default function GameControl(props: {board: GameBoard}) {
             )}
           <Space />
           {game.settings.mode != GameMode.ATARI &&
-            (game.settings.offline || thisPlayer.color != StoneColor.NONE) && (
+            (game.settings.offline ||
+              (thisPlayer.color != StoneColor.NONE &&
+                !board.finishedPlayers.has(thisPlayer.color))) && (
               <ScaryButton onClick={() => finishTurnsTurn(board)}>Finish turns</ScaryButton>
             )}
         </>
