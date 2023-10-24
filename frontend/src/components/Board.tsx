@@ -1,5 +1,5 @@
 import styles from "../styles/Board.module.css"
-import {CSSProperties, useEffect, useMemo, useState} from "react"
+import {CSSProperties, useEffect, useState} from "react"
 import {useActions, useAppSelector} from "../redux/hooks"
 import CircleSvg from "../assets/CircleSvg"
 import {BoardIntersectionStyler} from "../utils"

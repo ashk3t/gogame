@@ -14,9 +14,9 @@ class StoneColor(int, Enum):
     NONE = -1
     RED = 0
     YELLOW = 1
-    PEACH = 2
-    GREEN = 3
-    CYAN = 4
+    GREEN = 2
+    CYAN = 3
+    PEACH = 4
     PURPLE = 5
 
     @classmethod
