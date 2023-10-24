@@ -5,6 +5,7 @@ import {
   inGameRoutes,
   inSearchRoutes,
   SEARCH_PATH,
+  START_PATH,
 } from "../consts/pages"
 import {useAppSelector} from "../redux/hooks"
 import {useMemo} from "react"
@@ -17,7 +18,7 @@ export default function AppRouter() {
   const [routes, defaultPath] = useMemo(() => {
     return [
       gameRep ? inGameRoutes : connectedPlayers.length > 0 ? inSearchRoutes : defaultRoutes,
-      gameRep ? GAME_PATH : connectedPlayers.length > 0 ? SEARCH_PATH : outGamePath,
+      gameRep ? GAME_PATH : connectedPlayers.length > 0 ? SEARCH_PATH : outGamePath || START_PATH,
     ]
   }, [gameRep, connectedPlayers])
 

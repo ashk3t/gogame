@@ -1,7 +1,7 @@
 import {PayloadAction, createSlice} from "@reduxjs/toolkit"
 
 const initialState = {
-  outGameLastPath: "/",
+  outGameLastPath: "",
 }
 
 export const navigationSlice = createSlice({
