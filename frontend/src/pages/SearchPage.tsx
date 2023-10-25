@@ -9,6 +9,7 @@ import useGoBack from "../hooks/useGoBack"
 import {useNavigate} from "react-router-dom"
 import {GAME_PATH} from "../consts/pages"
 import ScaryButton from "../components/buttons/ScaryButton"
+import GameService from "../services/GameService"
 
 export default function SearchPage() {
   const goBack = useGoBack()
@@ -18,7 +19,7 @@ export default function SearchPage() {
   const rep = useAppSelector((state) => state.gameReducer.rep)
 
   useEffect(() => {
-    if (rep || connectedPlayers.length == 0) goBack()
+    if (rep || connectedPlayers.length == 0 || !GameService.connection) goBack()
   }, [])
 
   useEffect(() => {
