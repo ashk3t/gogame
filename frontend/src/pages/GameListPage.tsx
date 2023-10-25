@@ -1,7 +1,6 @@
 import {useEffect, useState} from "react"
 import {useActions, useAppSelector} from "../redux/hooks"
-import {START_PATH} from "../consts/pages"
-import NavButton from "../components/buttons/NavButton"
+import {GAME_PATH, START_PATH} from "../consts/pages"
 import MainContainer from "../components/containers/MainContainer"
 import CenteringContainer from "../components/containers/CenteringContainer"
 import GameTiles from "../components/lists/GameTiles"
@@ -14,14 +13,18 @@ import PageInput from "../components/inputs/PageInput"
 import GameService from "../services/GameService"
 import useUpdater from "../hooks/useUpdater"
 import {DEFAULT_PAGE_SIZE} from "../consts/api"
-import useUpdateOutGamePath from "../hooks/useUpdateOutGamePath"
+import ScaryButton from "../components/buttons/ScaryButton"
+import useGoBack from "../hooks/useGoBack"
+import {useNavigate} from "react-router-dom"
 
 export default function GameListPage() {
-  useUpdateOutGamePath()
+  const goBack = useGoBack()
+  const navigate = useNavigate()
   const {firstLoadGames, updateLoadedGames} = useActions()
 
   const games = useAppSelector((state) => state.gameListReducer.games)
   const settings = useAppSelector((state) => state.gameReducer.settings)
+  const rep = useAppSelector((state) => state.gameReducer.rep)
   const [nicknameFilter, setNicknameFilter] = useState("")
   const [settingsFilter, setSettingsFilter] = useState(false)
   const [searching, setSearching] = useState(false)
@@ -54,13 +57,17 @@ export default function GameListPage() {
     return () => clearTimeout(timer)
   }, [games])
 
+  useEffect(() => {
+    if (rep) navigate(GAME_PATH)
+  }, [rep])
+
   return (
     <MainContainer>
       <CenteringContainer vertical={true}>
         <CenteringContainer style={{flexWrap: "wrap"}}>
-          <NavButton path={START_PATH} scary={true}>
+          <ScaryButton onClick={goBack}>
             Back
-          </NavButton>
+          </ScaryButton>
           <Space />
           <h6>By nickname:</h6>
           <NiceInput

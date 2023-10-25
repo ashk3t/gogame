@@ -9,15 +9,9 @@ export const SEARCH_PATH = PATH_PREFIX + "/search"
 export const GAME_LIST_PATH = PATH_PREFIX + "/game_list"
 export const GAME_PATH = PATH_PREFIX + "/game"
 
-export const defaultRoutes = [
+export const routes = [
   {path: START_PATH, Component: StartPage},
-  {path: GAME_LIST_PATH, Component: GameListPage},
-]
-
-export const inSearchRoutes = [
   {path: SEARCH_PATH, Component: SearchPage},
-]
-
-export const inGameRoutes = [
   {path: GAME_PATH, Component: GamePage},
+  {path: GAME_LIST_PATH, Component: GameListPage},
 ]

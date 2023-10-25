@@ -4,7 +4,7 @@ import {gameSlice} from "../reducers/game"
 import {playerSlice} from "../reducers/player"
 import {gameListSlice} from "../reducers/gameList"
 import {GameBoard, InvalidTurnError} from "../../lib/gamelogic"
-import {GameMode, GameSettingsRequest} from "../../types/game"
+import {GameMode} from "../../types/game"
 import {MessageType, SocketMessage, TurnType} from "../../types/gameApi"
 import {camelize} from "../../utils"
 import {DEFAULT_PAGE_SIZE} from "../../consts/api"
@@ -100,13 +100,12 @@ export const tryReconnect = () => async (dispatch: AppDispatch, getState: () => 
 
 export const endGame = () => async (dispatch: AppDispatch, getState: () => RootState) => {
   const game = getState().gameReducer
-  if (!game.settings.offline && game.rep) {
-    const playerColor = getState().playerReducer.thisPlayer.color
-    if (GameService.connection != null) GameService.connection.onmessage = null
-    GameService.doTurn(TurnType.LEAVE, {color: playerColor})
-  } else if (GameService.connection) {
-    GameService.disconnect()
-  } else {
+  const connectedPlayers = getState().playerReducer.players
+  if (game.rep || connectedPlayers.length > 0) {
+    if (!game.settings.offline) {
+      const playerColor = getState().playerReducer.thisPlayer.color
+      GameService.doTurn(TurnType.LEAVE, {color: playerColor})
+    }
     dispatch(playerSlice.actions.clearPlayerData())
     dispatch(gameSlice.actions.clearGameData())
   }
@@ -147,12 +146,6 @@ function bindHandlers(dispatch: AppDispatch, getState: () => RootState, connecti
       case MessageType.BAD_TURN:
         dispatch(gameSlice.actions.setTurnError(data.error))
     }
-  }
-
-  connection.onclose = () => {
-    dispatch(playerSlice.actions.clearPlayerData())
-    dispatch(gameSlice.actions.clearGameData())
-    GameService.connection = null
   }
 }
 

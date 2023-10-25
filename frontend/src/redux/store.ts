@@ -13,7 +13,6 @@ import storage from "redux-persist/lib/storage"
 import playerReducer from "./reducers/player"
 import gameReducer from "./reducers/game"
 import gameListReducer from "./reducers/gameList"
-import navigationReducer from "./reducers/navigation"
 import {configureStore} from "@reduxjs/toolkit"
 
 const rootReducer = combineReducers({
@@ -23,7 +22,6 @@ const rootReducer = combineReducers({
     gameReducer,
   ),
   gameListReducer,
-  navigationReducer: persistReducer({key: "navigationReducer", storage}, navigationReducer),
 })
 
 export const store = configureStore({

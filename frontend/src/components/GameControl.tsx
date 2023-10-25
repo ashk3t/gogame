@@ -5,10 +5,12 @@ import {GameMode} from "../types/game"
 import NiceButton from "./buttons/NiceButton"
 import ScaryButton from "./buttons/ScaryButton"
 import Space from "./Space"
+import useGoBack from "../hooks/useGoBack"
 
 export default function GameControl(props: {board: GameBoard}) {
+  const goBack = useGoBack()
   const {board} = props
-  const {setDraftMode, stepBackDraft, endGame, passTurn, finishTurnsTurn} = useActions()
+  const {setDraftMode, stepBackDraft, passTurn, finishTurnsTurn} = useActions()
   const game = useAppSelector((state) => state.gameReducer)
   const thisPlayer = useAppSelector((state) => state.playerReducer.thisPlayer)
 
@@ -38,7 +40,7 @@ export default function GameControl(props: {board: GameBoard}) {
             )}
         </>
       )}
-      <ScaryButton onClick={endGame}>Leave game</ScaryButton>
+      <ScaryButton onClick={goBack}>Leave</ScaryButton>
     </div>
   )
 }

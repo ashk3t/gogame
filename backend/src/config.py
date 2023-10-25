@@ -30,7 +30,10 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=(
             ".dev.env"
-            if ("--dev" in sys.argv and os.path.isfile(".dev.env"))
+            if (
+                ("--dev" in sys.argv or "--debug" in sys.argv)
+                and os.path.isfile(".dev.env")
+            )
             else ".env"
         )
     )

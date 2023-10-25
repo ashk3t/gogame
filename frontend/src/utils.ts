@@ -45,7 +45,12 @@ export class BoardIntersectionStyler {
     this.width = width
   }
 
-  getStyle(i: number, j: number, turnColor: StoneColor | null = null, winnerColor: StoneColor | null = null) {
+  getStyle(
+    i: number,
+    j: number,
+    turnColor: StoneColor | null = null,
+    winnerColor: StoneColor | null = null,
+  ) {
     const fg = winnerColor == null ? "var(--text)" : stoneHexColors[winnerColor]
     const bg = "var(--base)"
     const w = 3 // Base inersections width (For estimating final width)
@@ -91,13 +96,13 @@ export class BoardIntersectionStyler {
   }
 }
 
-export function turnColor(gameRep: string): StoneColor {
-  return parseInt(gameRep.split(";")[3]) - 1
+export function turnColor(rep: string): StoneColor {
+  return parseInt(rep.split(";")[3]) - 1
 }
 
-export function finishedPlayers(gameRep: string): Set<number> {
+export function finishedPlayers(rep: string): Set<number> {
   return new Set(
-    gameRep
+    rep
       .split(";")[6]
       .split("")
       .map((v) => parseInt(v) - 1),

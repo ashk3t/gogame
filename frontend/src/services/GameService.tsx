@@ -32,19 +32,22 @@ export default class GameService {
   }
 
   static startGame(nickname: string, settings: GameSettings): WebSocket {
-    const socket = new WebSocket(
+    const connection = new WebSocket(
       WS_API_URL + GameService.baseUrl + (settings.new ? "/new" : "/search"),
     )
-    socket.onopen = (_) => {
-      socket.send(
+    connection.onopen = (_) => {
+      connection.send(
         JSON.stringify({
           nickname: nickname,
           ...(settings.custom ? stripGameSettings(settings) : {}),
         }),
       )
     }
-    GameService.connection = socket
-    return socket
+    connection.onclose = () => {
+      GameService.connection = null
+    }
+    GameService.connection = connection
+    return connection
   }
 
   static join(nickname: string, gameId: number): WebSocket {

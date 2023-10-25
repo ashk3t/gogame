@@ -1,12 +1,9 @@
 from fastapi.websockets import WebSocketDisconnect, WebSocketState
-from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
 from websockets.exceptions import ConnectionClosedOK
 from fastapi import WebSocket
 
 
-from ..config import settings
 from .utils import nest
 from ..models import *
 from ..schemas import *
