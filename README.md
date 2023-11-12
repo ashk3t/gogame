@@ -35,7 +35,7 @@
 - Docker Compose
 - Uvicorn
 - Nginx
-- CI/CD: Github actions
+- CI/CD: GitHub Actions
 #### Frontend
 - Typescript 5
 - React 18
