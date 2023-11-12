@@ -1,12 +1,12 @@
 from sqlalchemy import URL
 from sqlalchemy.ext.asyncio import (
-    AsyncSession,
     create_async_engine,
     async_sessionmaker,
     AsyncAttrs,
 )
 from sqlalchemy.orm import DeclarativeBase
 from .config import settings
+import redis.asyncio as redis
 
 
 class DBase(AsyncAttrs, DeclarativeBase):
@@ -14,7 +14,7 @@ class DBase(AsyncAttrs, DeclarativeBase):
 
 
 def init_database():
-    global SessionMaker, engine
+    global engine, SessionMaker, redis_connection_pool
     database_url = URL.create(
         drivername=settings.db_driver,
         username=settings.db_user,
@@ -27,10 +27,14 @@ def init_database():
     SessionMaker = async_sessionmaker(
         bind=engine, autocommit=False, autoflush=False, expire_on_commit=False
     )
+    redis_connection_pool = redis.ConnectionPool(
+        host=settings.redis_host, port=settings.redis_port
+    )
 
 
 async def create_all():
     from . import models
+
     async with engine.begin() as conn:
         await conn.run_sync(DBase.metadata.create_all)
 
@@ -44,6 +48,10 @@ async def clear_tables():
     async with engine.begin() as conn:
         for table in reversed(DBase.metadata.sorted_tables):
             await conn.execute(table.delete())
+
+
+def connect_redis():
+    return redis.Redis(connection_pool=redis_connection_pool)
 
 
 init_database()

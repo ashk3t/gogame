@@ -1,4 +1,4 @@
-from src.database import SessionMaker
+from .database import SessionMaker, redis_connection_pool
 
 
 async def get_session():

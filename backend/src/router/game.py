@@ -101,7 +101,7 @@ async def reconnect(websocket: WebSocket, ss: AsyncSession = Depends(get_session
     async with GameConnectionManager(ss, websocket) as manager:
         token = (await manager.get_data())["token"]
         player = await PlayerService.get_by_token(ss, token)
-        manager.bind_connection(player.game_id, player.id, player.spectator)
+        await manager.bind_connection(player.game_id, player.id, player.spectator)
         rep = str(player.game.rep)
         board = GameBoard.from_rep(rep)
         winner = check_winner(board, player.game.settings.mode)
@@ -141,7 +141,7 @@ async def game_connect(
         ),
     )
 
-    manager.bind_connection(game.id, player.id, spectator)
+    await manager.bind_connection(game.id, player.id, spectator)
     if spectator:
         game_spectators = await PlayerService.get_by_game_id(
             ss, game.id, spectator=True
@@ -165,10 +165,10 @@ async def game_connect(
         await manager.send_all(
             MessageType.CONNECT, players=list_model_dump(game_players), notify_back=True
         )
-        if len(manager.connections[game.id]) == settings.players:  # last player connect
+        if await manager.count_connections() == settings.players:  # last player connect
             game = await GameService.start(ss, game.id)
             await manager.wait()
-        while len(manager.connections[game.id]) < settings.players:
+        while await manager.count_connections() < settings.players:
             await manager.wait()
         init_rep = GameBoard(settings.height, settings.width, settings.players).to_rep()
         await manager.send_self(

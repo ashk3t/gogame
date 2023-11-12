@@ -2,6 +2,8 @@ from typing import Any, Sequence
 from sqlalchemy import and_, true
 from pydantic import BaseModel as BaseSchema
 from sqlalchemy.ext.asyncio import AsyncSession
+import uvloop
+import asyncio
 
 from ..schemas.game import GameSettingsBase, GameSettingsOptional
 from ..database import DBase
@@ -50,3 +52,9 @@ def nest(
     for child in children:
         parents_by_id[getattr(child, child_id)].players.append(child)
     return list(parents_by_id.values())
+
+
+def reuse_event_loop(callback, *args):
+    event_loop = asyncio.get_event_loop()
+    print(event_loop)
+    return lambda: asyncio.run_coroutine_threadsafe(callback(*args), event_loop)

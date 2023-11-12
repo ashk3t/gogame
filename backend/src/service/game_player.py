@@ -2,9 +2,11 @@ from fastapi.websockets import WebSocketDisconnect, WebSocketState
 from sqlalchemy.ext.asyncio import AsyncSession
 from websockets.exceptions import ConnectionClosedOK
 from fastapi import WebSocket
+import json
 
-
-from .utils import nest
+from ..lib.threads import StoppableThread
+from ..database import connect_redis
+from .utils import nest, create_event_loop
 from ..models import *
 from ..schemas import *
 from .game import *
@@ -53,9 +55,6 @@ class LeaveException(Exception):
 
 
 class GameConnectionManager:
-    # {game_id: {player_id: websocket}}
-    connections: dict[int, dict[int, WebSocket]] = {}
-
     def __init__(self, ss: AsyncSession, websocket: WebSocket):
         self.ss: AsyncSession = ss
         self.websocket: WebSocket = websocket
@@ -65,18 +64,24 @@ class GameConnectionManager:
         self.in_game: bool = False
 
     async def __aenter__(self):
+        self.redis = connect_redis()
+        self.pubsub = self.redis.pubsub()
+        self.pubsub_listener_thread: StoppableThread | None = None
         await self.websocket.accept()
         return self
 
     async def __aexit__(self, exc_type, exc_value, exc_tb):
         if self.player_id and self.game_id:
-            self.unbind_connection()
             if not self.in_game:
                 await self.permanent_disconnect()
             await self.send_all(
                 MessageType.DISCONNECT,
                 **{"spectator_id" if self.spectator else "player_id": self.player_id},
             )
+
+        if self.pubsub_listener_thread is not None:
+            self.pubsub_listener_thread.stop()
+        await self.pubsub.close()
         if self.websocket.client_state == WebSocketState.CONNECTED:
             await self.websocket.close()
 
@@ -87,16 +92,30 @@ class GameConnectionManager:
         ]:
             return True
 
-    def bind_connection(self, game_id: int, player_id: int, spectator: bool):
+    async def __listen_pubsub(self):
+        await self.pubsub.subscribe(self.channel)
+        while not self.pubsub_listener_thread.stopped:  # pyright: ignore
+            message = await self.pubsub.get_message(True, timeout=None)
+            if message and message["type"] == "message":
+                data = json.loads(message["data"])
+                await self.websocket.send_json(data)
+        await self.pubsub.unsubscribe()
+
+    @property
+    def channel(self):
+        return str(self.game_id)
+
+    async def bind_connection(self, game_id: int, player_id: int, spectator: bool):
         self.game_id = game_id
         self.player_id = player_id
         self.spectator = spectator
-        if not game_id in self.connections:
-            self.connections[game_id] = {}
-        self.connections[game_id][player_id] = self.websocket
+        self.pubsub_listener_thread = StoppableThread(
+            target=create_event_loop, args=(self.__listen_pubsub,), daemon=True
+        )
+        self.pubsub_listener_thread.start()
 
-    def unbind_connection(self):
-        self.connections[self.game_id].pop(self.player_id)
+    async def count_connections(self) -> int:
+        return (await self.redis.pubsub_numsub(self.channel))[0][1]
 
     def permanent_exit(self):
         self.in_game = False
@@ -106,7 +125,6 @@ class GameConnectionManager:
         await PlayerService.delete(self.ss, self.player_id)
         game_players = await PlayerService.get_by_game_id(self.ss, self.game_id)
         if len(game_players) == 0:
-            self.connections.pop(self.game_id)
             await GameService.delete(self.ss, self.game_id)
             await GameSettingsService.clear(self.ss)
 
@@ -119,9 +137,7 @@ class GameConnectionManager:
 
     async def send_all(self, data_type: str, **data):
         data["type"] = data_type
-        if self.game_id in self.connections:
-            for connection in self.connections[self.game_id].values():
-                await connection.send_json(data)
+        await self.redis.publish(self.channel, json.dumps(data))
 
     async def wait(self):
         await self.websocket.receive_text()
