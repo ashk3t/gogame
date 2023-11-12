@@ -7,7 +7,7 @@ from fastapi import WebSocket
 import json
 
 from ..database import connect_redis
-from .utils import nest, reuse_event_loop
+from .utils import nest
 from ..models import *
 from ..schemas import *
 from .game import *
