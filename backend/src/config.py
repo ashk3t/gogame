@@ -16,6 +16,8 @@ class Settings(BaseSettings):
     db_port: str = ""
     db_name: str = ""
 
+    workers: int = 1
+
     cors_allow_origins: list = [
         "http://localhost",
         "http://localhost:8080",
