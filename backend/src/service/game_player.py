@@ -1,12 +1,13 @@
+from asyncio.tasks import Task
 from fastapi.websockets import WebSocketDisconnect, WebSocketState
 from sqlalchemy.ext.asyncio import AsyncSession
+import asyncio
 from websockets.exceptions import ConnectionClosedOK
 from fastapi import WebSocket
 import json
 
-from ..lib.threads import StoppableThread
 from ..database import connect_redis
-from .utils import nest, create_event_loop
+from .utils import nest, reuse_event_loop
 from ..models import *
 from ..schemas import *
 from .game import *
@@ -66,7 +67,7 @@ class GameConnectionManager:
     async def __aenter__(self):
         self.redis = connect_redis()
         self.pubsub = self.redis.pubsub()
-        self.pubsub_listener_thread: StoppableThread | None = None
+        self.pubsub_broadcasting: Task | None = None
         await self.websocket.accept()
         return self
 
@@ -79,8 +80,8 @@ class GameConnectionManager:
                 **{"spectator_id" if self.spectator else "player_id": self.player_id},
             )
 
-        if self.pubsub_listener_thread is not None:
-            self.pubsub_listener_thread.stop()
+        if self.pubsub_broadcasting is not None:
+            self.pubsub_broadcasting.cancel()
         await self.pubsub.close()
         if self.websocket.client_state == WebSocketState.CONNECTED:
             await self.websocket.close()
@@ -92,14 +93,12 @@ class GameConnectionManager:
         ]:
             return True
 
-    async def __listen_pubsub(self):
-        await self.pubsub.subscribe(self.channel)
-        while not self.pubsub_listener_thread.stopped:  # pyright: ignore
+    async def __broadcast_pubsub(self):
+        while True:
             message = await self.pubsub.get_message(True, timeout=None)
             if message and message["type"] == "message":
                 data = json.loads(message["data"])
                 await self.websocket.send_json(data)
-        await self.pubsub.unsubscribe()
 
     @property
     def channel(self):
@@ -109,10 +108,8 @@ class GameConnectionManager:
         self.game_id = game_id
         self.player_id = player_id
         self.spectator = spectator
-        self.pubsub_listener_thread = StoppableThread(
-            target=create_event_loop, args=(self.__listen_pubsub,), daemon=True
-        )
-        self.pubsub_listener_thread.start()
+        await self.pubsub.subscribe(self.channel)
+        self.pubsub_broadcasting = asyncio.create_task(self.__broadcast_pubsub())
 
     async def count_connections(self) -> int:
         return (await self.redis.pubsub_numsub(self.channel))[0][1]
