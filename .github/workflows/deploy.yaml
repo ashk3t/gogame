@@ -9,7 +9,7 @@ jobs:
     runs-on: self-hosted
     defaults:
       run:
-        working-directory: ${{ secrets.WORKDIR_SHKET_SPACE }}
+        working-directory: /home/shket/projects/gogame
     steps:
       - name: Checkout
         uses: actions/checkout@v4
