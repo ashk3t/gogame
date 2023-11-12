@@ -17,9 +17,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Pull
-        uses: git pull
-
       - name: Down compose
         run: docker compose --env-file ./backend/.env down
 
