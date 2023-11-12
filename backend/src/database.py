@@ -28,7 +28,7 @@ def init_database():
         bind=engine, autocommit=False, autoflush=False, expire_on_commit=False
     )
     redis_connection_pool = redis.ConnectionPool(
-        host=settings.redis_host, port=settings.redis_port
+        host=settings.cache_host, port=settings.cache_port
     )
 
 

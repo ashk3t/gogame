@@ -18,8 +18,8 @@ class Settings(BaseSettings):
     db_port: str = ""
     db_name: str = ""
 
-    redis_host: str = "localhost"
-    redis_port: int = 6379
+    cache_host: str = "localhost"
+    cache_port: int = 6379
 
     cors_allow_origins: list = [
         "http://localhost",
