@@ -1,6 +1,6 @@
 import {useEffect, useState} from "react"
 import {useActions, useAppSelector} from "../redux/hooks"
-import {GAME_PATH, START_PATH} from "../consts/pages"
+import {GAME_PATH, SEARCH_PATH} from "../consts/pages"
 import MainContainer from "../components/containers/MainContainer"
 import CenteringContainer from "../components/containers/CenteringContainer"
 import GameTiles from "../components/lists/GameTiles"
@@ -24,6 +24,7 @@ export default function GameListPage() {
 
   const games = useAppSelector((state) => state.gameListReducer.games)
   const settings = useAppSelector((state) => state.gameReducer.settings)
+  const connectedPlayers = useAppSelector((state) => state.playerReducer.players)
   const rep = useAppSelector((state) => state.gameReducer.rep)
   const [nicknameFilter, setNicknameFilter] = useState("")
   const [settingsFilter, setSettingsFilter] = useState(false)
@@ -58,8 +59,9 @@ export default function GameListPage() {
   }, [games])
 
   useEffect(() => {
+    if (connectedPlayers.length > 0) navigate(SEARCH_PATH)
     if (rep) navigate(GAME_PATH)
-  }, [rep])
+  }, [connectedPlayers, rep])
 
   return (
     <MainContainer>
