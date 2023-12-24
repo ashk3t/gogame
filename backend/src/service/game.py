@@ -21,13 +21,15 @@ class GameService:
     )
 
     @staticmethod
-    def base_game_stmt(
+    def base_game_filter(
         *columns,
         searching: bool = False,
         settings: GameSettingsOptional = GameSettingsOptional(),
+        game_ids: list[int] | None = None,
     ) -> Select[Any]:
         return select(*columns).where(
             and_(
+                GameModel.id.in_(game_ids) if game_ids is not None else true(),
                 GameModel.start_time == None
                 if searching
                 else GameModel.start_time != None,
@@ -45,41 +47,27 @@ class GameService:
         return GameExtendedResponse.model_validate(result.scalars().one())
 
     @staticmethod
-    async def get_many_ext(
-        ss: AsyncSession, ids: list[int]
-    ) -> list[GameExtendedResponse]:
-        result = await ss.execute(
-            select(GameModel)
-            .options(selectinload(GameModel.settings))
-            .where(GameModel.id.in_(ids))
-        )
-        return list(map(GameExtendedResponse.model_validate, result.scalars()))
-
-    @staticmethod
     async def get_all_ext(
         ss: AsyncSession,
         offset: int = 0,
-        limit: int = settings.default_limit,
+        limit: int | None = None,
         searching: bool = False,
         **kwargs,
     ) -> list[GameExtendedResponse]:
-        stmt = GameService.base_game_stmt(GameModel, searching=searching, **kwargs)
+        stmt = GameService.base_game_filter(GameModel, searching=searching, **kwargs)
 
-        result = await ss.execute(
-            stmt.order_by(
-                GameModel.search_start_time
-                if searching
-                else GameModel.start_time.desc()
-            )
-            .options(selectinload(GameModel.settings))
-            .offset(offset)
-            .limit(limit)
-        )
+        stmt = stmt.order_by(
+            GameModel.search_start_time if searching else GameModel.start_time.desc()
+        ).options(selectinload(GameModel.settings))
+        stmt = stmt.offset(offset) if offset else stmt
+        stmt = stmt.limit(limit) if limit else stmt
+
+        result = await ss.execute(stmt)
         return list(map(GameExtendedResponse.model_validate, result.scalars()))
 
     @staticmethod
     async def count(ss: AsyncSession, **kwargs) -> int:
-        stmt = GameService.base_game_stmt(sql_count(GameModel.id), **kwargs)
+        stmt = GameService.base_game_filter(sql_count(GameModel.id), **kwargs)
         result = await ss.execute(stmt)
         return result.scalars().one()
 

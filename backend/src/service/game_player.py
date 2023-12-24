@@ -33,10 +33,10 @@ class GamePlayerService:
 
     @staticmethod
     async def get_games_full_by_ids(
-        ss: AsyncSession, ids: list[int]
+        ss: AsyncSession, game_ids: list[int]
     ) -> list[GameExtendedWithPlayers]:
-        games = await GameService.get_many_ext(ss, ids=ids)
-        players = await PlayerService.get_by_game_ids(ss, ids, False)
+        games = await GameService.get_all_ext(ss, game_ids=game_ids)
+        players = await PlayerService.get_by_game_ids(ss, game_ids, False)
         return nest(games, players, "id", "game_id", GameExtendedWithPlayers)
 
     @staticmethod

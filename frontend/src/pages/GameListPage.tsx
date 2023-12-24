@@ -40,6 +40,7 @@ export default function GameListPage() {
   }
 
   async function updatePageCount() {
+    console.log(filters)
     const count = await GameService.count(filters)
     setPageCount(Math.ceil(count / DEFAULT_PAGE_SIZE))
   }
