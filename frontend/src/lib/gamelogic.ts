@@ -164,32 +164,21 @@ export class GameBoard {
   }
 
   estimateOccupationColor(i: number, j: number): StoneColor {
-    let radius = 0
-    let ringPositions: number[][] = [[i, j]]
+    const R = 3.5
+    const stoneColorScores = new Array(this.players).fill(0.0)
 
-    while (ringPositions.length > 0) {
-      const stoneColorCount = new Array(this.players).fill(0)
-      for (const [posI, posJ] of ringPositions) {
-        const stone = this.stones[posI][posJ]
-        if (stone) stoneColorCount[stone.color]++
-      }
+    for (const di of range(-3, 4))
+      for (const dj of range(-3, 4))
+        if (this.isValid(i + di, j + dj)) {
+          const stone = this.stones[i + di][j + dj]
+          if (stone) {
+            const weight = Math.max(R - Math.hypot(di, dj), 0)
+            stoneColorScores[stone.color] += weight
+          }
+        }
 
-      const maxOccurences = Math.max(...stoneColorCount)
-      if (countBy(stoneColorCount)[maxOccurences] == 1)
-        return stoneColorCount.indexOf(maxOccurences)
-
-      radius++
-      let ringPositionDeltas = [
-        ...zip(new Array(2 * radius).fill(-radius), range(-radius, radius)),
-        ...zip(new Array(2 * radius).fill(radius), range(-radius + 1, radius + 1)),
-        ...zip(range(-radius + 1, radius + 1), new Array(2 * radius).fill(-radius)),
-        ...zip(range(-radius, radius), new Array(2 * radius).fill(radius)),
-      ]
-      ringPositions = ringPositionDeltas
-        .map(([di, dj]) => [i + di, j + dj])
-        .filter(([ni, nj]) => this.isValid(ni, nj))
-    }
-
+    const maxScore = Math.max(...stoneColorScores)
+    if (countBy(stoneColorScores)[maxScore] == 1) return stoneColorScores.indexOf(maxScore)
     return StoneColor.NONE
   }
 
@@ -198,8 +187,10 @@ export class GameBoard {
     for (let i = 0; i < this.height; i++)
       for (let j = 0; j < this.width; j++) {
         const color = this.estimateOccupationColor(i, j)
-        this.scores[color]++
-        this.occupationColors[i][j] = color
+        if (color != StoneColor.NONE) {
+          this.scores[color]++
+          this.occupationColors[i][j] = color
+        }
       }
   }
 

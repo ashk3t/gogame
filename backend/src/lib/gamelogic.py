@@ -1,5 +1,6 @@
 from __future__ import annotations
 from enum import Enum
+import math
 
 
 class InvalidTurnException(Exception):
@@ -141,33 +142,20 @@ class GameBoard:
             self.turn_color = StoneColor((self.turn_color + 1) % self.players)
 
     def estimate_occupation_color(self, i: int, j: int) -> StoneColor:
-        radius = 0
-        ring_positions: list[tuple[int, int]] = [(i, j)]
+        R = 3.5
+        stone_color_scores = [0.0] * self.players
 
-        while len(ring_positions):
-            stone_color_count = [0] * self.players
-            for pos_i, pos_j in ring_positions:
-                stone = self.stones[pos_i][pos_j]
-                if stone:
-                    stone_color_count[stone.color] += 1
+        for di in range(-3, 4):
+            for dj in range(-3, 4):
+                if self.is_valid(i + di, j + dj):
+                    stone = self.stones[i + di][j + dj]
+                    if stone:
+                        weight = max(R - math.hypot(di, dj), 0)
+                        stone_color_scores[stone.color] += weight
 
-            max_occurrences = max(stone_color_count)
-            if stone_color_count.count(max_occurrences) == 1:
-                return StoneColor(stone_color_count.index(max_occurrences))
-
-            radius += 1
-            ring_position_deltas = (
-                list(zip([-radius] * 2 * radius, range(-radius, radius)))
-                + list(zip([radius] * 2 * radius, range(-radius + 1, radius + 1)))
-                + list(zip(range(-radius + 1, radius + 1), [-radius] * 2 * radius))
-                + list(zip(range(-radius, radius), [radius] * 2 * radius))
-            )
-            ring_positions = [
-                (i + di, j + dj)
-                for di, dj in ring_position_deltas
-                if self.is_valid(i + di, j + dj)
-            ]
-
+        max_score = max(stone_color_scores)
+        if stone_color_scores.count(max_score) == 1:
+            return StoneColor(stone_color_scores.index(max_score))
         return StoneColor.NONE
 
     def update_scores(self):
@@ -175,8 +163,9 @@ class GameBoard:
         for i in range(self.height):
             for j in range(self.width):
                 color = self.estimate_occupation_color(i, j)
-                self.scores[color] += 1
-                self.occupation_colors[i][j] = color
+                if color != StoneColor.NONE:
+                    self.scores[color] += 1
+                    self.occupation_colors[i][j] = color
 
     def is_valid(self, i: int, j: int):
         return 0 <= i < self.height and 0 <= j < self.width
@@ -379,19 +368,3 @@ class GameBoard:
         return board_rep
 
     to_rep.__doc__ = from_rep.__doc__
-
-
-if __name__ == "__main__":
-
-    def oc_to_str(occupation_colors) -> str:
-        return "\n".join(
-            "".join(str(color + 1) for color in row) for row in occupation_colors
-        )
-
-    b = GameBoard()
-    b.take_turn(1, 1)
-    b.take_turn(15, 15)
-
-    print(b)
-    print(b.scores)
-    print(oc_to_str(b.occupation_colors))
