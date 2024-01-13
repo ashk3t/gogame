@@ -10,7 +10,7 @@ import useGoBack from "../hooks/useGoBack"
 export default function GameControl(props: {board: GameBoard}) {
   const goBack = useGoBack()
   const {board} = props
-  const {setDraftMode, stepBackDraft, passTurn, finishTurnsTurn} = useActions()
+  const {setDraftMode, stepBackDraft, passTurn, finishTurnsTurn, setShowOccupation} = useActions()
   const game = useAppSelector((state) => state.gameReducer)
   const thisPlayer = useAppSelector((state) => state.playerReducer.thisPlayer)
 
@@ -29,7 +29,13 @@ export default function GameControl(props: {board: GameBoard}) {
           <NiceButton onClick={() => setDraftMode(true)}>Draft mode</NiceButton>
           {game.settings.mode != GameMode.ATARI &&
             (game.settings.offline || thisPlayer.color == board.turnColor) && (
-              <NiceButton onClick={() => passTurn(board)}>Pass</NiceButton>
+              <NiceButton
+                onClick={() => passTurn(board)}
+                onMouseEnter={() => setShowOccupation(true)}
+                onMouseLeave={() => setShowOccupation(false)}
+              >
+                Pass
+              </NiceButton>
             )}
           <Space />
           {game.settings.mode != GameMode.ATARI &&

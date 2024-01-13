@@ -1,4 +1,4 @@
-import {round} from "lodash"
+import {round, countBy, zip, range} from "lodash"
 
 export function joinIJ(i: number, j: number): string {
   return `${i} ${j}`
@@ -17,6 +17,7 @@ export class InvalidTurnError extends Error {
 }
 
 export enum StoneColor {
+  // Absence of stone marked as `None` object, NOT a `Stone` with `color == StoneColor.NONE`
   NONE = -1,
   RED = 0,
   YELLOW = 1,
@@ -106,11 +107,13 @@ export class GameBoard {
   stones: Array<Array<Stone | null>>
   allGroups: Group[]
   turnColor: StoneColor
+  _scoreAdjustment: number[]
   scores: number[]
   passCounter: number
   koPosition: string
   finishedPlayers: Set<StoneColor>
   killer: StoneColor | null
+  occupationColors: Array<Array<StoneColor>>
 
   constructor(height: number = 19, width: number = 19, players: number = 2) {
     this.height = height
@@ -119,13 +122,13 @@ export class GameBoard {
     this.stones = Array.from(Array(height), () => new Array(width).fill(null))
     this.allGroups = []
     this.turnColor = StoneColor.RED
-    this.scores = Array(players)
-      .fill(0)
-      .map((_, i) => round(i * (8.1 - players), 1))
+    this._scoreAdjustment = new Array(players).fill(0).map((_, i) => round(i * (8.1 - players), 1))
+    this.scores = [...this._scoreAdjustment]
     this.passCounter = 0
     this.koPosition = ""
     this.finishedPlayers = new Set()
     this.killer = null
+    this.occupationColors = Array.from(Array(height), () => new Array(width).fill(StoneColor.NONE))
   }
 
   toString() {
@@ -160,8 +163,44 @@ export class GameBoard {
       this.turnColor = (this.turnColor + 1) % this.players
   }
 
-  incrementScore(color: StoneColor, value: number = 1) {
-    this.scores[color] += value
+  estimateOccupationColor(i: number, j: number): StoneColor {
+    let radius = 0
+    let ringPositions: number[][] = [[i, j]]
+
+    while (ringPositions.length > 0) {
+      const stoneColorCount = new Array(this.players).fill(0)
+      for (const [posI, posJ] of ringPositions) {
+        const stone = this.stones[posI][posJ]
+        if (stone) stoneColorCount[stone.color]++
+      }
+
+      const maxOccurences = Math.max(...stoneColorCount)
+      if (countBy(stoneColorCount)[maxOccurences] == 1)
+        return stoneColorCount.indexOf(maxOccurences)
+
+      radius++
+      let ringPositionDeltas = [
+        ...zip(new Array(2 * radius).fill(-radius), range(-radius, radius)),
+        ...zip(new Array(2 * radius).fill(radius), range(-radius + 1, radius + 1)),
+        ...zip(range(-radius + 1, radius + 1), new Array(2 * radius).fill(-radius)),
+        ...zip(range(-radius, radius), new Array(2 * radius).fill(radius)),
+      ]
+      ringPositions = ringPositionDeltas
+        .map(([di, dj]) => [i + di, j + dj])
+        .filter(([ni, nj]) => this.isValid(ni, nj))
+    }
+
+    return StoneColor.NONE
+  }
+
+  updateScores() {
+    this.scores = [...this._scoreAdjustment]
+    for (let i = 0; i < this.height; i++)
+      for (let j = 0; j < this.width; j++) {
+        const color = this.estimateOccupationColor(i, j)
+        this.scores[color]++
+        this.occupationColors[i][j] = color
+      }
   }
 
   isValid(i: number, j: number) {
@@ -222,7 +261,6 @@ export class GameBoard {
     for (const frontierGroup of group.frontierGroups)
       for (const memberIJ of Object.keys(group.memberStones)) frontierGroup.free(memberIJ)
 
-    this.incrementScore(group.color, -Object.keys(group.memberStones).length)
     if (Object.keys(group.memberStones).length == 1)
       this.koPosition = Object.keys(group.memberStones)[0]
     this.deleteGroup(group)
@@ -231,7 +269,7 @@ export class GameBoard {
   takeTurn(i: number, j: number) {
     const ij = joinIJ(i, j)
     if (!this.isValid(i, j)) throw new InvalidTurnError("Invalid (X, Y)")
-    if (this.stones[i][j]) throw new InvalidTurnError("Point is already occupied")
+    if (this.stones[i][j]) throw new InvalidTurnError("Position is already occupied")
     if (this.koPosition == joinIJ(i, j)) throw new InvalidTurnError("Ko rule")
 
     const stone = new Stone(this.turnColor)
@@ -272,7 +310,7 @@ export class GameBoard {
     }
 
     this.passCounter = 0
-    this.incrementScore(this.turnColor)
+    this.updateScores()
     this.updateTurnColor()
   }
 
@@ -319,7 +357,6 @@ export class GameBoard {
         if (char != "0") {
           const stone = Stone.fromString(char)
           board.stones[Math.floor(pos / width)][pos % width] = stone
-          board.incrementScore(stone.color)
         }
         pos++
       } else if (char == ")") {
@@ -329,6 +366,7 @@ export class GameBoard {
     }
 
     board.estimateGroups()
+    board.updateScores()
     return board
   }
 

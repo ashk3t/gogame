@@ -9,6 +9,7 @@ const initialState: GameState = {
   draftRep: null,
   draftHistory: [],
   error: null,
+  showOccupation: false,
 }
 
 export const gameSlice = createSlice({
@@ -44,6 +45,8 @@ export const gameSlice = createSlice({
       state.draftRep = state.draftHistory.pop() || state.draftRep
     },
     setGameWinner(state, action: PayloadAction<StoneColor>) {
+      if (action.payload)
+        state.showOccupation = false
       state.winner = action.payload
     },
     setTurnError(state, action: PayloadAction<string>) {
@@ -52,6 +55,9 @@ export const gameSlice = createSlice({
     clearGameData(state) {
       return {...initialState, settings: state.settings}
     },
+    setShowOccupation(state, action: PayloadAction<boolean>) {
+      state.showOccupation = action.payload
+    }
   },
 })
 

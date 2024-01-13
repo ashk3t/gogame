@@ -29,6 +29,7 @@ export interface GameState extends BaseGame {
   draftRep: string | null
   draftHistory: string[]
   error: string | null
+  showOccupation: boolean
 }
 
 export interface GameResponse extends BaseGame {

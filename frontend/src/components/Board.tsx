@@ -13,6 +13,7 @@ export default function Board(props: {board: GameBoard}) {
 
   const onlineRep = useAppSelector((state) => state.gameReducer.rep)
   const winner = useAppSelector((state) => state.gameReducer.winner)
+  const showOccupation = useAppSelector((state) => state.gameReducer.showOccupation)
   const [intersectionStyles, setIntersectionStyles] = useState<CSSProperties[][]>(
     Array.from(Array(board.height), () => new Array(board.width).fill({})),
   )
@@ -26,11 +27,17 @@ export default function Board(props: {board: GameBoard}) {
     setIntersectionStyles(
       intersectionStyles.map((row, i) =>
         row.map((_, j) =>
-          styler.getStyle(i, j, onlineRep ? turnColor(onlineRep) : board.turnColor, winner),
+          styler.getStyle(
+            i,
+            j,
+            onlineRep ? turnColor(onlineRep) : board.turnColor,
+            winner,
+            showOccupation ? board.occupationColors[i][j] : null,
+          ),
         ),
       ),
     )
-  }, [board, winner])
+  }, [board, winner, showOccupation])
 
   function updateHints(i: number, j: number) {
     if (hintsHere) setLibertyHints(libertyHints.map((row) => row.fill(false)))

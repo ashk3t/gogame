@@ -1,6 +1,6 @@
 import styles from "../styles/GameInfo.module.css"
 import {capitalize} from "lodash"
-import {useAppSelector} from "../redux/hooks"
+import {useActions, useAppSelector} from "../redux/hooks"
 import {GameBoard, StoneColor} from "../lib/gamelogic"
 import {hexColors, stoneHexColors} from "../consts/utils"
 import ScoreBoard from "./ScoreBoard"
@@ -8,6 +8,7 @@ import SpectatorsSection from "./SpectatorsSection"
 
 export default function GameInfo(props: {board: GameBoard}) {
   const {board} = props
+  const {setShowOccupation} = useActions()
   const winner = useAppSelector((state) => state.gameReducer.winner)
   const gameError = useAppSelector((state) => state.gameReducer.error)
   const connectedPlayers = useAppSelector((state) => state.playerReducer.players)
@@ -19,7 +20,10 @@ export default function GameInfo(props: {board: GameBoard}) {
 
   return (
     <div className={styles.infoContainer}>
-      <section>
+      <section
+        onMouseEnter={() => setShowOccupation(true)}
+        onMouseLeave={() => setShowOccupation(false)}
+      >
         <ScoreBoard board={board} />
       </section>
       {(winner != null || gameError) && (

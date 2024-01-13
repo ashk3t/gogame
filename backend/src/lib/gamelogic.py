@@ -11,6 +11,7 @@ class InvalidTurnException(Exception):
 # You can notice +1 and -1 in some color manipulations especially in REP functions
 # It is needed for more comfortable board representation: 0 = NONE color, not -1
 class StoneColor(int, Enum):
+    # Absence of stone marked as `None` object, NOT a `Stone` with `color == StoneColor.NONE`
     NONE = -1
     RED = 0
     YELLOW = 1
@@ -100,13 +101,17 @@ class GameBoard:
         ]
         self.all_groups: list[Group] = []
         self.turn_color: StoneColor = StoneColor.RED
-        self.scores: list[float] = [
+        self._score_adjustment: tuple[float, ...] = tuple(
             round(i * (8.1 - players), 1) for i in range(players)
-        ]
+        )
+        self.scores: list[float] = list(self._score_adjustment)
         self.pass_counter: int = 0
         self.ko_position: tuple[int, int] | None = None
         self.finished_players: set[StoneColor] = set()
         self.killer: StoneColor | None = None
+        self.occupation_colors: list[list[StoneColor]] = [
+            [StoneColor.NONE for _ in range(width)] for _ in range(height)
+        ]
 
     def __str__(self):
         return "\n".join(
@@ -135,8 +140,43 @@ class GameBoard:
         while self.turn_color in self.finished_players:
             self.turn_color = StoneColor((self.turn_color + 1) % self.players)
 
-    def increment_score(self, color: StoneColor, value: int = 1):
-        self.scores[color] += value
+    def estimate_occupation_color(self, i: int, j: int) -> StoneColor:
+        radius = 0
+        ring_positions: list[tuple[int, int]] = [(i, j)]
+
+        while len(ring_positions):
+            stone_color_count = [0] * self.players
+            for pos_i, pos_j in ring_positions:
+                stone = self.stones[pos_i][pos_j]
+                if stone:
+                    stone_color_count[stone.color] += 1
+
+            max_occurrences = max(stone_color_count)
+            if stone_color_count.count(max_occurrences) == 1:
+                return StoneColor(stone_color_count.index(max_occurrences))
+
+            radius += 1
+            ring_position_deltas = (
+                list(zip([-radius] * 2 * radius, range(-radius, radius)))
+                + list(zip([radius] * 2 * radius, range(-radius + 1, radius + 1)))
+                + list(zip(range(-radius + 1, radius + 1), [-radius] * 2 * radius))
+                + list(zip(range(-radius, radius), [radius] * 2 * radius))
+            )
+            ring_positions = [
+                (i + di, j + dj)
+                for di, dj in ring_position_deltas
+                if self.is_valid(i + di, j + dj)
+            ]
+
+        return StoneColor.NONE
+
+    def update_scores(self):
+        self.scores = list(self._score_adjustment)
+        for i in range(self.height):
+            for j in range(self.width):
+                color = self.estimate_occupation_color(i, j)
+                self.scores[color] += 1
+                self.occupation_colors[i][j] = color
 
     def is_valid(self, i: int, j: int):
         return 0 <= i < self.height and 0 <= j < self.width
@@ -185,7 +225,6 @@ class GameBoard:
             for member_i, member_j in group.member_stones.keys():
                 frontier_group.free(member_i, member_j)
 
-        self.increment_score(group.color, -len(group.member_stones))
         if len(group.member_stones) == 1:
             self.ko_position = tuple(group.member_stones.keys())[0]
         self.delete_group(group)
@@ -194,7 +233,7 @@ class GameBoard:
         if not self.is_valid(i, j):
             raise InvalidTurnException("Invalid (I, J)")
         if self.stones[i][j]:
-            raise InvalidTurnException("Point is already occupied")
+            raise InvalidTurnException("Position is already occupied")
         if self.ko_position == (i, j):
             raise InvalidTurnException("Ko rule")
 
@@ -235,7 +274,7 @@ class GameBoard:
                 self.killer = stone.color
 
         self.pass_counter = 0
-        self.increment_score(self.turn_color)
+        self.update_scores()
         self.update_turn_color()
 
     def pass_turn(self):
@@ -262,10 +301,10 @@ class GameBoard:
         height;width;players;turn_color;pass_counter;<ko_position>;<finished_players>;<rep>
 
         <rep> is the sequence of numbers,
-        which represent the color of stone on a specific point
-        OR vacant point if 0
-        OR length of sequence of vacant points if in ().
-        Last vacant points can be skipped.
+        which represent the color of stone on a specific position
+        OR vacant position if 0
+        OR length of sequence of vacant positions if in ().
+        Last vacant positions can be skipped.
         format: '0011(5)2'
 
         <finished_players> is sequence of numbers
@@ -297,13 +336,13 @@ class GameBoard:
                 if char != "0":
                     stone = Stone.from_str(char)
                     board.stones[pos // width][pos % width] = stone
-                    board.increment_score(stone.color)
                 pos += 1
             elif char == ")":
                 pos += int(board_rep[(left_parenthesis_idx + 1) : idx])
                 left_parenthesis_idx = None
 
         board.estimate_groups()
+        board.update_scores()
         return board
 
     def to_rep(self) -> str:
@@ -340,3 +379,19 @@ class GameBoard:
         return board_rep
 
     to_rep.__doc__ = from_rep.__doc__
+
+
+if __name__ == "__main__":
+
+    def oc_to_str(occupation_colors) -> str:
+        return "\n".join(
+            "".join(str(color + 1) for color in row) for row in occupation_colors
+        )
+
+    b = GameBoard()
+    b.take_turn(1, 1)
+    b.take_turn(15, 15)
+
+    print(b)
+    print(b.scores)
+    print(oc_to_str(b.occupation_colors))
